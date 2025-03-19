@@ -1,6 +1,7 @@
 baselines
 node_modules
 sde-prep
+emsdk
 *.vdf
 *.vdfx
 *.3vmfx
