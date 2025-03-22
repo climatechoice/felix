@@ -102,6 +102,34 @@ function createInfoIcon(hoverText) {
 }
 
 /*
+ * Function to add Scenario Info Icon
+ */
+
+function addScenarioInfoIcon() {
+  // Create the info icon with tooltip text
+  const scenarioInfo = createInfoIcon(
+    "Switch between Scenario 1 and Scenario 2 inputs."
+  );
+
+  // Append the info icon to the scenario info container
+  $("#scenario-info-container").append(scenarioInfo);
+
+  // Get references to the icon and tooltip
+  const scenarioIcon = $("#scenario-info-container .info-icon");
+  const scenarioTooltip = $("#scenario-info-container .tooltip");
+
+  // Add hover event listeners for tooltip positioning
+  scenarioIcon
+    .on("mouseenter", function () {
+      positionTooltip(scenarioTooltip);
+      scenarioTooltip.css("visibility", "visible");
+    })
+    .on("mouseleave", function () {
+      scenarioTooltip.css("visibility", "hidden");
+    });
+}
+
+/*
  * INPUTS
  */
 
@@ -874,6 +902,9 @@ async function initApp() {
   $(
     "#scenario-selector-container .scenario-selector-option[data-value='Scenario 1']"
   ).addClass("selected");
+
+  // Add scenario info icon and tooltip
+  addScenarioInfoIcon();
 
   // When the model outputs are updated, refresh all graphs
   model.onOutputsChanged = () => {

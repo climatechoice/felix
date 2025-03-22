@@ -86,61 +86,77 @@ p {
 #scenario-selector-container {
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  justify-content: space-evenly;
-  margin-top: 10px;
-  margin-bottom: 20px;
+  justify-content: flex-start;
+  gap: 10px;
+  /* margin-top: 3px; */
+  margin-bottom: 10px;
 }
 
 .scenario-selector-option {
   color: white;
-  padding: 8px 15px;
+  width: 30px; /* Fixed width */
+  height: 30px; /* Fixed height */
   border: none;
   cursor: pointer;
   transition: background-color 0.1s ease, transform 0.1s ease;
+  border-radius: 50%;
 }
 
-/* First Scenario - Green */
+/* First Scenario - Black */
 .scenario-selector-option:nth-child(1) {
-  background-color: #53bb37;
+  background-color: #000000;
 }
 
 .scenario-selector-option:nth-child(1):hover {
-  background-color: #5ecb40;
+  background-color: #444444;
 }
 
 .scenario-selector-option:nth-child(1):active {
-  background-color: #58c23a;
+  background-color: #333333;
 }
 
 .scenario-selector-option:nth-child(1).selected {
-  background-color: #4fb033;
-  transform: scale(1.02);
-  border: 2px solid #3a8e2d; /* Dark green border */
+  background-color: #000000;
+  transform: scale(1.05);
+  border: 3px solid #000000; /* Dark gray border */
+  box-shadow: 0px 0px 10px rgba(19, 19, 19, 0.3);
 }
 
-/* Second Scenario - Red */
+/* Second Scenario - Orange */
 .scenario-selector-option:nth-child(2) {
-  background-color: #d33700;
+  background-color: #e66100;
 }
 
 .scenario-selector-option:nth-child(2):hover {
-  background-color: #e34817;
+  background-color: #f0731a;
 }
 
 .scenario-selector-option:nth-child(2):active {
-  background-color: #cc3c10;
+  background-color: #d95c00;
 }
 
 .scenario-selector-option:nth-child(2).selected {
-  background-color: #c2330d;
-  transform: scale(1.02);
-  border: 2px solid #9e2809; /* Dark red border */
+  background-color: #e66100;
+  transform: scale(1.05);
+  border: 3px solid #8a3c00; /* Dark orange border */
+  box-shadow: 0px 0px 10px rgba(19, 19, 19, 0.3);
 }
 
-/* Red slider highlight colour for Scenario 2 */
+/* Orange slider highlight colour for Scenario 2 */
 .scenario-2 .slider-rangeHighlight {
-  background: #d33700 !important;
+  background: #e66100 !important;
+}
+
+/* Underline the scenario buttons */
+.scenario-selector-option.selected::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 4px; /* Thickness of the underline */
+  background-color: #000000;
+  position: absolute;
+  bottom: -10px; /* Position */
+  left: 0;
 }
 
 /*
@@ -229,6 +245,7 @@ p {
 .graph-legend {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap; /* Allow items to move to the next row */
   justify-content: center;
   width: 100%;
   margin-top: 2px;
@@ -503,7 +520,7 @@ p {
   border-radius: 4px;
   font-size: 12px;
   line-height: 1.4;
-  z-index: 1000;
+  z-index: 1001;
   pointer-events: none;
   min-width: 200px;
   max-width: 300px;
@@ -517,6 +534,12 @@ p {
   align-items: center;
   gap: 4px; /* Space between value and units */
   margin-left: auto; /* Force this container to the right */
+}
+
+/* Only for the scenario info container */
+#scenario-info-container {
+  display: flex;
+  align-items: flex-end; /* push it to the bottom */
 }
 
 /*
@@ -592,8 +615,9 @@ p {
   background: #fafafa;
 }
 
+/* Black for Scenario 1 */
 .slider-rangeHighlight {
-  background: #53bb37;
+  background: #000000;
 }
 
 .slider-handle {
