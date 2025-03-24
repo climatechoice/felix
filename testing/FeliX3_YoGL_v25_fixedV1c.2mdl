@@ -35546,7 +35546,7 @@ Water
 1:BAU + Scenarios.vdfx
 1:1b.vdfx
 4:Time
-5:Shift fraction of meat eaters to vegetarianism[Gender,Cohorts,Education]
+5:Indicative fraction intended to change diet[Cohorts,Gender,Education]
 6:"0-4"
 6:AltPasMeat
 6:Coal
