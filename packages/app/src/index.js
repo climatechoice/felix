@@ -234,6 +234,9 @@ function addSwitchItem(switchInput) {
   const spec = switchInput.spec;
   const inputElemId = `input-${spec.id}`;
 
+  // Create info tooltip for this Switch
+  const infoIcon = createInfoIcon(spec.hoverDescription);
+
   // Create button container
   const buttonContainer = $('<div class="switch-button-container"></div>');
   const onButton = $(
@@ -274,7 +277,7 @@ function addSwitchItem(switchInput) {
 
   // Create switch UI
   const div = $(`<div class="input-item switch-item"/>`).append([
-    buttonContainer.append(offButton, onButton),
+    buttonContainer.append(offButton, infoIcon, onButton),
     $(
       `<div class="input-desc">${
         spec.descriptionKey ? str(spec.descriptionKey) : ""
