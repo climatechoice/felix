@@ -8,12 +8,13 @@
 
 # NOTE: The following is an example of a simple check just to get you started.
 # Replace "Some output" with the name of some variable you'd like to test.
-- describe: Some output
+- describe: Check if within Bounds
   tests:
-    - it: should be > 0 for all input scenarios
+    - it: should not exceed a reasonable upper bound of a million
       scenarios:
         - preset: matrix
       datasets:
-        - name: Some output
+        - name: Annual Caloric Demand inc Waste in Petacalorie[PasMeat]
       predicates:
-        - gt: 0
+        - lt: 1e3
+        - gt: -1e3

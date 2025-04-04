@@ -11,10 +11,14 @@
 # Replace "Some input" and "Another input" with the names of some variables you'd
 # like to test.
 - scenario:
-    title: Custom scenario
-    subtitle: gradual ramp-up
+    title: Scenario 1
+    subtitle: Testing through different scenario types
     with:
-      - input: Some input
+      - input: Self efficacy aggregated multiplier
+        at: 180
+      - input: Subjective norm aggregated multiplier
+        at: 180
+      - input: Waste Fraction Scenarios by Food Category[PasMeat]
         at: 10
-      - input: Another input
-        at: 20
+      - input: Waste Fraction Scenarios by Food Category[Pulses]
+        at: 10
