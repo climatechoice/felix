@@ -130,6 +130,50 @@ function addScenarioInfoIcon() {
 }
 
 /*
+ * NAVIGATION BAR LOGIC
+ */
+
+// Function to reset all inputs of the active model
+function resetActiveModelInputs() {
+  coreConfig.inputs.forEach((spec) => {
+    const input = activeModel.getInputForId(spec.id);
+    if (input) {
+      input.reset();
+    }
+  });
+  // Refresh the inputs UI to show the default values
+  const selectedCategory = $(".input-category-selector-option.selected").data(
+    "value"
+  );
+  initInputsUI(selectedCategory);
+}
+
+// Listen for the resetScenario event and trigger the reset
+window.addEventListener("resetScenario", resetActiveModelInputs);
+
+// Function to reset all inputs for BOTH models
+function resetAllModelsInputs() {
+  // Reset both models
+  [model, modelB].forEach((modelInstance) => {
+    coreConfig.inputs.forEach((spec) => {
+      const input = modelInstance.getInputForId(spec.id);
+      if (input) {
+        input.reset();
+      }
+    });
+  });
+
+  // Refresh the UI to show updated values
+  const selectedCategory = $(".input-category-selector-option.selected").data(
+    "value"
+  );
+  initInputsUI(selectedCategory);
+}
+
+// Add event listener for resetAll
+window.addEventListener("resetAll", resetAllModelsInputs);
+
+/*
  * INPUTS
  */
 

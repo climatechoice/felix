@@ -6,29 +6,39 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Material Icons web font -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
     <script type="module" src="./src/index.js"></script>
+    <script src="./src/nav.js" defer></script>
   </head>
 
   <body>
-    <div id="inputs-section">
-      <div id="input-category-selector-container"></div>
-      <div id="scenario-selector-container">
-        <button class="scenario-selector-option" data-value="Scenario 1">
-          1
-        </button>
-        <button class="scenario-selector-option" data-value="Scenario 2">
-          2
-        </button>
-        <div id="scenario-info-container"></div>
+    <div id="nav-bar"></div>
+    <div id="inputs-graphs-section">
+      <div id="inputs-section">
+        <div id="input-category-selector-container"></div>
+        <div id="scenario-selector-container">
+          <button class="scenario-selector-option" data-value="Scenario 1">
+            1
+          </button>
+          <button class="scenario-selector-option" data-value="Scenario 2">
+            2
+          </button>
+          <div id="scenario-info-container"></div>
+        </div>
+        <div id="inputs-container">
+          <div id="inputs-content"></div>
+        </div>
       </div>
-      <div id="inputs-container">
-        <div id="inputs-content"></div>
-      </div>
-    </div>
 
-    <div id="graphs-section">
-      <div id="graph-category-selector-container"></div>
-      <div id="graphs-container"></div>
+      <div id="graphs-section">
+        <div id="graph-category-selector-container"></div>
+        <div id="graphs-container"></div>
+      </div>
     </div>
 
     <div class="overlay-container"></div>

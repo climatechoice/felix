@@ -1,7 +1,7 @@
 html,
 body {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   margin: 0;
@@ -17,6 +17,120 @@ p {
   margin-bottom: 10px;
 }
 
+/* nav-bar container */
+#nav-bar {
+  /* ensure it never flexes */
+  flex: 0 0 50px;
+  height: 50px;
+  background-color: #f5f5f5;
+  box-sizing: border-box;
+}
+
+/* inner <nav> flex row */
+#nav-bar > nav {
+  display: flex;
+  height: 100%;
+}
+
+/* each third */
+.nav-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+/* left-aligned, center, right-aligned */
+.nav-section.first {
+  justify-content: flex-start;
+}
+.nav-section.second {
+  justify-content: center;
+}
+.nav-section.third {
+  justify-content: flex-end;
+}
+
+/* button/reset/select styling (optional tweaks) */
+#nav-bar button,
+#nav-bar select {
+  display: flex; /* make the button a flexbox */
+  align-items: center; /* vertical centering */
+  justify-content: center; /* horizontal centering */
+
+  /* your existing size rules */
+  height: 26px;
+  min-height: 26px;
+  max-height: 26px;
+  padding: 0 8px;
+
+  /* visuals */
+  background: none;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#nav-bar button:hover,
+#nav-bar select:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ===== custom toggle ===== */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px; /* total width */
+  height: 26px; /* total height = 26px */
+  margin-left: 8px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+/* the sliding background */
+.toggle-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 13px;
+  transition: background-color 0.2s;
+}
+/* the circle */
+.toggle-switch .slider::before {
+  content: "";
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 2px;
+  top: 2px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+/* checked state */
+.toggle-switch input:checked + .slider {
+  background-color: #000000;
+}
+.toggle-switch input:checked + .slider::before {
+  transform: translateX(24px);
+}
+
+/* This contains both the inputs-section and the outputs-section */
+#inputs-graphs-section {
+  display: flex;
+  flex-direction: row;
+  min-height: 0; /* Allow children with overflow to shrink */
+}
+
 /* Styling for the entire inputs section */
 #inputs-section {
   flex: 0 0 33.333%; /* 1/3 width */
@@ -26,7 +140,7 @@ p {
   background-color: #ececec;
   overflow-y: auto;
   box-sizing: border-box;
-  padding: 10px;
+  padding: 10px 10px 0px 10px;
 }
 
 /* Styling for the graphs section */
@@ -50,7 +164,7 @@ p {
   flex-direction: row;
   justify-content: center; /* Center the options horizontally */
   justify-content: space-evenly;
-  margin-top: 10px; /* Space above the selector */
+  /* margin-top: 10px; Space above the selector */
   margin-bottom: 10px;
 }
 
@@ -214,9 +328,8 @@ p {
 .graph-container {
   position: relative;
   width: 31vw;
-  height: 36vh;
+  height: 32vh;
   padding-top: 5px;
-  /* padding-bottom: 30px; */
 }
 
 /* Contains the Graph Title, the Graph, and the Graph Legend */
@@ -285,7 +398,7 @@ p {
   border-radius: 4px;
   /* margin-top: 4px; */
   z-index: 1000;
-  max-height: 40vh;
+  max-height: 35vh;
   overflow-y: auto;
 }
 
@@ -340,7 +453,7 @@ p {
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  margin-top: 12px;
+  margin-top: 5px;
 }
 
 .input-title {
