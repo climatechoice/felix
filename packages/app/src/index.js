@@ -6,7 +6,7 @@ import "./index.css";
 import { config as coreConfig, createModel } from "@core";
 import enStrings from "@core-strings/en";
 
-import { initOverlay } from "./dev-overlay";
+// import { initOverlay } from "./dev-overlay";
 import { GraphView } from "./graph-view";
 
 let model;
@@ -14,6 +14,12 @@ let modelB;
 let activeModel;
 
 let graphViews = [];
+
+/*
+ * This is a custom solution, because the initial addSwitchItem implementation of
+ * SDEverywhere added the sliders Twice for each input. So, with this addedSliderIds Set,
+ * I first check if this slider has already been added, to prevent duplicates.
+ */
 const addedSliderIds = new Set(); // Track which slider IDs have been added
 
 /**
@@ -351,6 +357,74 @@ function addSwitchItem(switchInput) {
   }
 }
 
+/**
+ * Renders a “segmented control” (a row of mutually‐exclusive buttons)
+ * in place of a slider, based on spec.rangeDividers and spec.rangeLabelKeys.
+ *
+ * @param {Object} inputInstance   — the model input instance
+ * @param {jQuery} container       — a jQuery element to append into
+ * @returns {jQuery}               — the root element of the segmented control
+ */
+function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
+  const spec = inputInstance.spec;
+  const currentValue = inputInstance.get();
+
+  // Build segment values array: first min, then dividers, then maybe max
+  let segmentValues = [spec.minValue, ...spec.rangeDividers];
+  if (segmentValues.length < spec.rangeLabelKeys.length) {
+    segmentValues.push(spec.maxValue);
+  }
+  if (segmentValues.length > spec.rangeLabelKeys.length) {
+    segmentValues = segmentValues.slice(0, spec.rangeLabelKeys.length);
+  }
+
+  // Outer wrapper
+  const wrapper = $('<div class="input-segmented-item"/>');
+
+  // ——— Title + optional info icon ———
+  const infoIcon = createInfoIcon(spec.hoverDescription);
+  const titleAndIcon = $(
+    '<div class="slider-title-and-info-container"/>'
+  ).append(
+    [
+      $(`<div class="input-title">${str(spec.labelKey)}</div>`),
+      infoIcon,
+    ].filter((el) => el) // drop the icon if null
+  );
+  const titleRow = $('<div class="input-title-row"/>').append(titleAndIcon);
+  wrapper.append(titleRow);
+
+  // ——— Segmented buttons ———
+  const segmentsContainer = $('<div class="segmented-buttons"/>');
+  spec.rangeLabelKeys.forEach((labelKey, idx) => {
+    const targetValue = segmentValues[idx];
+    const btn = $(
+      `<button type="button" class="segmented-button">${str(labelKey)}</button>`
+    );
+    if (currentValue === targetValue) btn.addClass("active");
+
+    btn.on("click", () => {
+      inputInstance.set(targetValue);
+      segmentsContainer.find(".segmented-button").removeClass("active");
+      btn.addClass("active");
+    });
+
+    segmentsContainer.append(btn);
+  });
+  wrapper.append(segmentsContainer);
+
+  // ——— Optional description below ———
+  if (spec.descriptionKey) {
+    wrapper.append(
+      $(`<div class="input-desc">${str(spec.descriptionKey)}</div>`)
+    );
+  }
+
+  // Insert into DOM & return
+  container.append(wrapper);
+  return wrapper;
+}
+
 function addCombinedSlider(groupInputs, container) {
   if (groupInputs.length !== 2) {
     console.error("Combined slider group must contain exactly 2 sliders");
@@ -445,7 +519,11 @@ function addCombinedSlider(groupInputs, container) {
   });
 }
 
-function createDropdownGroup(mainInputSpec, assumptionInputs) {
+function createDropdownGroup(
+  mainInputSpec,
+  assumptionInputs,
+  assumptionCombinedSliders
+) {
   const dropdownContainer = $('<div class="input-dropdown-group">');
   const dropdownHeader = $('<div class="dropdown-header">');
   const dropdownContent = $(
@@ -459,10 +537,23 @@ function createDropdownGroup(mainInputSpec, assumptionInputs) {
 
   // Add main input
   const mainInputInstance = activeModel.getInputForId(mainInputSpec.id);
-  const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
 
-  // Add expand button
-  sliderDiv.find(".input-title-row").prepend(expandButton);
+  // Here, we check if input is Segmented Item OR just a Normal Slider
+  if (str(mainInputSpec.listingLabelKey) !== "yes") {
+    // this is a normal slider
+    // TODO: Update felix-plugin-config and use something like:
+    // TODO: if (mainInputSpec.isSegmented !== "yes")
+    const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
+
+    // Add expand button
+    sliderDiv.find(".input-title-row").prepend(expandButton);
+  } else {
+    // this is a segmented button
+    const segmentedDiv = addSegmentedItem(mainInputInstance, dropdownHeader);
+    segmentedDiv.find(".input-title-row").prepend(expandButton);
+  }
+
+  // ! ---------
 
   // Add assumption inputs
   assumptionInputs.forEach((inputSpec) => {
@@ -471,11 +562,16 @@ function createDropdownGroup(mainInputSpec, assumptionInputs) {
     else if (input.kind === "switch") addSwitchItem(input, dropdownContent);
   });
 
+  // Add assumption combined sliders
+  if (assumptionCombinedSliders.length > 0) {
+    addCombinedSlider(assumptionCombinedSliders, dropdownContent);
+  }
+
   // Toggle handler
   let isExpanded = false;
   expandButton.on("click", () => {
     isExpanded = !isExpanded;
-    dropdownContent.slideToggle();
+    dropdownContent.slideToggle(200);
     expandButton.text(isExpanded ? "▼" : "▶");
   });
 
@@ -549,7 +645,7 @@ $("#input-category-selector-container").on(
   }
 );
 
-//
+// Initialize the inputs section
 function initInputsUI(category) {
   $("#inputs-content").empty();
   addedSliderIds.clear(); // Reset tracked slider IDs
@@ -579,10 +675,12 @@ function initInputsUI(category) {
         addCombinedSlider(groupInputs, $("#inputs-content"));
         return;
       }
+
       // Handle dropdowns
       const standaloneInputs = [];
       let mainInput = null;
       const assumptionInputs = [];
+      const assumptionCombinedSliders = [];
 
       groupInputs.forEach((inputSpec) => {
         if (inputSpec.secondaryType === "without") {
@@ -591,19 +689,27 @@ function initInputsUI(category) {
           mainInput = inputSpec;
         } else if (inputSpec.secondaryType === "dropdown assumptions") {
           assumptionInputs.push(inputSpec);
+        } else if (inputSpec.secondaryType === "dropdown combined") {
+          assumptionCombinedSliders.push(inputSpec);
         }
       });
 
       // Add standalone inputs first
       standaloneInputs.forEach((inputSpec) => {
         const input = activeModel.getInputForId(inputSpec.id);
-        if (input.kind === "slider") addSliderItem(input);
-        else if (input.kind === "switch") addSwitchItem(input);
+        if (input.kind === "slider") {
+          // TODO: Add here the case for standalone addSegmentedItem
+          addSliderItem(input);
+        } else if (input.kind === "switch") addSwitchItem(input);
       });
 
       // Process main input with dropdown
       if (mainInput) {
-        createDropdownGroup(mainInput, assumptionInputs);
+        createDropdownGroup(
+          mainInput,
+          assumptionInputs,
+          assumptionCombinedSliders
+        );
       }
     });
   } else {
@@ -937,7 +1043,7 @@ async function initApp() {
   initGraphsUI(defaultGraphCategory);
   initInputsUI(defaultInputCategory);
 
-  initOverlay();
+  // initOverlay();
 
   // Also, mark the default buttons as "selected"
   $(

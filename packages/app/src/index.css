@@ -20,8 +20,8 @@ p {
 /* nav-bar container */
 #nav-bar {
   /* ensure it never flexes */
-  flex: 0 0 50px;
-  height: 50px;
+  flex: 0 0 40px;
+  height: 40px;
   background-color: #f5f5f5;
   box-sizing: border-box;
 }
@@ -127,6 +127,7 @@ p {
 /* This contains both the inputs-section and the outputs-section */
 #inputs-graphs-section {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: row;
   min-height: 0; /* Allow children with overflow to shrink */
 }
@@ -281,7 +282,7 @@ p {
   display: flex; /* Arrange the options in a row */
   justify-content: center; /* Center the options horizontally */
   justify-content: space-evenly;
-  margin-top: 5px; /* Space above the selector */
+  /* margin-top: 5px; Space above the selector */
 }
 
 .graph-category-selector-option {
@@ -292,7 +293,7 @@ p {
   border-radius: 5px; /* Rounded corners */
   font-size: 16px; /* Text size */
   cursor: pointer; /* Pointer cursor when hovered */
-  transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth hover effect */
+  transition: background-color 0.1s ease, transform 0.1s ease; /* Smooth hover effect */
 }
 
 .graph-category-selector-option:hover {
@@ -521,7 +522,7 @@ p {
   border-radius: 8px;
   background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
 }
 
 .input-dropdown-group:hover {
@@ -554,7 +555,7 @@ p {
   color: #475569;
   font-size: 12px;
   padding: 0;
-  transition: all 0.2s ease;
+  transition: all 0.1s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -580,11 +581,43 @@ p {
 } */
 
 /*
+ * Segmented Buttons for dropdown main
+ */
+
+.input-segmented-item {
+  margin: 6px 0;
+  padding: 6px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.segmented-buttons {
+  display: flex;
+  flex-wrap: wrap; /* allow buttons to flow onto the next line */
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.segmented-button {
+  flex: 1;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.segmented-button.active {
+  background: #2563eb;
+  color: white;
+  border-color: #007bff;
+}
+
+/*
  * Combined Slider Inputs
  */
 
 .combined-slider-group {
-  margin: 20px 0;
+  margin: 6px 0;
 }
 
 .combined-slider-group .input-title-row {
@@ -705,9 +738,9 @@ p {
   font-family: monospace;
   font-size: 11px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
-} */
+}
 
-/* .overlay-container .overlay-error {
+.overlay-container .overlay-error {
   color: crimson;
 } */
 
