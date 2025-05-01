@@ -9,9 +9,12 @@ import enStrings from "@core-strings/en";
 // import { initOverlay } from "./dev-overlay";
 import { GraphView } from "./graph-view";
 
-let model;
+let modelA;
 let modelB;
-let activeModel;
+// ! there's no activeModel now.
+// let activeModel;
+// ! we 're now using this instead:
+let scenarioMode = "single";
 
 let graphViews = [];
 
@@ -20,7 +23,9 @@ let graphViews = [];
  * SDEverywhere added the sliders Twice for each input. So, with this addedSliderIds Set,
  * I first check if this slider has already been added, to prevent duplicates.
  */
-const addedSliderIds = new Set(); // Track which slider IDs have been added
+// Track which slider IDs have been added
+// ! no need to check for both models, since sliders are either added for one or for both at the same time.
+const addedSliderIds = new Set();
 
 /**
  * Return the base (English) string for the given key.
@@ -111,56 +116,60 @@ function createInfoIcon(hoverText) {
  * Function to add Scenario Info Icon
  */
 
-function addScenarioInfoIcon() {
-  // Create the info icon with tooltip text
-  const scenarioInfo = createInfoIcon(
-    "Switch between Scenario 1 and Scenario 2 inputs."
-  );
+// ! removed this since no scenario tooltip now.
+// function addScenarioInfoIcon() {
+//   // Create the info icon with tooltip text
+//   const scenarioInfo = createInfoIcon(
+//     "Switch between Scenario 1 and Scenario 2 inputs."
+//   );
 
-  // Append the info icon to the scenario info container
-  $("#scenario-info-container").append(scenarioInfo);
+//   // Append the info icon to the scenario info container
+//   $("#scenario-info-container").append(scenarioInfo);
 
-  // Get references to the icon and tooltip
-  const scenarioIcon = $("#scenario-info-container .info-icon");
-  const scenarioTooltip = $("#scenario-info-container .tooltip");
+//   // Get references to the icon and tooltip
+//   const scenarioIcon = $("#scenario-info-container .info-icon");
+//   const scenarioTooltip = $("#scenario-info-container .tooltip");
 
-  // Add hover event listeners for tooltip positioning
-  scenarioIcon
-    .on("mouseenter", function () {
-      positionTooltip(scenarioTooltip);
-      scenarioTooltip.css("visibility", "visible");
-    })
-    .on("mouseleave", function () {
-      scenarioTooltip.css("visibility", "hidden");
-    });
-}
+//   // Add hover event listeners for tooltip positioning
+//   scenarioIcon
+//     .on("mouseenter", function () {
+//       positionTooltip(scenarioTooltip);
+//       scenarioTooltip.css("visibility", "visible");
+//     })
+//     .on("mouseleave", function () {
+//       scenarioTooltip.css("visibility", "hidden");
+//     });
+// }
 
 /*
  * NAVIGATION BAR LOGIC
  */
 
+// TODO: change to selected model, not "active". Since, now there's no "active" model.
 // Function to reset all inputs of the active model
-function resetActiveModelInputs() {
-  coreConfig.inputs.forEach((spec) => {
-    const input = activeModel.getInputForId(spec.id);
-    if (input) {
-      input.reset();
-    }
-  });
-  // Refresh the inputs UI to show the default values
-  const selectedCategory = $(".input-category-selector-option.selected").data(
-    "value"
-  );
-  initInputsUI(selectedCategory);
-}
+// function resetActiveModelInputs() {
+//   coreConfig.inputs.forEach((spec) => {
+//     const input = activeModel.getInputForId(spec.id);
+//     if (input) {
+//       input.reset();
+//     }
+//   });
+//   // Refresh the inputs UI to show the default values
+//   const selectedCategory = $(".input-category-selector-option.selected").data(
+//     "value"
+//   );
+//   initInputsUI(selectedCategory);
+// }
 
+// TODO: and this
 // Listen for the resetScenario event and trigger the reset
-window.addEventListener("resetScenario", resetActiveModelInputs);
+// window.addEventListener("resetScenario", resetActiveModelInputs);
 
 // Function to reset all inputs for BOTH models
+// ! this should still work
 function resetAllModelsInputs() {
   // Reset both models
-  [model, modelB].forEach((modelInstance) => {
+  [modelA, modelB].forEach((modelInstance) => {
     coreConfig.inputs.forEach((spec) => {
       const input = modelInstance.getInputForId(spec.id);
       if (input) {
@@ -173,16 +182,37 @@ function resetAllModelsInputs() {
   const selectedCategory = $(".input-category-selector-option.selected").data(
     "value"
   );
+  // ! perhaps only change this to have the scenario-mode passed as well. So, initInputsUI(selectedCategory, scenarioMode);
   initInputsUI(selectedCategory);
 }
 
 // Add event listener for resetAll
 window.addEventListener("resetAll", resetAllModelsInputs);
 
+// Function to toggle between single-scenario-mode and multi-scenario-mode for the inputs
+function toggleScenarioMode() {
+  scenarioMode = scenarioMode === "single" ? "multi" : "single";
+  console.log(`scenarioMode changed to: ${scenarioMode}`);
+
+  const selectedCategory = $(".input-category-selector-option.selected").data(
+    "value"
+  );
+  initInputsUI(selectedCategory);
+  // ! anything else to add?
+}
+
+// Add event listener for resetAll
+window.addEventListener("toggleScenarioMode", toggleScenarioMode);
+
 /*
  * INPUTS
  */
 
+// TODO: This should have two cases according to whether scenarioMode = "single" or "multi"
+// TODO: Right now, it's as if it's "single" scenarioMode.
+// TODO: The only things changed in "multi" mode should be:
+// TODO: a) to put both sliders side by side for the two models,
+// TODO: b) to show both sliders' values.
 function addSliderItem(sliderInput, container = $("#inputs-content")) {
   const spec = sliderInput.spec;
 
@@ -191,6 +221,7 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
    * added the sliders Twice for each input.
    * So, here I first check if this slider has already been added, to prevent duplicates.
    */
+  // ! perhaps there's no need to check for both, since they're either being added for one model or for both each time.
   if (addedSliderIds.has(spec.id)) {
     // Check if already added
     return; // Skip if duplicate
@@ -280,6 +311,8 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
   return div; // fm
 }
 
+// TODO: check if this needs to be changed.
+// TODO: When the switch is changed, it should probably change BOTH models' switches.
 function addSwitchItem(switchInput) {
   const spec = switchInput.spec;
   const inputElemId = `input-${spec.id}`;
@@ -313,7 +346,7 @@ function addSwitchItem(switchInput) {
     onSlidersContainer.toggle(isOn);
     offSlidersContainer.toggle(!isOn);
 
-    // Update model value
+    // Update value
     switchInput.set(isOn ? spec.onValue : spec.offValue);
   }
 
@@ -344,14 +377,14 @@ function addSwitchItem(switchInput) {
   // Add sliders to their respective containers
   if (spec.slidersActiveWhenOn) {
     spec.slidersActiveWhenOn.forEach((sliderId) => {
-      const slider = activeModel.getInputForId(sliderId);
+      const slider = modelA.getInputForId(sliderId);
       addSliderItem(slider, onSlidersContainer);
     });
   }
 
   if (spec.slidersActiveWhenOff) {
     spec.slidersActiveWhenOff.forEach((sliderId) => {
-      const slider = activeModel.getInputForId(sliderId);
+      const slider = modelA.getInputForId(sliderId);
       addSliderItem(slider, offSlidersContainer);
     });
   }
@@ -361,10 +394,16 @@ function addSwitchItem(switchInput) {
  * Renders a “segmented control” (a row of mutually‐exclusive buttons)
  * in place of a slider, based on spec.rangeDividers and spec.rangeLabelKeys.
  *
- * @param {Object} inputInstance   — the model input instance
- * @param {jQuery} container       — a jQuery element to append into
- * @returns {jQuery}               — the root element of the segmented control
+ * @param inputInstance   — the model input instance
+ * @param container       — a jQuery element to append into
+ * @returns               — the root element of the segmented control
  */
+
+// TODO: This should have two cases according to whether scenarioMode = "single" or "multi"
+// TODO: Right now, it's as if it's "single" scenarioMode.
+// TODO: The only things changed in "multi" mode should be:
+// TODO: a) to put the two segmented buttons side by side for the two models, with a clear distinction between the two models' segmented buttons.
+// TODO: b) to show both sliders' selected values for the segmented buttons.
 function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
   const spec = inputInstance.spec;
   const currentValue = inputInstance.get();
@@ -425,6 +464,11 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
   return wrapper;
 }
 
+// TODO: This should have two cases according to whether scenarioMode = "single" or "multi"
+// TODO: Right now, it's as if it's "single" scenarioMode.
+// TODO: The only things changed in "multi" mode should be:
+// TODO: a) to put both sliders side by side for the two models,
+// TODO: b) to show both sliders' start and end values.
 function addCombinedSlider(groupInputs, container) {
   if (groupInputs.length !== 2) {
     console.error("Combined slider group must contain exactly 2 sliders");
@@ -432,8 +476,8 @@ function addCombinedSlider(groupInputs, container) {
   }
 
   const [startSpec, endSpec] = groupInputs;
-  const startInput = activeModel.getInputForId(startSpec.id);
-  const endInput = activeModel.getInputForId(endSpec.id);
+  const startInput = modelA.getInputForId(startSpec.id);
+  const endInput = modelA.getInputForId(endSpec.id);
 
   // Get hover description and normal description from first spec that has it
   const hoverDescription = [startSpec, endSpec].find(
@@ -513,12 +557,16 @@ function addCombinedSlider(groupInputs, container) {
       },
     ]);
 
-    // Update model values
+    // Update values
     startInput.set(startValue);
     endInput.set(endValue);
   });
 }
 
+// ! This should -- in theory -- not be changed at all.
+// ! since we're checking the scenarioMode in ALL the addXItem functions.
+// ! and here we're simply using "modelA.getInputForId(mainInputSpec.id);"
+// ! to get the input instance from the first "modelA".
 function createDropdownGroup(
   mainInputSpec,
   assumptionInputs,
@@ -536,7 +584,7 @@ function createDropdownGroup(
   dropdownContainer.append(dropdownHeader, dropdownContent);
 
   // Add main input
-  const mainInputInstance = activeModel.getInputForId(mainInputSpec.id);
+  const mainInputInstance = modelA.getInputForId(mainInputSpec.id);
 
   // Here, we check if input is Segmented Item OR just a Normal Slider
   if (str(mainInputSpec.listingLabelKey) !== "yes") {
@@ -553,11 +601,9 @@ function createDropdownGroup(
     segmentedDiv.find(".input-title-row").prepend(expandButton);
   }
 
-  // ! ---------
-
   // Add assumption inputs
   assumptionInputs.forEach((inputSpec) => {
-    const input = activeModel.getInputForId(inputSpec.id);
+    const input = modelA.getInputForId(inputSpec.id);
     if (input.kind === "slider") addSliderItem(input, dropdownContent);
     else if (input.kind === "switch") addSwitchItem(input, dropdownContent);
   });
@@ -582,47 +628,6 @@ function createDropdownGroup(
  * Initialize the UI for the inputs menu and panel.
  */
 
-// Click event for selecting a scenario
-$("#scenario-selector-container").on(
-  "click",
-  ".scenario-selector-option",
-  function () {
-    // If the clicked button is already selected, do nothing
-    if ($(this).hasClass("selected")) return;
-
-    // Remove 'selected' class from all buttons
-    $(".scenario-selector-option").removeClass("selected");
-
-    // Add 'selected' class to the clicked button
-    $(this).addClass("selected");
-
-    // Get the selected scenario value
-    const selectedScenario = $(this).data("value");
-
-    // Call the function to update the UI based on the selected scenario
-    updateScenario(selectedScenario);
-  }
-);
-
-// Example function to handle scenario selection
-function updateScenario(selectedScenario) {
-  console.log("Selected scenario:", selectedScenario);
-  // The logic to handle the change in scenario
-  activeModel = selectedScenario === "Scenario 2" ? modelB : model;
-
-  // Green highlight for Scenario 1,
-  // Red highlight for Scenario 2
-  document.body.classList.toggle(
-    "scenario-2",
-    selectedScenario === "Scenario 2"
-  );
-
-  const selectedCategory = $(".input-category-selector-option.selected").data(
-    "value"
-  );
-  initInputsUI(selectedCategory);
-}
-
 // jquery Click event for Selecting Input Category (Diet Change, Food Waste, Alternative Protein)
 $("#input-category-selector-container").on(
   "click",
@@ -646,6 +651,10 @@ $("#input-category-selector-container").on(
 );
 
 // Initialize the inputs section
+// ! This should -- in theory -- not be changed at all.
+// ! since we're checking the scenarioMode in ALL the addXItem functions.
+// ! and here we're simply using "modelA.getInputForId(inputSpec.id);"
+// ! to get the input instance from the first "modelA".
 function initInputsUI(category) {
   $("#inputs-content").empty();
   addedSliderIds.clear(); // Reset tracked slider IDs
@@ -667,6 +676,7 @@ function initInputsUI(category) {
   }
 
   const categoryGroups = dynamicInputCategories[category] || {};
+  // ! unchanged until here ^^
 
   if (coreConfig.inputs.size > 0) {
     Object.entries(categoryGroups).forEach(([groupName, groupInputs]) => {
@@ -696,7 +706,7 @@ function initInputsUI(category) {
 
       // Add standalone inputs first
       standaloneInputs.forEach((inputSpec) => {
-        const input = activeModel.getInputForId(inputSpec.id);
+        const input = modelA.getInputForId(inputSpec.id);
         if (input.kind === "slider") {
           // TODO: Add here the case for standalone addSegmentedItem
           addSliderItem(input);
@@ -744,6 +754,8 @@ $("#graph-category-selector-container").on(
   }
 );
 
+// ! I think this should keep the "model" parameter
+// ! for when the two scenarios need to be on separate graphs
 function createGraphViewModel(graphSpec, model) {
   return {
     spec: graphSpec,
@@ -767,6 +779,8 @@ function createGraphViewModel(graphSpec, model) {
 /**
  * Create a dropdown selector for switching graphs.
  */
+// TODO: This should be changed, so that we dont show scenario 2 graphs when on
+// TODO: scenarioMode = "single".
 function createGraphSelector(category, currentGraphId, onGraphChange) {
   // Get all graphs for the current category and group by classification
   const graphs = Array.from(coreConfig.graphs.values()).filter(
@@ -864,7 +878,10 @@ function showGraph(graphSpec, outerContainer, category) {
   }
 
   // First, create the viewModel
-  const modelToUse = graphSpec.levels === "Scenario2" ? modelB : model; // fm - added this line
+  // ! I think we need to keep this logic for scenarios on "separate" graphs
+  // TODO: and implement the logic for scenarios on a single "combined" graph.
+  // TODO: Perhaps implement a function called "createCombinedGraphViewModel" (?)
+  const modelToUse = graphSpec.levels === "Scenario2" ? modelB : modelA; // fm - added this line
   const viewModel = createGraphViewModel(graphSpec, modelToUse); // fm - added "modelToUse"
 
   // Create the dropdown selector for switching graphs
@@ -1001,9 +1018,10 @@ function initGraphsUI(category) {
  */
 async function initApp() {
   try {
-    model = await createModel();
+    modelA = await createModel();
     modelB = await createModel();
-    activeModel = model;
+    // ! there's no activeModel now.
+    // activeModel = modelA;
   } catch (e) {
     console.error(`ERROR: Failed to load model: ${e.message}`);
     return;
@@ -1052,15 +1070,17 @@ async function initApp() {
   $(
     "#graph-category-selector-container .graph-category-selector-option[data-value='Food']"
   ).addClass("selected");
-  $(
-    "#scenario-selector-container .scenario-selector-option[data-value='Scenario 1']"
-  ).addClass("selected");
+  // ! removed this, since no #scenario-selector-container
+  // $(
+  //   "#scenario-selector-container .scenario-selector-option[data-value='Scenario 1']"
+  // ).addClass("selected");
 
   // Add scenario info icon and tooltip
-  addScenarioInfoIcon();
+  // ! removed this, since no scenario tooltip
+  // addScenarioInfoIcon();
 
   // When the model outputs are updated, refresh all graphs
-  model.onOutputsChanged = () => {
+  modelA.onOutputsChanged = () => {
     graphViews.forEach((graphView) => graphView.updateData());
   };
   modelB.onOutputsChanged = () => {

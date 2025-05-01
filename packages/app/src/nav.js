@@ -71,7 +71,9 @@ function loadNavBar() {
 
   const toggle = document.createElement("input");
   toggle.type = "checkbox";
-  toggle.addEventListener("change", () => console.log("toggle switched"));
+  toggle.addEventListener("change", () => {
+    window.dispatchEvent(new CustomEvent("toggleScenarioMode"));
+  });
 
   const slider = document.createElement("span");
   slider.className = "slider";
