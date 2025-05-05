@@ -11,6 +11,17 @@ import type {
   StringKey,
 } from "@core";
 
+import { config as coreConfig } from "@core";
+
+import enStrings from "@core-strings/en";
+
+/**
+ * Return the base (English) string for the given key.
+ */
+function str(key) {
+  return enStrings[key];
+}
+
 /** View model for a graph. */
 export interface GraphViewModel {
   /** The spec that describes the graph datasets and visuals. */
@@ -138,7 +149,37 @@ function createChart(
   options: GraphViewOptions
 ): Chart {
   // Create the chart data and config depending on the given style
-  const chartData = createLineChartJsData(viewModel.spec);
+  /*
+   * If viewModel.spec.scenarioDisplay === "combined", then
+   * I want to give createLineChartJsData two specs:
+   * a) the viewModel.spec,
+   * b) the viewModel.spec with the same str(viewModel.spec.titleKey) as the current viewModel.spec
+   */
+  let chartData;
+  if (viewModel.spec.scenarioDisplay === "combined") {
+    const title = str(viewModel.spec.titleKey);
+    // Search in coreConfig.graphs for a different spec with the same title
+    const matchingSpec = Array.from(coreConfig.graphs.values()).find(
+      (spec) => spec !== viewModel.spec && str(spec.titleKey) === title
+    );
+    if (matchingSpec) {
+      // console.log("found MATCHING title");
+      chartData = createLineChartJsData(viewModel.spec, matchingSpec);
+    } else {
+      console.warn(
+        "Combined scenario display requested but no matching spec found."
+      );
+      chartData = createLineChartJsData(viewModel.spec, null); // fallback
+    }
+  } else {
+    chartData = createLineChartJsData(viewModel.spec, null);
+  }
+
+  /*
+   * The above chartData has BOTH datasets
+   * when "scenario display" is combined.
+   */
+
   const chartJsConfig = lineChartJsConfig(viewModel, chartData);
   updateLineChartJsData(viewModel, chartData);
 
@@ -184,6 +225,7 @@ function createChart(
   return new Chart(canvas, chartJsConfig);
 }
 
+// TODO: Perhaps use this function instead of the imported str()
 function stringForKey(
   viewModel: GraphViewModel,
   key?: StringKey
@@ -282,57 +324,75 @@ function lineChartJsConfig(
       },
     },
   };
-
   return chartConfig;
 }
 
-function createLineChartJsData(spec: GraphSpec): ChartData {
-  const varCount = spec.datasets.length;
-  const stacked = isStacked(spec);
+function createLineChartJsData(spec1: GraphSpec, spec2: GraphSpec): ChartData {
   const chartDatasets: ChartDataSets[] = [];
+  // function to process a single spec
+  const processSpec = (spec: GraphSpec) => {
+    // console.log(spec.levels);
+    for (let varIndex = 0; varIndex < spec.datasets.length; varIndex++) {
+      const chartDataset: ChartDataSets = {};
 
-  for (let varIndex = 0; varIndex < varCount; varIndex++) {
-    const chartDataset: ChartDataSets = {};
+      const color = spec.datasets[varIndex].color;
 
-    const color = spec.datasets[varIndex].color;
-    const lineStyle = spec.datasets[varIndex].lineStyle;
-    const lineStyleModifiers = spec.datasets[varIndex].lineStyleModifiers || [];
-    if (stacked && lineStyle === "area") {
-      // This is an area section of a stacked chart; display it with fill style
-      // and disable the border (which would otherwise make the section appear
-      // larger than it should be, and would cause misalignment with the ref line).
-      chartDataset.fill = true;
-      chartDataset.borderColor = "rgba(0, 0, 0, 0)";
-      chartDataset.backgroundColor = color;
-    } else if (lineStyle === "scatter") {
-      // This is a scatter plot.  We configure the chart type and dot color here,
-      // but the point radius will be configured in `applyScaleFactors`.
-      chartDataset.type = "scatter";
-      chartDataset.fill = false;
-      chartDataset.borderColor = "rgba(0, 0, 0, 0)";
-      chartDataset.backgroundColor = color;
-    } else {
-      // This is a line plot. Always specify a background color even if fill is
-      // disabled; this ensures that the color square is correct for tooltips.
-      chartDataset.backgroundColor = color;
-      // This is a normal line plot; no fill
-      chartDataset.fill = false;
-      if (lineStyle === "none") {
-        // Make the line transparent (typically only used for confidence intervals)
+      const lineStyle = spec.datasets[varIndex].lineStyle;
+      const lineStyleModifiers =
+        spec.datasets[varIndex].lineStyleModifiers || [];
+      if (isStacked(spec) && lineStyle === "area") {
+        // This is an area section of a stacked chart; display it with fill style
+        // and disable the border (which would otherwise make the section appear
+        // larger than it should be, and would cause misalignment with the ref line).
+        chartDataset.fill = true;
         chartDataset.borderColor = "rgba(0, 0, 0, 0)";
+        chartDataset.backgroundColor = color;
+      } else if (lineStyle === "scatter") {
+        // This is a scatter plot.  We configure the chart type and dot color here,
+        // but the point radius will be configured in `applyScaleFactors`.
+        chartDataset.type = "scatter";
+        chartDataset.fill = false;
+        chartDataset.borderColor = "rgba(0, 0, 0, 0)";
+        chartDataset.backgroundColor = color;
       } else {
-        // Use the specified color for the line
-        chartDataset.borderColor = color;
-        chartDataset.borderCapStyle = "round";
+        // This is a line plot. Always specify a background color even if fill is
+        // disabled; this ensures that the color square is correct for tooltips.
+        chartDataset.backgroundColor = color;
+        // This is a normal line plot; no fill
+        chartDataset.fill = false;
+        if (lineStyle === "none") {
+          // Make the line transparent (typically only used for confidence intervals)
+          chartDataset.borderColor = "rgba(0, 0, 0, 0)";
+        } else {
+          // Use the specified color for the line
+          chartDataset.borderColor = color;
+          chartDataset.borderCapStyle = "round";
+        }
       }
+
+      chartDataset.pointHitRadius = 3;
+      chartDataset.pointHoverRadius = 0;
+      // console.log("ONE chartDataset INSIDE PROCESSING: ", chartDataset);
+      chartDatasets.push(chartDataset);
     }
+  };
 
-    chartDataset.pointHitRadius = 3;
-    chartDataset.pointHoverRadius = 0;
-
-    chartDatasets.push(chartDataset);
+  /*
+   * If "combined" is true, then I have to go through
+   * the first spec's variables, but also the second spec's variables.
+   * This is how to get the second graphSpec's
+   * colours and styles for the second graphSpec's graph lines if
+   * "scenario display" is "combined".
+   */
+  processSpec(spec1);
+  // If combined, also process spec2
+  // ! We also check whether spec2 exists before processing
+  // ! for the cases that "scenario display" = "combined"
+  // ! but no matching title is found in another spec.
+  if (isCombined(spec1) && spec2) {
+    processSpec(spec2);
   }
-
+  // console.log("ALL chartDatasets OUTSIDE PROCESSING: ", chartDatasets);
   return {
     datasets: chartDatasets,
   };
@@ -359,14 +419,57 @@ function updateLineChartJsData(
 
   const visibleDatasetSpecs =
     viewModel.getDatasets?.() || viewModel.spec.datasets;
-  const varCount = chartData.datasets.length;
+  /*
+   * Changed this to varCount = viewModel.spec.datasets.length;
+   * and I only loop over this for the FIRST viewModel.
+   */
+  const varCount = viewModel.spec.datasets.length;
+
   for (let varIndex = 0; varIndex < varCount; varIndex++) {
     const specDataset = viewModel.spec.datasets[varIndex];
     const varId = specDataset.varId;
     const sourceName = specDataset.externalSourceName;
     const series = getSeries(varId, sourceName);
     if (series) {
-      chartData.datasets[varIndex].data = series.points;
+      if (viewModel.spec.datasets.length !== chartData.datasets.length) {
+        // ! this means (implicitly) that "scenario display" = "combined".
+        // ! because viewModel.spec has less datasets than chartData.
+        // TODO: Right now, I assume that it is half, but it is not always half.
+        // TODO: change to a better "if statement"
+
+        // series.points has both seriesA, seriesB data. (eg. 402 total)
+        const allPoints = series.points || [];
+        const mid = Math.floor(allPoints.length / 2); // (eg. 201)
+        const firstHalf = allPoints.slice(0, mid); // modelA's points
+        const secondHalf = allPoints.slice(mid); // modelB's points
+
+        // Calculate base index for modelB's dataset
+        // This is where the data for modelB will be "injected".
+        // ! This assumes that the same amount of variables exist for both rows
+        // ! in graphs.csv that have "scenario display" = "combined".
+        // TODO: Change this so that the above assumption isn't needed.
+        // TODO: This will also fix the two BAUs being seen in the graphs.
+        const modelBOffset = chartData.datasets.length / 2;
+        const modelBIndex = varIndex + modelBOffset;
+
+        // Ensure both datasets exist
+        chartData.datasets[varIndex] = chartData.datasets[varIndex] || {};
+        // TODO: More thorough tests here
+        chartData.datasets[modelBIndex] = chartData.datasets[modelBIndex] || {};
+
+        // Assign the split data
+        /*
+         * Here, the data is updated for both models when
+         * "scenario display" = "combined"
+         */
+        chartData.datasets[varIndex].data = firstHalf; // Model A
+        chartData.datasets[modelBIndex].data = secondHalf; // Model B
+        // console.log("Model A Dataset:", chartData.datasets[varIndex]);
+        // console.log("Model B Dataset:", chartData.datasets[modelBIndex]);
+      } else {
+        // Here "scenario display" is not "combined"
+        chartData.datasets[varIndex].data = series.points;
+      }
     }
     const visible = visibleDatasetSpecs.find(
       (d) => d.varId === varId && d.externalSourceName === sourceName
@@ -380,4 +483,10 @@ function isStacked(spec: GraphSpec): boolean {
   // Note that other plot line styles are ignored, except for the special case
   // where a ref line is specified (with a line style other than 'area').
   return spec.kind === "stacked-line";
+}
+
+function isCombined(spec: GraphSpec): boolean {
+  // Check whether the graphSpec's "scenario display" column is set
+  // to "combined".
+  return spec.scenarioDisplay === "combined";
 }

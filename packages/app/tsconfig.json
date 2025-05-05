@@ -10,6 +10,7 @@
       // The following lines enable path aliases within the app
       "@core": ["../core/src"],
       "@core-strings": ["../core/strings"],
+      "@core-strings/*": ["../core/strings/*"],
       "@prep/*": ["../../sde-prep/*"]
     },
     // XXX: The following two lines work around a TS/VSCode issue where this config

@@ -361,9 +361,9 @@ function addSwitchItem(switchInput) {
  * Renders a “segmented control” (a row of mutually‐exclusive buttons)
  * in place of a slider, based on spec.rangeDividers and spec.rangeLabelKeys.
  *
- * @param {Object} inputInstance   — the model input instance
- * @param {jQuery} container       — a jQuery element to append into
- * @returns {jQuery}               — the root element of the segmented control
+ * @param inputInstance   — the model input instance
+ * @param container       — a jQuery element to append into
+ * @returns               — the root element of the segmented control
  */
 function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
   const spec = inputInstance.spec;
@@ -539,10 +539,8 @@ function createDropdownGroup(
   const mainInputInstance = activeModel.getInputForId(mainInputSpec.id);
 
   // Here, we check if input is Segmented Item OR just a Normal Slider
-  if (str(mainInputSpec.listingLabelKey) !== "yes") {
+  if (mainInputSpec.isSegmented !== "yes") {
     // this is a normal slider
-    // TODO: Update felix-plugin-config and use something like:
-    // TODO: if (mainInputSpec.isSegmented !== "yes")
     const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
 
     // Add expand button
@@ -552,8 +550,6 @@ function createDropdownGroup(
     const segmentedDiv = addSegmentedItem(mainInputInstance, dropdownHeader);
     segmentedDiv.find(".input-title-row").prepend(expandButton);
   }
-
-  // ! ---------
 
   // Add assumption inputs
   assumptionInputs.forEach((inputSpec) => {
@@ -744,16 +740,34 @@ $("#graph-category-selector-container").on(
   }
 );
 
-function createGraphViewModel(graphSpec, model) {
+function createGraphViewModel(graphSpec, modelToUse) {
+  /*
+   * Here, I use the "isCombined" variable to know whether to return only the modelToUse's
+   * series data for the varId, or BOTH models' series data.
+   */
+  const isCombined = graphSpec.scenarioDisplay === "combined";
   return {
     spec: graphSpec,
-    model: model,
+    model: modelToUse,
     style: "normal",
     getLineWidth: () => window.innerWidth * (0.5 / 100),
     getScaleLabelFontSize: () => window.innerWidth * (1.2 / 100),
     getAxisLabelFontSize: () => window.innerWidth * (1.0 / 100),
     getSeriesForVar: (varId, sourceName) => {
-      return model.getSeriesForVar(varId, sourceName);
+      if (isCombined) {
+        // both models' series data are used here
+        const seriesA = model.getSeriesForVar(varId, sourceName);
+        const seriesB = modelB.getSeriesForVar(varId, sourceName);
+        const mergedSeries = {
+          ...seriesA,
+          points: [...seriesA.points, ...seriesB.points], // concatenate points
+        };
+        // console.log(mergedSeries);
+        return mergedSeries;
+      } else {
+        // only one modelToUse is used here.
+        return modelToUse.getSeriesForVar(varId, sourceName);
+      }
     },
     getStringForKey: (key) => {
       return str(key);
@@ -769,9 +783,18 @@ function createGraphViewModel(graphSpec, model) {
  */
 function createGraphSelector(category, currentGraphId, onGraphChange) {
   // Get all graphs for the current category and group by classification
-  const graphs = Array.from(coreConfig.graphs.values()).filter(
-    (spec) => spec.graphCategory === category
-  );
+  /*
+   * seenTitles is used, so that the second graph that has "scenario display" = "combined"
+   * doesn't show up in the graph selector.
+   */
+  const seenTitles = new Set();
+  const graphs = Array.from(coreConfig.graphs.values()).filter((spec) => {
+    if (spec.graphCategory !== category) return false;
+    const title = str(spec.titleKey);
+    if (seenTitles.has(title)) return false;
+    seenTitles.add(title);
+    return true;
+  });
   const groups = {};
   graphs.forEach((spec) => {
     const classification = spec.classification || "Uncategorized";
@@ -864,8 +887,13 @@ function showGraph(graphSpec, outerContainer, category) {
   }
 
   // First, create the viewModel
-  const modelToUse = graphSpec.levels === "Scenario2" ? modelB : model; // fm - added this line
-  const viewModel = createGraphViewModel(graphSpec, modelToUse); // fm - added "modelToUse"
+  /*
+   * modelToUse should still be used in this way
+   * for the cases that scenarioDisplay = "separate" (or undefined)
+   */
+  const modelToUse = graphSpec.levels === "Scenario2" ? modelB : model;
+  // ! now this either returns one "series" data, or "seriesA, seriesB" concatenated.
+  const viewModel = createGraphViewModel(graphSpec, modelToUse);
 
   // Create the dropdown selector for switching graphs
   const selector = createGraphSelector(category, graphSpec.id, (newGraphId) => {
@@ -928,8 +956,34 @@ function showGraph(graphSpec, outerContainer, category) {
     const itemElem = $(`<div ${attrs}>${label}</div>`);
     legendContainer.append(itemElem);
   }
+  // If "scenario display" is "combined",
+  // also get the second graphSpec's legends.
+  if (graphSpec.scenarioDisplay === "combined") {
+    // search and find the second graphSpec whose title is the same
+    const matchingSpec = findMatchingGraphSpec(graphSpec);
+
+    // now loop over this matchingSpec and get its graph legends
+    for (const itemSpec of matchingSpec.legendItems) {
+      const attrs = `class="graph-legend-item" style="background-color: ${itemSpec.color}"`;
+      const label = str(itemSpec.labelKey);
+      const itemElem = $(`<div ${attrs}>${label}</div>`);
+      legendContainer.append(itemElem);
+    }
+  }
 
   return graphView;
+}
+
+/*
+ * Function to find the graphSpec with a matching title.
+ * This is used in the case that "scenario display" = "combined"
+ */
+function findMatchingGraphSpec(graphSpec) {
+  const title = str(graphSpec.titleKey);
+  // Search in coreConfig.graphs for a different spec with the same titleKey
+  return Array.from(coreConfig.graphs.values()).find(
+    (spec) => spec !== graphSpec && str(spec.titleKey) === title
+  );
 }
 
 //fm - changed this to initialize graphs according to selected graph category
