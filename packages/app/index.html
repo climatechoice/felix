@@ -1,35 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Model Explorer</title>
+    <title>FeliX ISE</title>
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Material Icons web font -->
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
-
     <script type="module" src="./src/index.js"></script>
-    <script src="./src/nav.js" defer></script>
+    <!-- <script src="./src/nav.js" defer></script> -->
   </head>
 
   <body>
     <div id="nav-bar"></div>
     <div id="inputs-graphs-section">
-      <div id="inputs-section">
-        <div id="input-category-selector-container"></div>
+      <!-- sidebar which expands when the toggle is on multi-scenario mode -->
+      <div id="side-bar">
         <div id="scenario-selector-container">
-          <button class="scenario-selector-option" data-value="Scenario 1">
-            1
-          </button>
-          <button class="scenario-selector-option" data-value="Scenario 2">
-            2
+          <!-- Scenario buttons will be injected here -->
+          <!-- “+” button is in the markup so it always sits at the bottom -->
+          <button id="add-scenario" class="add-scenario-btn">
+            <span class="material-icons">add</span>
           </button>
           <div id="scenario-info-container"></div>
         </div>
+      </div>
+
+      <div id="inputs-section">
+        <div id="input-category-selector-container"></div>
+
         <div id="inputs-container">
           <div id="inputs-content"></div>
         </div>

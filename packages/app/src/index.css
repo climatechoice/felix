@@ -24,6 +24,9 @@ p {
   height: 40px;
   background-color: #f5f5f5;
   box-sizing: border-box;
+  border-width: 0 0 1px 0;
+  border-style: solid;
+  border-color: #c9c9c9;
 }
 
 /* inner <nav> flex row */
@@ -38,7 +41,7 @@ p {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 12px;
+  padding: 0 8px;
   box-sizing: border-box;
 }
 
@@ -85,7 +88,7 @@ p {
   display: inline-block;
   width: 50px; /* total width */
   height: 26px; /* total height = 26px */
-  margin-left: 8px;
+  /* margin-left: 8px; */
 }
 .toggle-switch input {
   opacity: 0;
@@ -124,17 +127,29 @@ p {
   transform: translateX(24px);
 }
 
-/* This contains both the inputs-section and the outputs-section */
+/* Base layout: sidebar column is 0 (hidden) */
 #inputs-graphs-section {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: row;
-  min-height: 0; /* Allow children with overflow to shrink */
+  display: grid;
+  /* 0 for sidebar (hidden), auto for inputs, 66.666% for graphs */
+  grid-template-columns: 0 auto 66.666%;
+  min-height: 0;
+  transition: grid-template-columns 0.2s ease; /* smooth */
 }
 
-/* Styling for the entire inputs section */
+/* Expanded state: sidebar opens to 40px */
+#inputs-graphs-section.expanded {
+  grid-template-columns: 60px auto 66.666%;
+}
+
+/* Left Sidebar */
+#side-bar {
+  background-color: #f5f5f5;
+  box-sizing: border-box;
+  overflow: hidden; /* hide any overflow when collapsed */
+}
+
+/* Inputs: middle column */
 #inputs-section {
-  flex: 0 0 33.333%; /* 1/3 width */
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -142,11 +157,14 @@ p {
   overflow-y: auto;
   box-sizing: border-box;
   padding: 10px 10px 0px 10px;
+  border-width: 0 1px 0 0;
+  border-style: solid;
+  border-color: #c9c9c9;
+  /* box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); */
 }
 
-/* Styling for the graphs section */
+/* Graphs: right column */
 #graphs-section {
-  flex: 0 0 66.666%; /* 2/3 width */
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -170,27 +188,27 @@ p {
 }
 
 .input-category-selector-option {
-  background-color: #4b5563; /* Green background for buttons */
-  color: white; /* White text color */
-  padding: 5px 10px; /* Add some padding for the buttons */
+  background-color: #7d7d7d;
+  color: white;
+  padding: 5px 10px;
   border: none; /* Remove default border */
-  border-radius: 5px; /* Rounded corners */
-  font-size: 13px; /* Text size */
-  cursor: pointer; /* Pointer cursor when hovered */
-  transition: background-color 0.1s ease, transform 0.1s ease; /* Smooth hover effect */
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.1s ease, transform 0.1s ease;
 }
 
 .input-category-selector-option:hover {
-  background-color: #1e3a8a; /* Darker green on hover */
-  transform: scale(1.05); /* Slightly enlarge the button on hover */
+  background-color: #27272a;
+  transform: scale(1.05); /* enlarge the button on hover */
 }
 
 .input-category-selector-option:active {
-  background-color: #1d4ed8; /* Even darker green when clicked */
+  background-color: #18181b; /* when clicked */
 }
 
 .input-category-selector-option.selected {
-  background-color: #2563eb; /* Change color when selected */
+  background-color: #000; /* Change color when selected */
   transform: scale(1.05); /* Slightly enlarge when selected */
 }
 
@@ -200,79 +218,89 @@ p {
 
 #scenario-selector-container {
   display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  gap: 10px;
-  /* margin-top: 3px; */
-  margin-bottom: 10px;
+  flex-direction: column;
 }
 
 .scenario-selector-option {
-  color: white;
-  width: 30px; /* Fixed width */
-  height: 30px; /* Fixed height */
+  display: flex;
+  color: rgb(0, 0, 0);
+  width: 100%;
+  height: 40px;
   border: none;
   cursor: pointer;
   transition: background-color 0.1s ease, transform 0.1s ease;
-  border-radius: 50%;
+  font-size: 16px;
+  align-items: center; /* vertical centering for text */
+  justify-content: center; /* horizontal centering for text */
 }
 
-/* First Scenario - Black */
-.scenario-selector-option:nth-child(1) {
-  background-color: #000000;
+.scenario-selector-option.selected {
+  /* set top/right/bottom to 2px, left to 0 */
+  border-width: 2px 2px 2px 0;
+  border-style: solid;
+  border-color: #000;
+  box-shadow: 0 0 10px rgba(19, 19, 19, 0.3);
 }
 
-.scenario-selector-option:nth-child(1):hover {
-  background-color: #444444;
+/* push the + button to the bottom */
+.add-scenario-btn {
+  margin-top: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px 2px 2px 2px;
 }
 
-.scenario-selector-option:nth-child(1):active {
-  background-color: #333333;
+.add-scenario-btn:hover {
+  background-color: #e0e0e0; /* light gray hover background */
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
 
-.scenario-selector-option:nth-child(1).selected {
-  background-color: #000000;
-  transform: scale(1.05);
-  border: 3px solid #000000; /* Dark gray border */
-  box-shadow: 0px 0px 10px rgba(19, 19, 19, 0.3);
+/* Scenario-1 styles */
+/* .scenario-selector-option[data-value="Scenario 1"] {
+  background-color: #868686;
 }
+.scenario-selector-option[data-value="Scenario 1"]:hover {
+  background-color: #444;
+}
+.scenario-selector-option[data-value="Scenario 1"].selected {
+  border: 2px solid #000;
+  box-shadow: 0 0 10px rgba(19, 19, 19, 0.3);
+} */
 
-/* Second Scenario - Orange */
-.scenario-selector-option:nth-child(2) {
-  background-color: #e66100;
+/* Scenario-2 styles */
+/* .scenario-selector-option[data-value="Scenario 2"] {
+  background-color: #868686;
 }
-
-.scenario-selector-option:nth-child(2):hover {
-  background-color: #f0731a;
+.scenario-selector-option[data-value="Scenario 2"]:hover {
+  background-color: #444;
 }
-
-.scenario-selector-option:nth-child(2):active {
-  background-color: #d95c00;
-}
-
-.scenario-selector-option:nth-child(2).selected {
-  background-color: #e66100;
-  transform: scale(1.05);
-  border: 3px solid #8a3c00; /* Dark orange border */
-  box-shadow: 0px 0px 10px rgba(19, 19, 19, 0.3);
-}
+.scenario-selector-option[data-value="Scenario 2"].selected {
+  border: 2px solid #8a3c00;
+  box-shadow: 0 0 10px rgba(19, 19, 19, 0.3);
+} */
 
 /* Orange slider highlight colour for Scenario 2 */
 .scenario-2 .slider-rangeHighlight {
   background: #e66100 !important;
 }
 
-/* Underline the scenario buttons */
-.scenario-selector-option.selected::after {
+/* Underline on selected */
+/* .scenario-selector-option.selected::after {
   content: "";
   display: block;
   width: 100%;
-  height: 4px; /* Thickness of the underline */
-  background-color: #000000;
+  height: 4px;
+  background-color: #000;
   position: absolute;
-  bottom: -10px; /* Position */
+  bottom: -5px;
   left: 0;
-}
+} */
 
 /*
 * For Graph Category Selection
@@ -286,7 +314,7 @@ p {
 }
 
 .graph-category-selector-option {
-  background-color: #4b5563; /* Gray background for buttons */
+  background-color: #7d7d7d; /* Gray background for buttons */
   color: white; /* White text color */
   padding: 5px 10px; /* Add some padding for the buttons */
   border: none; /* Remove default border */
@@ -297,16 +325,16 @@ p {
 }
 
 .graph-category-selector-option:hover {
-  background-color: #1e3a8a; /* Darker green on hover */
+  background-color: #27272a; /* Darker green on hover */
   transform: scale(1.05); /* Slightly enlarge the button on hover */
 }
 
 .graph-category-selector-option:active {
-  background-color: #1d4ed8; /* Even darker green when clicked */
+  background-color: #18181b; /* Even darker green when clicked */
 }
 
 .graph-category-selector-option.selected {
-  background-color: #2563eb; /* Change color when selected */
+  background-color: #000; /* Change color when selected */
   transform: scale(1.05); /* Slightly enlarge when selected */
 }
 
@@ -418,6 +446,11 @@ p {
   margin-right: 8px;
 }
 
+.material-icons.expand-icon {
+  font-size: 15px;
+  margin-right: 6px;
+}
+
 .classification-header {
   padding: 8px 12px;
   font-weight: bold;
@@ -460,7 +493,7 @@ p {
 .input-title {
   flex: 1;
   font-weight: bold;
-  font-size: 1.2em;
+  font-size: 1em;
   color: #111;
 }
 
@@ -480,6 +513,7 @@ p {
   font-style: italic;
   color: #333;
   margin-top: 5px;
+  font-size: 0.95em;
 }
 
 .input-slider-row {
@@ -549,10 +583,10 @@ p {
   width: 24px;
   height: 24px;
   border: none;
-  background: #e2e8f0;
+  background: #e1e1e1;
   border-radius: 4px;
   cursor: pointer;
-  color: #475569;
+  color: #000000;
   font-size: 12px;
   padding: 0;
   transition: all 0.1s;
@@ -562,8 +596,8 @@ p {
 }
 
 .expand-button:hover {
-  background: #cbd5e1;
-  color: #334155;
+  background: #d3d3d3;
+  color: #4d4d4d;
 }
 
 /* Compact spacing for grouped inputs */
@@ -607,9 +641,9 @@ p {
   border-radius: 4px;
 }
 .segmented-button.active {
-  background: #2563eb;
+  background: #000;
   color: white;
-  border-color: #007bff;
+  border-color: #000;
 }
 
 /*
@@ -618,13 +652,17 @@ p {
 
 .combined-slider-group {
   margin: 6px 0;
-}
-
-.combined-slider-group .input-title-row {
   margin-bottom: 10px;
+  font-weight: bold;
 }
 
-.combined-slider-group .input-value {
+.input-title-row {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.input-value {
   font-weight: bold;
 }
 
@@ -709,9 +747,8 @@ p {
 }
 
 .switch-button.active {
-  background: #2563eb;
+  background: #000;
   color: white;
-  border-color: #007bff;
 }
 
 /*

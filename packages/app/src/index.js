@@ -1,6 +1,7 @@
 import $ from "jquery";
 import Slider from "bootstrap-slider";
 import "bootstrap-slider/dist/css/bootstrap-slider.css";
+import "material-icons/iconfont/material-icons.css";
 import "./index.css";
 
 import { config as coreConfig, createModel } from "@core";
@@ -139,6 +140,111 @@ function addScenarioInfoIcon() {
  * NAVIGATION BAR LOGIC
  */
 
+// Inject a 50px-tall nav bar split into three equal sections
+function loadNavBar() {
+  const $navBar = $("#nav-bar");
+  $navBar.empty(); // clear any existing content
+
+  const $nav = $("<nav></nav>");
+  $navBar.append($nav);
+
+  /*
+   * Section 1
+   */
+  const $sect1 = $('<div class="nav-section first"></div>');
+
+  // Toggle switch
+  const $toggleSwitch = $(`
+    <label class="toggle-switch">
+      <input type="checkbox">
+      <span class="slider"></span>
+    </label>
+  `);
+  // Mode text
+  const $modeLabel = $('<span class="mode-label">Single-scenario mode</span>');
+  $toggleSwitch.find("input").on("change", function () {
+    const isOn = this.checked;
+    $("#inputs-graphs-section").toggleClass("expanded", isOn);
+    // console.log("sidebar expanded:", isOn);
+    // update the label
+    $modeLabel.text(isOn ? "Multi-scenario mode" : "Single-scenario mode");
+  });
+  $sect1.append($toggleSwitch, $modeLabel);
+
+  // Reset current scenario button
+  const $resetCurrentBtn = $(`
+    <button>
+      <span class="material-icons">refresh</span>
+      <span>Current</span>
+    </button>
+  `);
+  $resetCurrentBtn.on("click", () => resetActiveModelInputs());
+  $sect1.append($resetCurrentBtn);
+
+  // Reset all scenarios button
+  const $resetAllBtn = $(`
+    <button>
+      <span class="material-icons">refresh</span>
+      <span>All</span>
+    </button>
+  `);
+  $resetAllBtn.on("click", () => resetAllModelsInputs());
+  $sect1.append($resetAllBtn);
+
+  /*
+   * Section 2
+   */
+  const $sect2 = $('<div class="nav-section second"></div>');
+
+  // Logo link + image
+  const $logoLink = $(
+    '<a href="https://www.climatechoice.eu/" target="_blank" rel="noopener noreferrer"></a>'
+  );
+  const $logoImg = $(
+    '<img src="./imgs/choice-png.png" alt="Choice Logo" style="height: 30px;">'
+  );
+  $logoLink.append($logoImg);
+  $sect2.append($logoLink);
+
+  /*
+   * Section 3
+   */
+  const $sect3 = $('<div class="nav-section third"></div>');
+
+  const $langSelect = $(`
+    <select>
+      <option value="en">English</option>
+    </select>
+  `);
+  $langSelect.on("change", (e) => console.log(e.target.value));
+  $sect3.append($langSelect);
+
+  const $helpBtn = $("<button>Help</button>");
+  $helpBtn.on("click", () => console.log("Help needed"));
+  $sect3.append($helpBtn);
+
+  const $bugBtn = $("<button>Submit a bug</button>");
+  $bugBtn.on("click", () => {
+    window.open("https://github.com/ntantaroudas/choice-web/issues", "_blank");
+  });
+  $sect3.append($bugBtn);
+
+  const $fsBtn = $(`
+    <button>
+      <span class="material-icons">fullscreen</span>
+    </button>
+  `);
+  $fsBtn.on("click", () => {
+    document.fullscreenElement
+      ? document.exitFullscreen()
+      : document.documentElement.requestFullscreen();
+  });
+  $sect3.append($fsBtn);
+
+  // Final assembly
+  $nav.append($sect1, $sect2, $sect3);
+}
+
 // Function to reset all inputs of the active model
 function resetActiveModelInputs() {
   coreConfig.inputs.forEach((spec) => {
@@ -153,9 +259,6 @@ function resetActiveModelInputs() {
   );
   initInputsUI(selectedCategory);
 }
-
-// Listen for the resetScenario event and trigger the reset
-window.addEventListener("resetScenario", resetActiveModelInputs);
 
 // Function to reset all inputs for BOTH models
 function resetAllModelsInputs() {
@@ -175,9 +278,6 @@ function resetAllModelsInputs() {
   );
   initInputsUI(selectedCategory);
 }
-
-// Add event listener for resetAll
-window.addEventListener("resetAll", resetAllModelsInputs);
 
 /*
  * INPUTS
@@ -529,7 +629,12 @@ function createDropdownGroup(
   const dropdownContent = $(
     '<div class="dropdown-content" style="display: none;">'
   );
-  const expandButton = $('<button class="expand-button">▶</button>');
+  // const expandButton = $('<button class="expand-button">▶</button>');
+  const expandButton = $(`
+    <button class="expand-button">
+      <span class="material-icons">expand_more</span>
+    </button>
+  `);
 
   // Append container to DOM first
   $("#inputs-content").append(dropdownContainer);
@@ -568,7 +673,10 @@ function createDropdownGroup(
   expandButton.on("click", () => {
     isExpanded = !isExpanded;
     dropdownContent.slideToggle(200);
-    expandButton.text(isExpanded ? "▼" : "▶");
+    // expandButton.text(isExpanded ? "▼" : "▶");
+    expandButton
+      .find(".material-icons")
+      .text(isExpanded ? "expand_less" : "expand_more");
   });
 
   return dropdownContainer;
@@ -578,46 +686,107 @@ function createDropdownGroup(
  * Initialize the UI for the inputs menu and panel.
  */
 
-// Click event for selecting a scenario
-$("#scenario-selector-container").on(
-  "click",
-  ".scenario-selector-option",
-  function () {
-    // If the clicked button is already selected, do nothing
-    if ($(this).hasClass("selected")) return;
+$(function () {
+  const $container = $("#scenario-selector-container");
+  const maxScenarios = 4; // or whatever limit
 
-    // Remove 'selected' class from all buttons
+  // 1) Inject the first scenario button on load
+  addScenarioButton(1);
+
+  // 2) “+” button handler
+  $container.on("click", "#add-scenario", function () {
+    const existing = $container.find(".scenario-selector-option").length;
+    const next = existing + 1;
+    if (next <= maxScenarios) {
+      addScenarioButton(next);
+    }
+  });
+
+  // 3) Delegate selection clicks
+  $container.on("click", ".scenario-selector-option", function () {
+    const $btn = $(this);
+    if ($btn.hasClass("selected")) return;
     $(".scenario-selector-option").removeClass("selected");
+    $btn.addClass("selected");
+    updateScenario($btn.data("value"));
+  });
 
-    // Add 'selected' class to the clicked button
-    $(this).addClass("selected");
-
-    // Get the selected scenario value
-    const selectedScenario = $(this).data("value");
-
-    // Call the function to update the UI based on the selected scenario
-    updateScenario(selectedScenario);
+  // Helper to create & insert a scenario button
+  function addScenarioButton(n) {
+    const val = `Scenario ${n}`;
+    const $btn = $(`
+      <button 
+        class="scenario-selector-option" 
+        data-value="${val}">
+        S${n}
+      </button>
+    `);
+    // insert *before* the plus-button
+    $("#add-scenario").before($btn);
+    // if it’s the very first, select it
+    if (n === 1) $btn.addClass("selected");
   }
-);
 
-// Example function to handle scenario selection
-function updateScenario(selectedScenario) {
-  console.log("Selected scenario:", selectedScenario);
-  // The logic to handle the change in scenario
-  activeModel = selectedScenario === "Scenario 2" ? modelB : model;
+  // your existing scenario-change logic
+  function updateScenario(selectedScenario) {
+    console.log("Selected scenario:", selectedScenario);
+    // The logic to handle the change in scenario
+    activeModel = selectedScenario === "Scenario 2" ? modelB : model;
 
-  // Green highlight for Scenario 1,
-  // Red highlight for Scenario 2
-  document.body.classList.toggle(
-    "scenario-2",
-    selectedScenario === "Scenario 2"
-  );
+    // Green highlight for Scenario 1,
+    // Red highlight for Scenario 2
+    document.body.classList.toggle(
+      "scenario-2",
+      selectedScenario === "Scenario 2"
+    );
 
-  const selectedCategory = $(".input-category-selector-option.selected").data(
-    "value"
-  );
-  initInputsUI(selectedCategory);
-}
+    const selectedCategory = $(".input-category-selector-option.selected").data(
+      "value"
+    );
+    initInputsUI(selectedCategory);
+  }
+});
+
+// // Click event for selecting a scenario
+// $("#scenario-selector-container").on(
+//   "click",
+//   ".scenario-selector-option",
+//   function () {
+//     // If the clicked button is already selected, do nothing
+//     if ($(this).hasClass("selected")) return;
+
+//     // Remove 'selected' class from all buttons
+//     $(".scenario-selector-option").removeClass("selected");
+
+//     // Add 'selected' class to the clicked button
+//     $(this).addClass("selected");
+
+//     // Get the selected scenario value
+//     const selectedScenario = $(this).data("value");
+
+//     // Call the function to update the UI based on the selected scenario
+//     updateScenario(selectedScenario);
+//   }
+// );
+
+// // Example function to handle scenario selection
+// function updateScenario(selectedScenario) {
+//   console.log("Selected scenario:", selectedScenario);
+//   // The logic to handle the change in scenario
+//   activeModel = selectedScenario === "Scenario 2" ? modelB : model;
+
+//   // Green highlight for Scenario 1,
+//   // Red highlight for Scenario 2
+//   document.body.classList.toggle(
+//     "scenario-2",
+//     selectedScenario === "Scenario 2"
+//   );
+
+//   const selectedCategory = $(".input-category-selector-option.selected").data(
+//     "value"
+//   );
+//   initInputsUI(selectedCategory);
+// }
 
 // jquery Click event for Selecting Input Category (Diet Change, Food Waste, Alternative Protein)
 $("#input-category-selector-container").on(
@@ -804,7 +973,12 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
 
   // Create custom dropdown container
   const dropdownContainer = $('<div class="custom-graph-selector"></div>');
-  const selectedOption = $('<div class="selected-option"></div>');
+  const $expandIcon = $(
+    '<span class="material-icons expand-icon">expand_more</span>'
+  );
+  const selectedOption = $('<div class="selected-option"></div>').append(
+    $expandIcon
+  );
   const dropdownMenu = $('<div class="dropdown-menu"></div>').hide();
 
   // Add classification groups to the dropdown
@@ -1111,7 +1285,11 @@ async function initApp() {
   ).addClass("selected");
 
   // Add scenario info icon and tooltip
-  addScenarioInfoIcon();
+  // TODO: still use this ?
+  // addScenarioInfoIcon();
+
+  // Load the navigation bar
+  loadNavBar();
 
   // When the model outputs are updated, refresh all graphs
   model.onOutputsChanged = () => {
