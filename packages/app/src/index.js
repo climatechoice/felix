@@ -4,6 +4,8 @@ import "bootstrap-slider/dist/css/bootstrap-slider.css";
 import "material-icons/iconfont/material-icons.css";
 import "./index.css";
 
+import choiceLogo from "./imgs/choice-png.png";
+
 import { config as coreConfig, createModel } from "@core";
 import enStrings from "@core-strings/en";
 
@@ -201,7 +203,7 @@ function loadNavBar() {
     '<a href="https://www.climatechoice.eu/" target="_blank" rel="noopener noreferrer"></a>'
   );
   const $logoImg = $(
-    '<img src="./imgs/choice-png.png" alt="Choice Logo" style="height: 30px;">'
+    `<img src="${choiceLogo}" alt="Choice Logo" style="height: 30px;">`
   );
   $logoLink.append($logoImg);
   $sect2.append($logoLink);
