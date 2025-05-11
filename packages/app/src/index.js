@@ -325,11 +325,7 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
     ].filter((el) => el !== null)
   );
 
-  // Title row with left and right sections
-  const titleRow = $(`<div class="input-title-row"/>`).append([
-    sliderTitleAndInfoContainer,
-    valueUnitsContainer,
-  ]);
+  // TODO: sliderRow should be created below here, and appended as the second thing inside titleRow.
 
   let tickPos =
     (spec.defaultValue - spec.minValue) / (spec.maxValue - spec.minValue);
@@ -341,9 +337,15 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
     $(`<input id="${inputElemId}" class="slider" type="text"></input>`),
   ]);
 
+  // Title row with left and right sections
+  const titleRow = $(`<div class="input-title-row"/>`).append([
+    sliderTitleAndInfoContainer,
+    sliderRow,
+    valueUnitsContainer,
+  ]);
+
   const div = $(`<div class="input-item"/>`).append([
     titleRow,
-    sliderRow,
     $(
       `<div class="input-desc">${
         spec.descriptionKey ? str(spec.descriptionKey) : ""
@@ -550,6 +552,9 @@ function addCombinedSlider(groupInputs, container) {
   // Create container with existing input-item styling
   const div = $(`<div class="input-item combined-slider-group"/>`);
 
+  // Slider row with existing styling
+  const sliderId = `combined-${startSpec.id}-${endSpec.id}`;
+
   // Title row matching existing style
   const titleRow = $(`
     <div class="input-title-row">
@@ -558,6 +563,9 @@ function addCombinedSlider(groupInputs, container) {
     endSpec.labelKey
   )}</div>
       </div>
+      <div class="input-slider-row">
+      <input id="${sliderId}" class="slider" type="text"/>
+    </div>
       <div class="value-units-container">
         <div class="input-value">${startInput.get()} - ${endInput.get()}</div>
         <div class="input-units">${str(startSpec.unitsKey)}</div>
@@ -568,18 +576,16 @@ function addCombinedSlider(groupInputs, container) {
   // Add info icon to the title container
   titleRow.find(".slider-title-and-info-container").append(infoIcon);
 
-  // Slider row with existing styling
-  const sliderId = `combined-${startSpec.id}-${endSpec.id}`;
-  const sliderRow = $(`
-    <div class="input-slider-row">
-      <input id="${sliderId}" class="slider" type="text"/>
-    </div>
-  `);
+  // const sliderRow = $(`
+  //   <div class="input-slider-row">
+  //     <input id="${sliderId}" class="slider" type="text"/>
+  //   </div>
+  // `);
   const descRow = $(
     `<div class="input-desc">${description ? str(description) : ""}</div>`
   );
 
-  div.append(titleRow, sliderRow, descRow);
+  div.append(titleRow, descRow);
   container.append(div);
 
   // Initialize slider with existing styles
@@ -631,7 +637,6 @@ function createDropdownGroup(
   const dropdownContent = $(
     '<div class="dropdown-content" style="display: none;">'
   );
-  // const expandButton = $('<button class="expand-button">▶</button>');
   const expandButton = $(`
     <button class="expand-button">
       <span class="material-icons">expand_more</span>
@@ -1261,7 +1266,7 @@ async function initApp() {
 
   inputCategories.forEach((inputCategory) => {
     inputCategoryContainer.append(
-      `<button class="input-category-selector-option" data-value="${inputCategory}">${inputCategory}</button>`
+      `<button class="input-category-selector-option" data-value="${inputCategory}" data-label="${inputCategory}">${inputCategory}</button>`
     );
   });
 

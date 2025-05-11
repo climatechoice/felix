@@ -132,6 +132,7 @@ p {
   display: grid;
   /* 0 for sidebar (hidden), auto for inputs, 66.666% for graphs */
   grid-template-columns: 0 auto 66.666%;
+  /* min-height: 100vh; so that inputs-section's gray color stretches to the bottom of the screen. // Breaks the padding.. */
   min-height: 0;
   transition: grid-template-columns 0.2s ease; /* smooth */
 }
@@ -181,6 +182,7 @@ p {
 #input-category-selector-container {
   display: flex; /* Arrange the options in a row */
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: center; /* Center the options horizontally */
   justify-content: space-evenly;
   /* margin-top: 10px; Space above the selector */
@@ -188,28 +190,55 @@ p {
 }
 
 .input-category-selector-option {
-  background-color: #7d7d7d;
-  color: white;
-  padding: 5px 10px;
-  border: none; /* Remove default border */
-  border-radius: 5px;
-  font-size: 13px;
+  position: relative;
+  background: none;
+  color: black;
+  margin: 5px 5px;
+  border: none;
+  font-size: 15px;
   cursor: pointer;
-  transition: background-color 0.1s ease, transform 0.1s ease;
+  font-weight: normal;
+  transition: transform 0.1s ease;
+  white-space: nowrap;
+  display: inline-block;
 }
 
-.input-category-selector-option:hover {
-  background-color: #27272a;
-  transform: scale(1.05); /* enlarge the button on hover */
+/* Pseudo-element to reserve space for bold text */
+.input-category-selector-option::before {
+  content: attr(data-label);
+  font-weight: bold;
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  display: block;
 }
 
-.input-category-selector-option:active {
-  background-color: #18181b; /* when clicked */
+/* Underline pseudo-element */
+.input-category-selector-option::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background-color: black;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.1s ease;
 }
 
+/* Hover effect: animate underline */
+.input-category-selector-option:hover::after {
+  transform: scaleX(1);
+}
+
+/* Selected state: bold text and visible underline */
 .input-category-selector-option.selected {
-  background-color: #000; /* Change color when selected */
-  transform: scale(1.05); /* Slightly enlarge when selected */
+  font-weight: bold;
+}
+
+.input-category-selector-option.selected::after {
+  transform: scaleX(1);
 }
 
 /*
@@ -495,6 +524,8 @@ p {
   font-weight: bold;
   font-size: 1em;
   color: #111;
+  white-space: nowrap;
+  /* min-width: 200px; */
 }
 
 .input-value {
@@ -520,6 +551,7 @@ p {
   position: relative;
   width: 94%;
   margin-left: 3%;
+  margin-right: 3%;
 }
 
 .input-slider-tick {
@@ -664,6 +696,7 @@ p {
 
 .input-value {
   font-weight: bold;
+  white-space: nowrap;
 }
 
 /*
@@ -675,6 +708,7 @@ p {
   display: inline-flex;
   gap: 4px;
   position: relative;
+  /* min-width: 160px; */
 }
 
 .info-icon-container {
@@ -806,11 +840,12 @@ p {
 
 .slider-handle {
   background: none; /* Removes the default circle */
+  box-shadow: none; /* Removes the default circle shadow */
 }
 
 .slider-handle::before {
   content: "\258C"; /* Unicode block character */
-  line-height: 20px;
+  line-height: 16px;
   font-size: 20px;
   color: #000;
   display: block;
