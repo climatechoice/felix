@@ -377,30 +377,64 @@ p {
   padding: 0 10px;
 }
 
+/* A generic row wrapper */
+.graph-row {
+  display: flex;
+  flex-direction: row;
+}
+
 /*
- * This container is set up to allow for automatic responsive sizing
+ * This graph-container is set up to allow for automatic responsive sizing
  * by Chart.js.  For this to work, we need the canvas element to have
  * this parent container with `position: relative` and fixed dimensions
  * using `px` or `vw`/`vh` units.
  */
-.graph-container {
-  position: relative;
-  width: 31vw;
-  height: 32vh;
-  padding-top: 5px;
+
+/*
+  * I've actually used:
+  * #graphs-container.graphs-N .graph-container
+  * in order to be able to use multiple different layouts,
+  * so that each graph-container has FIXED but different
+  * dimensions.
+  */
+
+/* 16 xD. I've not included this as an option in layoutConfig, for now. */
+#graphs-container.graphs-16 .graph-container {
+  width: 15vw;
+  height: 16vh;
 }
 
-/* Contains the Graph Title, the Graph, and the Graph Legend */
+#graphs-container.graphs-9 .graph-container {
+  width: 21vw;
+  height: 21vh;
+}
+
+#graphs-container.graphs-6 .graph-container {
+  width: 21vw;
+  height: 32vh;
+}
+
+#graphs-container.graphs-4 .graph-container {
+  width: 31vw;
+  height: 32vh;
+}
+
+#graphs-container.graphs-2 .graph-container {
+  width: 31vw;
+  height: 64vh;
+  margin-top: 20px; /* to better align these two graphs */
+}
+
+#graphs-container.graphs-1 .graph-container {
+  width: 62vw;
+  height: 64vh;
+  margin-top: 40px; /* to better align this single graph */
+}
+
+/* Contains the .title-container, the graph-container, and the .graph-legend */
 .outer-graph-container {
   display: flex;
   flex-direction: column;
-}
-
-/* Row for top graphs */
-.top-graph-row,
-.bottom-graph-row {
-  display: flex;
-  flex-direction: row; /* Display graphs side by side in each row */
 }
 
 /* Center-align title container and its content */

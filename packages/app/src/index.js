@@ -25,6 +25,26 @@ let graphViews = [];
  */
 const addedSliderIds = new Set(); // Track which slider IDs have been added
 
+/*
+ * These are the Graph Layout definitions.
+ * New entries can easily be added here for whichever number of graphs
+ * to show. Simply:
+ * 1) define the number of graphs (N), the amount of rows, and the amount of columns
+ * 2) add a new #graphs-container.graphs-N .graph-container
+ *    class in index.css where you define the vh and vw of each graph-container
+ */
+const layoutConfig = {
+  1: { rows: 1, cols: 1 },
+  2: { rows: 1, cols: 2 },
+  4: { rows: 2, cols: 2 },
+  6: { rows: 2, cols: 3 },
+  9: { rows: 3, cols: 3 },
+  // 16: { rows: 4, cols: 4 },
+};
+
+// default layout contains 4 graphs
+let selectedGraphCount = 4;
+
 /**
  * Return the base (English) string for the given key.
  */
@@ -198,7 +218,7 @@ function loadNavBar() {
    */
   const $sect2 = $('<div class="nav-section second"></div>');
 
-  // Logo link + image
+  // Choice Logo link + image
   const $logoLink = $(
     '<a href="https://www.climatechoice.eu/" target="_blank" rel="noopener noreferrer"></a>'
   );
@@ -213,6 +233,50 @@ function loadNavBar() {
    */
   const $sect3 = $('<div class="nav-section third"></div>');
 
+  // Layout selector (based on layoutConfig)
+  const $layoutSelect = $(`
+  <select id="layout-select" aria-label="Number of graphs to display">
+    ${Object.keys(layoutConfig)
+      .map(
+        (n) => `<option value="${n}" ${
+          n == selectedGraphCount ? "selected" : ""
+        }>
+                   ${n} graph${n > 1 ? "s" : ""}
+                 </option>`
+      )
+      .join("")}
+  </select>
+`);
+
+  // Change handler updates the global variable "selectedGraphCount"
+  $layoutSelect.on("change", (e) => {
+    const chosen = parseInt(e.target.value, 10);
+    if (!layoutConfig[chosen]) {
+      console.error(
+        `Unsupported layout "${chosen}". Supported: ${Object.keys(
+          layoutConfig
+        ).join(", ")}.`
+      );
+      // This shouldn't ever be needed, but
+      // if selected option is unsupported, then fallback to 4.
+      selectedGraphCount = 4;
+    } else {
+      selectedGraphCount = chosen;
+      // console.log("chosen layout: ", selectedGraphCount);
+    }
+    // Refresh graphs section to apply the selected graph layout
+    const selectedCategory = $(".graph-category-selector-option.selected").data(
+      "value"
+    );
+    initGraphsUI(selectedCategory, selectedGraphCount);
+  });
+
+  $sect3.append(
+    $('<label for="layout-select">Layout:&nbsp;</label>'),
+    $layoutSelect
+  );
+
+  // Language selector
   const $langSelect = $(`
     <select>
       <option value="en">English</option>
@@ -933,7 +997,7 @@ $("#graph-category-selector-container").on(
     const selectedCategory = $(this).data("value");
 
     // Call the function to update the graphs
-    initGraphsUI(selectedCategory);
+    initGraphsUI(selectedCategory, selectedGraphCount);
   }
 );
 
@@ -1188,59 +1252,62 @@ function findMatchingGraphSpec(graphSpec) {
   );
 }
 
-//fm - changed this to initialize graphs according to selected graph category
-function initGraphsUI(category) {
-  const graphsContainer = $("#graphs-container");
-  graphsContainer.empty(); // Clear previous graphs
+/*
+ * Initialize the graphs according to selected category and selected layout.
+ * Default layout is 4 graphs.
+ */
+function initGraphsUI(category, amountOfGraphs = 4) {
+  // First, clear previous graphs,
+  // then remove any old graphs-N class from #graphs-container
+  // and then add e.g. "graphs-1" or "graphs-4"
+  const graphsContainer = $("#graphs-container")
+    .empty()
+    .removeClass((_, cls) => (cls.match(/graphs-\d+/g) || []).join(" "))
+    .addClass(`graphs-${amountOfGraphs}`);
+
   graphViews = []; // Reset graphViews
 
+  // Define the rows and columns from global layoutConfig
+  // acording to the amountOfGraphs asked
+  const { rows, cols } = layoutConfig[amountOfGraphs];
+
   // Dynamically build graph categories based on coreConfig.graphs
+  // ! Build a flat list of the first N graph IDs in this category
   const dynamicGraphCategories = {};
   for (const spec of coreConfig.graphs.values()) {
-    const graphCategory = spec.graphCategory;
-    if (!graphCategory) continue; // Skip graphs without a category. (!) probably unecessary, since it's a required field.
-    if (!dynamicGraphCategories[graphCategory]) {
-      dynamicGraphCategories[graphCategory] = [];
-    }
-    dynamicGraphCategories[graphCategory].push(spec.id);
+    const cat = spec.graphCategory;
+    (dynamicGraphCategories[cat] ||= []).push(spec.id);
+  }
+  const catIds = dynamicGraphCategories[category] || [];
+
+  // This is the total amount of graphIds that we will render
+  const graphIds = catIds.slice(0, amountOfGraphs);
+
+  // Create as many rows as needed (according to layoutConfig)
+  const rowDivs = [];
+  for (let r = 0; r < rows; r++) {
+    const row = $(`<div class="graph-row"></div>`);
+    rowDivs.push(row);
+    graphsContainer.append(row);
   }
 
-  const categoryGraphIds = dynamicGraphCategories[category] || [];
-  const topRowGraphIds = categoryGraphIds.slice(0, 2); // First two graphs for the top row
-  const bottomRowGraphIds = categoryGraphIds.slice(2, 4); // Next two graphs for the bottom row
+  // ! For each selected graph, figure out which row it goes in
+  graphIds.forEach((id, index) => {
+    const spec = coreConfig.graphs.get(id);
+    const outer = $(`<div class="outer-graph-container"></div>`);
 
-  // Create containers for the rows
-  const topGraphRow = $('<div class="top-graph-row"></div>');
-  const bottomGraphRow = $('<div class="bottom-graph-row"></div>');
+    const rowIndex = Math.floor(index / cols);
+    rowDivs[rowIndex].append(outer);
 
-  // (!) logs the coreConfig object, which contains inputs, graphs specifications. (!)
-  console.log(coreConfig);
+    // Add the graph rendering after a delay, so that it always has animations
+    setTimeout(() => {
+      const view = showGraph(spec, outer, category);
+      graphViews.push(view);
+    }, 50);
+  });
 
-  if (coreConfig.graphs.size > 0) {
-    for (const spec of coreConfig.graphs.values()) {
-      if (categoryGraphIds.includes(spec.id)) {
-        const outerGraphContainer = $(
-          '<div class="outer-graph-container"></div>'
-        );
-
-        // Add the graph to the appropriate row
-        if (topRowGraphIds.includes(spec.id)) {
-          topGraphRow.append(outerGraphContainer);
-        } else if (bottomRowGraphIds.includes(spec.id)) {
-          bottomGraphRow.append(outerGraphContainer);
-        }
-
-        // Add the graph rendering after a delay, so that it always has animations
-        setTimeout(() => {
-          const graphView = showGraph(spec, outerGraphContainer, category);
-          graphViews.push(graphView);
-        }, 50);
-      }
-    }
-
-    // Append the rows to the graphsContainer
-    graphsContainer.append(topGraphRow).append(bottomGraphRow);
-  } else {
+  // Fallback if nothing to show
+  if (graphIds.length === 0) {
     graphsContainer.text(
       `No graphs configured. You can edit 'config/graphs.csv' to get started.`
     );
@@ -1296,7 +1363,7 @@ async function initApp() {
   const defaultInputCategory =
     inputCategories.values().next().value || "Diet Change";
 
-  initGraphsUI(defaultGraphCategory);
+  initGraphsUI(defaultGraphCategory); // default layout contains 4 graphs
   initInputsUI(defaultInputCategory);
 
   // initOverlay();
