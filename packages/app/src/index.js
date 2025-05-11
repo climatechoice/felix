@@ -221,9 +221,11 @@ function loadNavBar() {
   $langSelect.on("change", (e) => console.log(e.target.value));
   $sect3.append($langSelect);
 
-  const $helpBtn = $("<button>Help</button>");
-  $helpBtn.on("click", () => console.log("Help needed"));
-  $sect3.append($helpBtn);
+  const $documentationBtn = $("<button>Documentation</button>");
+  $documentationBtn.on("click", () => {
+    window.open("https://iiasa.github.io/felix_docs/", "_blank");
+  });
+  $sect3.append($documentationBtn);
 
   const $bugBtn = $("<button>Submit a bug</button>");
   $bugBtn.on("click", () => {
@@ -324,8 +326,6 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
       $(`<div class="input-units">${str(spec.unitsKey)}</div>`),
     ].filter((el) => el !== null)
   );
-
-  // TODO: sliderRow should be created below here, and appended as the second thing inside titleRow.
 
   let tickPos =
     (spec.defaultValue - spec.minValue) / (spec.maxValue - spec.minValue);
@@ -627,6 +627,51 @@ function addCombinedSlider(groupInputs, container) {
   });
 }
 
+/*
+ * This is a makeshift solution for showing
+ * a slider item as a plain label (without the slider).
+ */
+function addSimpleLabelItem(sliderInput, container = $("#inputs-content")) {
+  const spec = sliderInput.spec;
+
+  if (addedSliderIds.has(spec.id)) {
+    // Check if already added
+    return; // Skip if duplicate
+  }
+  addedSliderIds.add(spec.id); // Mark as added
+
+  // Create info icon if description exists
+  // and Position it correctly, inside the viewport (!).
+  const infoIcon = createInfoIcon(spec.hoverDescription);
+
+  // Title + Info Icon container. This should be in the far left.
+  const sliderTitleAndInfoContainer = $(
+    '<div class="slider-title-and-info-container"/>'
+  ).append(
+    [
+      $(`<div class="input-title">${str(spec.labelKey)}</div>`),
+      infoIcon,
+    ].filter((el) => el !== null)
+  );
+
+  // ! removed slider row from here
+  const titleRow = $(`<div class="input-title-row"/>`).append(
+    sliderTitleAndInfoContainer
+  );
+
+  const div = $(`<div class="input-item"/>`).append([
+    titleRow,
+    $(
+      `<div class="input-desc">${
+        spec.descriptionKey ? str(spec.descriptionKey) : ""
+      }</div>`
+    ),
+  ]);
+
+  container.append(div);
+  return div; // fm
+}
+
 function createDropdownGroup(
   mainInputSpec,
   assumptionInputs,
@@ -650,13 +695,27 @@ function createDropdownGroup(
   // Add main input
   const mainInputInstance = activeModel.getInputForId(mainInputSpec.id);
 
-  // Here, we check if input is Segmented Item OR just a Normal Slider
+  // Here, we check if input is Segmented Item OR just a Normal Slider (! OR just a Label)
+  // TODO: fix this makeshift solution for putting just a label in dropdown main
   if (mainInputSpec.isSegmented !== "yes") {
-    // this is a normal slider
-    const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
+    if (mainInputSpec.secondaryType === "dropdown main") {
+      // this is a normal slider
+      const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
 
-    // Add expand button
-    sliderDiv.find(".input-title-row").prepend(expandButton);
+      // Add expand button
+      sliderDiv.find(".input-title-row").prepend(expandButton);
+    } else if (mainInputSpec.secondaryType === "dropdown main label") {
+      // TODO: fix this makeshift solution for putting just a label in dropdown main
+      const simpleLabelDiv = addSimpleLabelItem(
+        mainInputInstance,
+        dropdownHeader
+      );
+
+      // Add expand button
+      simpleLabelDiv.find(".input-title-row").prepend(expandButton);
+    } else {
+      console.warn("this secondary type is not yet supported.");
+    }
   } else {
     // this is a segmented button
     const segmentedDiv = addSegmentedItem(mainInputInstance, dropdownHeader);
@@ -754,47 +813,6 @@ $(function () {
   }
 });
 
-// // Click event for selecting a scenario
-// $("#scenario-selector-container").on(
-//   "click",
-//   ".scenario-selector-option",
-//   function () {
-//     // If the clicked button is already selected, do nothing
-//     if ($(this).hasClass("selected")) return;
-
-//     // Remove 'selected' class from all buttons
-//     $(".scenario-selector-option").removeClass("selected");
-
-//     // Add 'selected' class to the clicked button
-//     $(this).addClass("selected");
-
-//     // Get the selected scenario value
-//     const selectedScenario = $(this).data("value");
-
-//     // Call the function to update the UI based on the selected scenario
-//     updateScenario(selectedScenario);
-//   }
-// );
-
-// // Example function to handle scenario selection
-// function updateScenario(selectedScenario) {
-//   console.log("Selected scenario:", selectedScenario);
-//   // The logic to handle the change in scenario
-//   activeModel = selectedScenario === "Scenario 2" ? modelB : model;
-
-//   // Green highlight for Scenario 1,
-//   // Red highlight for Scenario 2
-//   document.body.classList.toggle(
-//     "scenario-2",
-//     selectedScenario === "Scenario 2"
-//   );
-
-//   const selectedCategory = $(".input-category-selector-option.selected").data(
-//     "value"
-//   );
-//   initInputsUI(selectedCategory);
-// }
-
 // jquery Click event for Selecting Input Category (Diet Change, Food Waste, Alternative Protein)
 $("#input-category-selector-container").on(
   "click",
@@ -857,7 +875,10 @@ function initInputsUI(category) {
       groupInputs.forEach((inputSpec) => {
         if (inputSpec.secondaryType === "without") {
           standaloneInputs.push(inputSpec);
-        } else if (inputSpec.secondaryType === "dropdown main") {
+        } else if (
+          inputSpec.secondaryType === "dropdown main" ||
+          inputSpec.secondaryType === "dropdown main label"
+        ) {
           mainInput = inputSpec;
         } else if (inputSpec.secondaryType === "dropdown assumptions") {
           assumptionInputs.push(inputSpec);
