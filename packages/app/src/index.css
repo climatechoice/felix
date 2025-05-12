@@ -129,6 +129,7 @@ p {
 
 /* Base layout: sidebar column is 0 (hidden) */
 #inputs-graphs-section {
+  flex: 1 1 auto;
   display: grid;
   /* 0 for sidebar (hidden), auto for inputs, 66.666% for graphs */
   grid-template-columns: 0 auto 66.666%;
@@ -583,8 +584,11 @@ p {
 
 .input-slider-row {
   position: relative;
-  width: 94%;
-  margin-left: 3%;
+  /* width: 94%; */
+  width: 13vw;
+  margin-left: auto; /* Force this container to the right */
+  /* margin-left: 3%; */
+  padding-left: 3%;
   margin-right: 3%;
 }
 
@@ -785,7 +789,7 @@ p {
   display: flex;
   align-items: center;
   gap: 4px; /* Space between value and units */
-  margin-left: auto; /* Force this container to the right */
+  /* margin-left: auto; Force this container to the right */
 }
 
 /* Only for the scenario info container */

@@ -319,8 +319,18 @@ function lineChartJsConfig(
           },
         ],
       },
-      tooltips: {
+      tooltips: { 
+        // Show numbers when hovering over the graph, and 
+        // make sure they're fixed to two decimal places.
         enabled: true,
+        callbacks: {
+          label: function (tooltipItem, data) {
+            const dataset = data.datasets[tooltipItem.datasetIndex];
+            const value = Number(tooltipItem.yLabel); // Ensure it's a number
+            const label = dataset.label || '';
+            return `${label}: ${value.toFixed(2)}`;
+          },
+        },
       },
     },
   };

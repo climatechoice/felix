@@ -511,30 +511,58 @@ function addSwitchItem(switchInput) {
 
   // Add sliders to their respective containers
   if (spec.slidersActiveWhenOn) {
+    const groupMap = {};
     spec.slidersActiveWhenOn.forEach((sliderId) => {
-      const slider = activeModel.getInputForId(sliderId);
-      addSliderItem(slider, onSlidersContainer);
+      const inputSpec = coreConfig.inputs.get(sliderId);
+      if (!inputSpec || !inputSpec.inputGroup) return;
+
+      if (!groupMap[inputSpec.inputGroup]) {
+        groupMap[inputSpec.inputGroup] = [];
+      }
+      groupMap[inputSpec.inputGroup].push(inputSpec);
+    });
+
+    console.log("Switch On groups: ", groupMap);
+
+    Object.entries(groupMap).forEach(([groupName, groupInputs]) => {
+      renderInputGroup(groupName, groupInputs, onSlidersContainer);
     });
   }
 
   if (spec.slidersActiveWhenOff) {
+    const groupMap = {};
     spec.slidersActiveWhenOff.forEach((sliderId) => {
-      const slider = activeModel.getInputForId(sliderId);
-      addSliderItem(slider, offSlidersContainer);
+      const inputSpec = coreConfig.inputs.get(sliderId);
+      if (!inputSpec || !inputSpec.inputGroup) return;
+
+      if (!groupMap[inputSpec.inputGroup]) {
+        groupMap[inputSpec.inputGroup] = [];
+      }
+      groupMap[inputSpec.inputGroup].push(inputSpec);
+    });
+
+    console.log("Switch Off groups: ", groupMap);
+
+    Object.entries(groupMap).forEach(([groupName, groupInputs]) => {
+      renderInputGroup(groupName, groupInputs, offSlidersContainer);
     });
   }
 }
 
-/**
+/*
  * Renders a “segmented control” (a row of mutually‐exclusive buttons)
  * in place of a slider, based on spec.rangeDividers and spec.rangeLabelKeys.
- *
- * @param inputInstance   — the model input instance
- * @param container       — a jQuery element to append into
- * @returns               — the root element of the segmented control
  */
 function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
   const spec = inputInstance.spec;
+
+  // ! Skip if this slider has already been added
+  if (addedSliderIds.has(spec.id)) {
+    return;
+  }
+  // ! Mark as added
+  addedSliderIds.add(spec.id);
+
   const currentValue = inputInstance.get();
 
   // Build segment values array: first min, then dividers, then maybe max
@@ -600,6 +628,15 @@ function addCombinedSlider(groupInputs, container) {
   }
 
   const [startSpec, endSpec] = groupInputs;
+
+  // ! Check if either slider has already been added
+  if (addedSliderIds.has(startSpec.id) || addedSliderIds.has(endSpec.id)) {
+    return; // ! Skip if either is a duplicate
+  }
+  // ! Mark both as added
+  addedSliderIds.add(startSpec.id);
+  addedSliderIds.add(endSpec.id);
+
   const startInput = activeModel.getInputForId(startSpec.id);
   const endInput = activeModel.getInputForId(endSpec.id);
 
@@ -739,7 +776,8 @@ function addSimpleLabelItem(sliderInput, container = $("#inputs-content")) {
 function createDropdownGroup(
   mainInputSpec,
   assumptionInputs,
-  assumptionCombinedSliders
+  assumptionCombinedSliders,
+  container = $("#inputs-content")
 ) {
   const dropdownContainer = $('<div class="input-dropdown-group">');
   const dropdownHeader = $('<div class="dropdown-header">');
@@ -752,8 +790,8 @@ function createDropdownGroup(
     </button>
   `);
 
-  // Append container to DOM first
-  $("#inputs-content").append(dropdownContainer);
+  // Append dropdownContainer to DOM first
+  container.append(dropdownContainer);
   dropdownContainer.append(dropdownHeader, dropdownContent);
 
   // Add main input
@@ -764,10 +802,15 @@ function createDropdownGroup(
   if (mainInputSpec.isSegmented !== "yes") {
     if (mainInputSpec.secondaryType === "dropdown main") {
       // this is a normal slider
+      console.log("main input spec: ", mainInputSpec);
       const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
 
       // Add expand button
-      sliderDiv.find(".input-title-row").prepend(expandButton);
+      if (sliderDiv) {
+        sliderDiv.find(".input-title-row").prepend(expandButton);
+      } else {
+        console.error("Slider not created for:", mainInputSpec.id);
+      }
     } else if (mainInputSpec.secondaryType === "dropdown main label") {
       // TODO: fix this makeshift solution for putting just a label in dropdown main
       const simpleLabelDiv = addSimpleLabelItem(
@@ -776,14 +819,22 @@ function createDropdownGroup(
       );
 
       // Add expand button
-      simpleLabelDiv.find(".input-title-row").prepend(expandButton);
+      if (simpleLabelDiv) {
+        simpleLabelDiv.find(".input-title-row").prepend(expandButton);
+      } else {
+        console.error("Simple Label not created for:", mainInputSpec.id);
+      }
     } else {
       console.warn("this secondary type is not yet supported.");
     }
   } else {
     // this is a segmented button
     const segmentedDiv = addSegmentedItem(mainInputInstance, dropdownHeader);
-    segmentedDiv.find(".input-title-row").prepend(expandButton);
+    if (segmentedDiv) {
+      segmentedDiv.find(".input-title-row").prepend(expandButton);
+    } else {
+      console.error("segmentedDiv not created for:", mainInputSpec.id);
+    }
   }
 
   // Add assumption inputs
@@ -899,6 +950,90 @@ $("#input-category-selector-container").on(
   }
 );
 
+/*
+ * Calls the appropriate add{X}Item function
+ * according to the type of input.
+ * These are not part of any dropdown nor combined sliders.
+ */
+function renderStandaloneInput(inputSpec, container = $("#inputs-content")) {
+  const input = activeModel.getInputForId(inputSpec.id);
+
+  if (input.kind === "slider") {
+    // both normal sliders and segmented buttons
+    // are defined as sliders in inputs.csv
+    if (inputSpec.isSegmented === "yes") {
+      // slider as segmented button
+      addSegmentedItem(input, container);
+    } else {
+      // normal slider
+      addSliderItem(input, container);
+    }
+  } else if (input.kind === "switch") {
+    // ! switch currently can only have as its container the #inputs-section
+    addSwitchItem(input);
+  } else {
+    console.warn("This input kind is not supported.");
+  }
+}
+
+/*
+ * Function to prepare and render one "input group".
+ * Each "input group" is either:
+ * a) Two sliders which will be combined into one
+ * b) A Dropdown, which contains a "secondary type" = "dropdown main" || "dropdown main label"
+ *    and (optionally) one or more "secondary type" = "dropdown assumptions" || "dropdown combined"
+ *
+ * This function also renders the "standalone items" that are part of the group.
+ */
+function renderInputGroup(
+  groupName,
+  groupInputs,
+  container = $("#inputs-content")
+) {
+  // Handle combined sliders first
+  if (groupInputs[0]?.secondaryType === "combined") {
+    // ! check what happens here when container is not $("#inputs-content")
+    addCombinedSlider(groupInputs, container);
+    return;
+  }
+
+  // Handle dropdowns
+  const standaloneInputs = [];
+  let mainInput = null;
+  const assumptionInputs = [];
+  const assumptionCombinedSliders = [];
+
+  groupInputs.forEach((inputSpec) => {
+    if (inputSpec.secondaryType === "without") {
+      standaloneInputs.push(inputSpec);
+    } else if (
+      inputSpec.secondaryType === "dropdown main" ||
+      inputSpec.secondaryType === "dropdown main label"
+    ) {
+      mainInput = inputSpec;
+    } else if (inputSpec.secondaryType === "dropdown assumptions") {
+      assumptionInputs.push(inputSpec);
+    } else if (inputSpec.secondaryType === "dropdown combined") {
+      assumptionCombinedSliders.push(inputSpec);
+    }
+  });
+
+  // Process main input with dropdown
+  if (mainInput) {
+    createDropdownGroup(
+      mainInput,
+      assumptionInputs,
+      assumptionCombinedSliders,
+      container
+    );
+  }
+
+  // Add standalone inputs
+  standaloneInputs.forEach((inputSpec) => {
+    renderStandaloneInput(inputSpec, container);
+  });
+}
+
 // Initialize the inputs section
 function initInputsUI(category) {
   $("#inputs-content").empty();
@@ -921,53 +1056,12 @@ function initInputsUI(category) {
   }
 
   const categoryGroups = dynamicInputCategories[category] || {};
+  console.log("categoryGroups: ", categoryGroups);
 
   if (coreConfig.inputs.size > 0) {
+    // for each "input group", render a dropdown
     Object.entries(categoryGroups).forEach(([groupName, groupInputs]) => {
-      // Handle combined sliders first
-      if (groupInputs[0]?.secondaryType === "combined") {
-        addCombinedSlider(groupInputs, $("#inputs-content"));
-        return;
-      }
-
-      // Handle dropdowns
-      const standaloneInputs = [];
-      let mainInput = null;
-      const assumptionInputs = [];
-      const assumptionCombinedSliders = [];
-
-      groupInputs.forEach((inputSpec) => {
-        if (inputSpec.secondaryType === "without") {
-          standaloneInputs.push(inputSpec);
-        } else if (
-          inputSpec.secondaryType === "dropdown main" ||
-          inputSpec.secondaryType === "dropdown main label"
-        ) {
-          mainInput = inputSpec;
-        } else if (inputSpec.secondaryType === "dropdown assumptions") {
-          assumptionInputs.push(inputSpec);
-        } else if (inputSpec.secondaryType === "dropdown combined") {
-          assumptionCombinedSliders.push(inputSpec);
-        }
-      });
-
-      // Add standalone inputs first
-      standaloneInputs.forEach((inputSpec) => {
-        const input = activeModel.getInputForId(inputSpec.id);
-        if (input.kind === "slider") {
-          // TODO: Add here the case for standalone addSegmentedItem
-          addSliderItem(input);
-        } else if (input.kind === "switch") addSwitchItem(input);
-      });
-
-      // Process main input with dropdown
-      if (mainInput) {
-        createDropdownGroup(
-          mainInput,
-          assumptionInputs,
-          assumptionCombinedSliders
-        );
-      }
+      renderInputGroup(groupName, groupInputs);
     });
   } else {
     const msg = `No sliders configured. Edit 'config/inputs.csv' to get started.`;
