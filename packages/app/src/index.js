@@ -20,7 +20,11 @@ let graphViews = [];
 
 /*
  * This is a custom solution, because the initial addSwitchItem implementation of
- * SDEverywhere added the sliders Twice for each input. So, with this addedSliderIds Set,
+ * SDEverywhere added the sliders Twice for each input.
+ * a) It first adds the sliders defined INSIDE the switch row
+ * b) It then adds the sliders defined in their own row in inputs.csv
+ *
+ * So, with this addedSliderIds Set,
  * I first check if this slider has already been added, to prevent duplicates.
  */
 const addedSliderIds = new Set(); // Track which slider IDs have been added
@@ -522,7 +526,7 @@ function addSwitchItem(switchInput) {
       groupMap[inputSpec.inputGroup].push(inputSpec);
     });
 
-    console.log("Switch On groups: ", groupMap);
+    // console.log("Switch On groups: ", groupMap);
 
     Object.entries(groupMap).forEach(([groupName, groupInputs]) => {
       renderInputGroup(groupName, groupInputs, onSlidersContainer);
@@ -541,7 +545,7 @@ function addSwitchItem(switchInput) {
       groupMap[inputSpec.inputGroup].push(inputSpec);
     });
 
-    console.log("Switch Off groups: ", groupMap);
+    // console.log("Switch Off groups: ", groupMap);
 
     Object.entries(groupMap).forEach(([groupName, groupInputs]) => {
       renderInputGroup(groupName, groupInputs, offSlidersContainer);
@@ -564,6 +568,7 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
   addedSliderIds.add(spec.id);
 
   const currentValue = inputInstance.get();
+  console.log("initial value of segmented: ", currentValue);
 
   // Build segment values array: first min, then dividers, then maybe max
   let segmentValues = [spec.minValue, ...spec.rangeDividers];
@@ -600,7 +605,10 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
     if (currentValue === targetValue) btn.addClass("active");
 
     btn.on("click", () => {
+      // console.log("target value is: ", targetValue);
       inputInstance.set(targetValue);
+      // const valueAfterChange = inputInstance.get();
+      // console.log("valueAfterChange: ", valueAfterChange);
       segmentsContainer.find(".segmented-button").removeClass("active");
       btn.addClass("active");
     });
@@ -779,6 +787,17 @@ function createDropdownGroup(
   assumptionCombinedSliders,
   container = $("#inputs-content")
 ) {
+  // Add main input
+  const mainInputInstance = activeModel.getInputForId(mainInputSpec.id);
+  // ! For some reason
+  // console.log("mainInputInstance: ", mainInputInstance);
+  // ! check if already added
+  if (addedSliderIds.has(mainInputSpec.id)) {
+    // Check if already added
+    return; // ! Skip if duplicate
+  }
+  // addedSliderIds.add(mainInputSpec.id);
+
   const dropdownContainer = $('<div class="input-dropdown-group">');
   const dropdownHeader = $('<div class="dropdown-header">');
   const dropdownContent = $(
@@ -794,15 +813,12 @@ function createDropdownGroup(
   container.append(dropdownContainer);
   dropdownContainer.append(dropdownHeader, dropdownContent);
 
-  // Add main input
-  const mainInputInstance = activeModel.getInputForId(mainInputSpec.id);
-
   // Here, we check if input is Segmented Item OR just a Normal Slider (! OR just a Label)
   // TODO: fix this makeshift solution for putting just a label in dropdown main
   if (mainInputSpec.isSegmented !== "yes") {
     if (mainInputSpec.secondaryType === "dropdown main") {
       // this is a normal slider
-      console.log("main input spec: ", mainInputSpec);
+      // console.log("main input spec: ", mainInputSpec);
       const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
 
       // Add expand button
@@ -1056,7 +1072,7 @@ function initInputsUI(category) {
   }
 
   const categoryGroups = dynamicInputCategories[category] || {};
-  console.log("categoryGroups: ", categoryGroups);
+  // console.log("categoryGroups: ", categoryGroups);
 
   if (coreConfig.inputs.size > 0) {
     // for each "input group", render a dropdown
