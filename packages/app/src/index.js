@@ -377,11 +377,20 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
   // and Position it correctly, inside the viewport (!).
   const infoIcon = createInfoIcon(spec.hoverDescription);
 
+  // Create Material Icon element if defined
+  let muiIconElem = null;
+  if (spec.muiIcon) {
+    muiIconElem = $(
+      `<span class="material-icons-two-tone mui-icon">${spec.muiIcon}</span>`
+    );
+  }
+
   // Title + Info Icon container. This should be in the far left.
   const sliderTitleAndInfoContainer = $(
     '<div class="slider-title-and-info-container"/>'
   ).append(
     [
+      muiIconElem,
       $(`<div class="input-title">${str(spec.labelKey)}</div>`),
       infoIcon,
     ].filter((el) => el !== null)
@@ -582,12 +591,20 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
   // Outer wrapper
   const wrapper = $('<div class="input-segmented-item"/>');
 
-  // ——— Title + optional info icon ———
+  // Title + optional info icon + optional material icon
   const infoIcon = createInfoIcon(spec.hoverDescription);
+  // Create Material Icon element if defined
+  let muiIconElem = null;
+  if (spec.muiIcon) {
+    muiIconElem = $(
+      `<span class="material-icons-two-tone mui-icon">${spec.muiIcon}</span>`
+    );
+  }
   const titleAndIcon = $(
     '<div class="slider-title-and-info-container"/>'
   ).append(
     [
+      muiIconElem,
       $(`<div class="input-title">${str(spec.labelKey)}</div>`),
       infoIcon,
     ].filter((el) => el) // drop the icon if null

@@ -741,11 +741,19 @@ p {
  * Info box
  */
 
+/* Material mui icon for the slider */
+.mui-icon {
+  /* margin-right: 6px; */
+  vertical-align: middle;
+  font-size: 17px;
+}
+
 /* Container for title + info icon */
 .slider-title-and-info-container {
   display: inline-flex;
   gap: 4px;
   position: relative;
+  align-items: center;
   /* min-width: 160px; */
 }
 
