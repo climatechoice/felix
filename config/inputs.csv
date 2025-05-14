@@ -1,7 +1,71 @@
 id,input type,segmented,viewid,categoryid,input group,combined,secondary type,label,mui icon,second label,varname,description,hover description,extensive description,view level,group name,slider min,slider max,slider/switch default,slider step,units,format,reversed,range 2 start,range 3 start,range 4 start,range 5 start,range 1 label,range 2 label,range 3 label,range 4 label,range 5 label,enabled value,disabled value,controlled input ids,listing label
 dxx,switch,,Diet Change,Diet Change,Diet Change Changes,,without,Shifts in Diet Groups,,Change in Average Diets,Fake Value ,,"Toggle between Food Category and Supply Chain—only one can have an impact at a time. The default values display the reference food loss and waste fractions from different sources. Note for the supply chain, a 100% value for each stage accounts for food loss and waste in each food category.",,Primary,switch,0,1,0,1,-,.0f,,,,,,,,,,,1,0,da|d1;d2;d3;d4;d5;d6;d7;d8;d9;d10;d11;d12;d13;d14;d15;d16;d17;d18;d19;d20;d21;d22;d23;d24,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-da,slider,,Diet Change,Diet Change,Change in Average Diets,,without,Average Diet Slider,,,Fake Value 0,Slider 1,Toolkit1,,Primary,Sliders,0,100,100,1,%,.0f,,1,2,,,Reference,Healthy,Flexitarian,,,,,,
+da,slider,,Diet Change,Diet Change,Change in Average Diets,,without,Average Diet Slider,,,Fake Value 0,Slider 1,"### Toolkit1
+This is a new line. Edit this elsewhere, and then insert (copy-paste) it inside the hover description or extensive description column.","### This markdown is for Conventional Diet Compositions.
+This is a new line. Lorem ipsum, lorem ipsum.
+
+This is also a new line. More text.
+
+Here is a link: https://github.com/markedjs/marked
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum.",Primary,Sliders,0,100,100,1,%,.0f,,1,2,,,Reference,Healthy,Flexitarian,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 d1,slider,,Diet Change,Diet Change,Self Efficacy,,dropdown main,Self Efficacy,lock_open,,Self efficacy aggregated multiplier,"If you feel confident in yourself to make dietary changes, you are also more likely to shift toward sustainable eating habits.",Self Efficacy refers to an individual's belief in their ability to successfully adopt and maintain a different diet.,test test test,Primary,Sliders,0,200,100,5,%,.0f,,,,,,,,,,,,,,
@@ -26,7 +90,70 @@ d16,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social No
 d17,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Middle Aged),,,"SA x0 social norm reciprocal[""40-44""]",,,,Secondary,Sliders,0,300,180,5,%,.0f,,,,,,,,,,,,,,
 d18,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Elderly),,,"SA x0 social norm reciprocal[""80-84""]",,,,Secondary,Sliders,0,300,140,5,%,.0f,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-d19,slider,yes,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown main,Conventional Diet Compositions,restaurant,,Meat Diet Composition Switch,,This is the assumed diet of the global population that maintains traditional eating habits.,,Secondary,Sliders,0,2,0,1,-,.0f,,1,2,,,Reference,Healthy,Flexitarian,,,,,,
+d19,slider,yes,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown main,Conventional Diet Compositions,restaurant,,Meat Diet Composition Switch,,This is the assumed diet of the global population that maintains traditional eating habits.,"### This markdown is for Average Diet Slider.
+This is a new line. Lorem ipsum, lorem ipsum.
+
+This is also a new line. More text.
+
+Here is a link: https://github.com/markedjs/marked
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum.
+
+Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum. Here are more stuff. bla bla lorem ipsum.",Secondary,Sliders,0,2,0,1,-,.0f,,1,2,,,Reference,Healthy,Flexitarian,,,,,,
 d20,slider,,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown combined,Start Year,,,Start Year of Meat Diet Switch,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,Secondary,Sliders,2000,2100,2020,1,-,.0f,,,,,,,,,,,,,,
 d21,slider,,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown combined,End Year,,,End Year of Meat Diet Switch,,,,Secondary,Sliders,2000,2100,2040,1,-,.0f,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,

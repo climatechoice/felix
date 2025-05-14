@@ -2,6 +2,7 @@ import $ from "jquery";
 import Slider from "bootstrap-slider";
 import "bootstrap-slider/dist/css/bootstrap-slider.css";
 import "material-icons/iconfont/material-icons.css";
+import { marked } from "marked";
 import "./index.css";
 
 import choiceLogo from "./imgs/choice-png.png";
@@ -118,7 +119,10 @@ function createInfoIcon(hoverText) {
 
   const infoIconContainer = $('<div class="info-icon-container">');
   const icon = $('<div class="info-icon">i</div>');
-  const tooltip = $(`<div class="tooltip">${hoverText}</div>`);
+
+  // Parse Markdown to HTML
+  const parsedHTML = marked.parse(hoverText);
+  const tooltip = $(`<div class="tooltip">${parsedHTML}</div>`);
 
   infoIconContainer.append(icon, tooltip);
 
@@ -132,6 +136,48 @@ function createInfoIcon(hoverText) {
   });
 
   return infoIconContainer;
+}
+
+/*
+ * Function to add Popup Box w/ extensive Markdown Description
+ */
+
+function createPopupBox(extensiveText) {
+  if (!extensiveText) return null;
+
+  // Remove any existing popup
+  $(".popup-overlay").remove();
+
+  // Parse Markdown to HTML
+  const parsedHTML = marked.parse(extensiveText);
+
+  // Create overlay
+  const overlay = $('<div class="popup-overlay">');
+
+  // Create popup box
+  const popup = $('<div class="popup">').html(parsedHTML);
+
+  // Add close button with Material Icon
+  const closeBtn = $(`
+    <button class="popup-close">
+      <span class="material-icons">close</span>
+    </button>
+  `);
+  closeBtn.on("click", () => overlay.remove());
+
+  // Close on clicking outside the popup
+  overlay.on("click", (e) => {
+    if (e.target === overlay[0]) {
+      overlay.remove();
+    }
+  });
+
+  // Assemble and show popup
+  popup.prepend(closeBtn);
+  overlay.append(popup);
+  $("body").append(overlay);
+
+  return overlay;
 }
 
 /*
@@ -376,6 +422,21 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
   // Create info icon if description exists
   // and Position it correctly, inside the viewport (!).
   const infoIcon = createInfoIcon(spec.hoverDescription);
+  const extensiveInfoIcon = (function () {
+    if (!spec.extensiveDescription) return null;
+
+    const iconContainer = $('<div class="info-icon-container">');
+    const bookIcon = $(`
+    <span class="material-icons-two-tone book-popup-icon">menu_book</span>
+  `);
+
+    bookIcon.on("click", function () {
+      createPopupBox(spec.extensiveDescription);
+    });
+
+    iconContainer.append(bookIcon);
+    return iconContainer;
+  })();
 
   // Create Material Icon element if defined
   let muiIconElem = null;
@@ -393,6 +454,7 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
       muiIconElem,
       $(`<div class="input-title">${str(spec.labelKey)}</div>`),
       infoIcon,
+      extensiveInfoIcon,
     ].filter((el) => el !== null)
   );
 
@@ -577,7 +639,7 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
   addedSliderIds.add(spec.id);
 
   const currentValue = inputInstance.get();
-  console.log("initial value of segmented: ", currentValue);
+  // console.log("initial value of segmented: ", currentValue);
 
   // Build segment values array: first min, then dividers, then maybe max
   let segmentValues = [spec.minValue, ...spec.rangeDividers];
@@ -593,6 +655,21 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
 
   // Title + optional info icon + optional material icon
   const infoIcon = createInfoIcon(spec.hoverDescription);
+  const extensiveInfoIcon = (function () {
+    if (!spec.extensiveDescription) return null;
+
+    const iconContainer = $('<div class="info-icon-container">');
+    const bookIcon = $(`
+    <span class="material-icons-two-tone book-popup-icon">menu_book</span>
+  `);
+
+    bookIcon.on("click", function () {
+      createPopupBox(spec.extensiveDescription);
+    });
+
+    iconContainer.append(bookIcon);
+    return iconContainer;
+  })();
   // Create Material Icon element if defined
   let muiIconElem = null;
   if (spec.muiIcon) {
@@ -607,6 +684,7 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
       muiIconElem,
       $(`<div class="input-title">${str(spec.labelKey)}</div>`),
       infoIcon,
+      extensiveInfoIcon,
     ].filter((el) => el) // drop the icon if null
   );
   const titleRow = $('<div class="input-title-row"/>').append(titleAndIcon);
@@ -1512,6 +1590,8 @@ async function initApp() {
 
   // Load the navigation bar
   loadNavBar();
+
+  console.log(coreConfig);
 
   // When the model outputs are updated, refresh all graphs
   model.onOutputsChanged = () => {
