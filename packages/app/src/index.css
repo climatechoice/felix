@@ -826,7 +826,7 @@ p {
 .popup {
   background: white;
   color: black;
-  width: 70vw;
+  width: 50vw;
   max-height: 80vh;
   overflow-y: auto;
   padding: 20px;
@@ -934,12 +934,22 @@ p {
   height: 8px;
   top: 4px; /* (slider-handle:height / 2) - (slider-track:height / 2) */
   margin-top: 0;
-  background: #fafafa;
+  background: #f0f0f0;
 }
 
-/* Black for Scenario 1 */
+/* Default color for Scenario 1 in single scenario mode */
 .slider-rangeHighlight {
-  background: #000000;
+  background: #000000; /* black */
+}
+
+/* Color for Scenario 1 in multi-scenario mode */
+.multi-scenario .slider-rangeHighlight {
+  background: #6a3d9a; /* purple from colors.csv */
+}
+
+/* Color for Scenario 2 (always orange) */
+.scenario-2 .slider-rangeHighlight {
+  background: #e66100 !important; /* orange from colors.csv */
 }
 
 .slider-handle {
@@ -958,4 +968,136 @@ p {
 
 .slider.slider-horizontal .slider-handle {
   margin-left: -8px;
+}
+
+/* Combined2 Slider Styles */
+.combined2-slider-group {
+  margin: 6px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.input-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  margin-bottom: 0;
+}
+
+.slider-title-and-info-container {
+  min-width: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.combined2-slider-container {
+  position: relative;
+  padding: 0 25px;
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  justify-content: right;
+}
+
+.slider-with-labels {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0px 0px 0px;
+  position: relative;
+  width: 50%;
+  max-width: 60%;
+}
+
+.slider-with-labels .info-icon-container {
+  flex-shrink: 0;
+}
+
+.slider-with-labels .input-slider-row {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.inline-labels {
+  position: absolute;
+  width: 100%;
+  left: 3px;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+}
+
+.inline-labels.names {
+  top: 17px;
+}
+
+.inline-labels.values {
+  top: 3px;
+}
+
+.inline-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: absolute;
+  transform: translateX(-50%);
+  padding: 4px 4px;
+}
+
+/* Style the slider track */
+.combined2-slider-container .slider.slider-horizontal .slider-track {
+  background: #f0f0f0;
+  height: 8px;
+  top: 4px;
+}
+
+/* Style the slider segments */
+.combined2-slider-container .slider.slider-horizontal .slider-selection {
+  background: #000000;
+  height: 8px;
+  top: 4px;
+}
+
+/* Style the slider handles */
+.combined2-slider-container .slider.slider-horizontal .slider-handle {
+  background: #000;
+  border: 2px solid #000;
+  width: 16px;
+  height: 16px;
+  margin-top: -2px;
+}
+
+.combined2-slider-container .slider.slider-horizontal .slider-handle::before {
+  display: none;
+}
+
+/* Ensure the slider track is visible */
+.combined2-slider-container .slider.slider-horizontal .slider-track {
+  background: #f0f0f0;
+  height: 8px;
+  top: 4px;
+}
+
+/* Style the selected range */
+.combined2-slider-container .slider.slider-horizontal .slider-selection {
+  height: 8px;
+  top: 4px;
+}
+
+/* Style the labels */
+.inline-label .label-value {
+  font-weight: 700;
+  color: #000;
+}
+
+.inline-label .label-text {
+  font-size: 0.9em;
+  color: #666;
+  white-space: nowrap;
+  margin-bottom: 4px;
 }

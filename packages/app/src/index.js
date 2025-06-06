@@ -6,6 +6,8 @@ import { marked } from "marked";
 import "./index.css";
 
 import choiceLogo from "./imgs/choice-png.png";
+import iiasaLogo from "./imgs/iiasa-png.png";
+import felixLogo from "./imgs/felix-png.png";
 
 import { config as coreConfig, createModel } from "@core";
 import enStrings from "@core-strings/en";
@@ -141,7 +143,6 @@ function createInfoIcon(hoverText) {
 /*
  * Function to add Popup Box w/ extensive Markdown Description
  */
-
 function createPopupBox(extensiveText) {
   if (!extensiveText) return null;
 
@@ -176,7 +177,7 @@ function createPopupBox(extensiveText) {
   popup.prepend(closeBtn);
   overlay.append(popup);
   $("body").append(overlay);
-
+      
   return overlay;
 }
 
@@ -237,9 +238,20 @@ function loadNavBar() {
   $toggleSwitch.find("input").on("change", function () {
     const isOn = this.checked;
     $("#inputs-graphs-section").toggleClass("expanded", isOn);
-    // console.log("sidebar expanded:", isOn);
+    // Add/remove multi-scenario class to body
+    document.body.classList.toggle("multi-scenario", isOn);
     // update the label
     $modeLabel.text(isOn ? "Multi-scenario mode" : "Single-scenario mode");
+    
+    // Refresh all sliders to update their colors
+    $(".slider").each(function() {
+      const slider = $(this).data('slider');
+      if (slider) {
+        const currentValue = slider.getValue();
+        const defaultValue = slider.options.rangeHighlights[0].start;
+        slider.setAttribute("rangeHighlights", [{ start: defaultValue, end: currentValue }]);
+      }
+    });
   });
   $sect1.append($toggleSwitch, $modeLabel);
 
@@ -268,15 +280,33 @@ function loadNavBar() {
    */
   const $sect2 = $('<div class="nav-section second"></div>');
 
-  // Choice Logo link + image
-  const $logoLink = $(
+  // Logos link + image
+  const $logo1Link = $(
     '<a href="https://www.climatechoice.eu/" target="_blank" rel="noopener noreferrer"></a>'
   );
-  const $logoImg = $(
-    `<img src="${choiceLogo}" alt="Choice Logo" style="height: 30px;">`
+  const $logo1Img = $(
+    `<img src="${choiceLogo}" alt="Choice Logo" style="height: 25px;">`
   );
-  $logoLink.append($logoImg);
-  $sect2.append($logoLink);
+
+    const $logo2Link = $(
+    '<a href="https://iiasa.ac.at/" target="_blank" rel="noopener noreferrer"></a>'
+  );
+  const $logo2Img = $(
+    `<img src="${iiasaLogo}" alt="IIASA Logo" style="height: 30px;">`
+  );
+
+    const $logo3Link = $(
+    '<a href="https://iiasa.ac.at/models-tools-data/felix" target="_blank" rel="noopener noreferrer"></a>'
+  );
+  const $logo3Img = $(
+    `<img src="${felixLogo}" alt="FeliX Logo" style="height: 25px;">`
+  );
+
+
+  $logo1Link.append($logo1Img);
+  $logo2Link.append($logo2Img);
+  $logo3Link.append($logo3Img);
+  $sect2.append($logo1Link,$logo2Link,$logo3Link);
 
   /*
    * Section 3
@@ -625,7 +655,7 @@ function addSwitchItem(switchInput) {
 }
 
 /*
- * Renders a “segmented control” (a row of mutually‐exclusive buttons)
+ * Renders a "segmented control" (a row of mutually-exclusive buttons)
  * in place of a slider, based on spec.rangeDividers and spec.rangeLabelKeys.
  */
 function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
@@ -985,7 +1015,7 @@ $(function () {
   // 1) Inject the first scenario button on load
   addScenarioButton(1);
 
-  // 2) “+” button handler
+  // 2) "+" button handler
   $container.on("click", "#add-scenario", function () {
     const existing = $container.find(".scenario-selector-option").length;
     const next = existing + 1;
@@ -1015,7 +1045,7 @@ $(function () {
     `);
     // insert *before* the plus-button
     $("#add-scenario").before($btn);
-    // if it’s the very first, select it
+    // if it's the very first, select it
     if (n === 1) $btn.addClass("selected");
   }
 
@@ -1105,6 +1135,12 @@ function renderInputGroup(
   if (groupInputs[0]?.secondaryType === "combined") {
     // ! check what happens here when container is not $("#inputs-content")
     addCombinedSlider(groupInputs, container);
+    return;
+  }
+
+  // Handle combined2 sliders
+  if (groupInputs[0]?.secondaryType === "combined2") {
+    addCombined2Slider(groupInputs, container);
     return;
   }
 
@@ -1604,3 +1640,123 @@ async function initApp() {
 
 // Initialize the app when this script is loaded
 initApp();
+
+function addCombined2Slider(groupInputs, container = $("#inputs-content")) {
+  if (groupInputs.length < 2) {
+    console.error("Combined2 slider group must contain at least 2 sliders");
+    return;
+  }
+
+  // Check for duplicates
+  if (groupInputs.some(spec => addedSliderIds.has(spec.id))) {
+    return;
+  }
+  groupInputs.forEach(spec => addedSliderIds.add(spec.id));
+
+  // Get input instances
+  const inputs = groupInputs.map(spec => activeModel.getInputForId(spec.id));
+  
+  // Get hover description and normal description from first spec that has it
+  const hoverDescription = groupInputs.find(spec => spec.hoverDescription)?.hoverDescription;
+  const description = groupInputs.find(spec => spec.descriptionKey)?.descriptionKey;
+
+  const infoIcon = createInfoIcon(hoverDescription);
+
+  // Create container
+  const div = $(`<div class="input-item combined2-slider-group"/>`);
+
+  // Create title row using the inputGroup value
+  const titleRow = $(`
+    <div class="input-title-row">
+      <div class="slider-title-and-info-container">
+        <div class="input-title">${groupInputs[0].inputGroup}</div>
+      </div>
+    </div>
+  `);
+
+  // Add info icon to title container
+  titleRow.find(".slider-title-and-info-container").append(infoIcon);
+
+  // Create the single range slider with inline labels
+  const sliderId = `combined2-${groupInputs[0].id}`;
+  const sliderContainer = $(`
+    <div class="combined2-slider-container">
+      <div class="slider-with-labels">
+        <div class="inline-labels names">
+          ${groupInputs.map((spec, i) => {
+            const position = (i * 100) / (groupInputs.length - 1);
+            return `
+              <div class="inline-label" data-index="${i}" style="top: 0; left: ${position}%">
+                <span class="label-text">${str(spec.labelKey)}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div class="input-slider-row">
+          <input id="${sliderId}" class="slider" type="text"/>
+        </div>
+        <div class="inline-labels values">
+          ${groupInputs.map((spec, i) => {
+            const position = (i * 100) / (groupInputs.length - 1);
+            return `
+              <div class="inline-label" data-index="${i}" style="bottom: 0; left: ${position}%">
+                <span class="label-value">${inputs[i].get()}%</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `);
+
+  // Add description if available
+  const descRow = $(`<div class="input-desc">${description ? str(description) : ""}</div>`);
+
+  // Assemble the UI
+  div.append(titleRow, sliderContainer, descRow);
+  container.append(div);
+
+  // Initialize the range slider
+  const slider = new Slider(`#${sliderId}`, {
+    min: 0,
+    max: 100,
+    value: groupInputs.slice(0, -1).map((_, i) => {
+      // Calculate cumulative values for the knobs
+      return inputs.slice(0, i + 1).reduce((sum, input) => sum + input.get(), 0);
+    }),
+    range: true,
+    tooltip: "hide",
+    step: 1,
+    selection: "none"
+  });
+
+  // Function to update segment values and display
+  function updateSegments(values) {
+    // Calculate segment values
+    const segments = [];
+    let lastValue = 0;
+    values.forEach(value => {
+      segments.push(value - lastValue);
+      lastValue = value;
+    });
+    segments.push(100 - lastValue); // Last segment
+
+    // Update model values
+    segments.forEach((value, i) => {
+      inputs[i].set(value);
+    });
+
+    // Update segment labels
+    segments.forEach((value, i) => {
+      sliderContainer.find(`.inline-labels.values .inline-label[data-index="${i}"] .label-value`).text(`${value}%`);
+    });
+  }
+
+  // Add change handler
+  slider.on("change", (change) => {
+    updateSegments(change.newValue);
+  });
+
+  // Initial update
+  updateSegments(slider.getValue());
+}

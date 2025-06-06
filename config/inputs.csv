@@ -1,17 +1,21 @@
-id,input type,segmented,viewid,categoryid,input group,combined,secondary type,label,mui icon,second label,varname,empty,description,hover description,extensive description,view level,group name,slider min,slider max,slider/switch default,slider step,units,format,reversed,range 2 start,range 3 start,range 4 start,range 5 start,range 1 label,range 2 label,range 3 label,range 4 label,range 5 label,enabled value,disabled value,controlled input ids,listing label
-dxx,switch,,Diet Change,Diet Change,Diet Change Changes,,without,Population Dynamics,,Global Diet Composition,Global Diet Scenario Switch,0,,"Choose EITHER **Global Diet Composition** OR **Population Dynamics** modes—only one can have an impact at a time.<br><br> The **Global Diet Composition** scenario assumes a future where a new average diet is adopted globally. <br><br> In contrast, the **Population Dynamics** scenario explores a future where there are bottom-up shifts in dietary populations, driven by a range of behavioural factors.",,Primary,switch,0,1,0,1,-,.0f,,,,,,,,,,,1,0,da;db;dc;dd|d1;d2;d3;d4;d5;d6;d7;d8;d9;d10;d11;d12;d13;d14;d15;d16;d17;d18;d19;d20;d21;d22;d23;d24,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-da,slider,,Diet Change,Diet Change,Change in Average Diets,,without,Target Population,,,Target Percentage for Diet Change,0,,This variable represents the proportion of the global population adopting the new diet.,,Secondary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
-db,slider,yes,Diet Change,Diet Change,Change in Average Diets,,without,Global Diet Compositions,,,Global Diet Composition Switch,0,Reach out if you'd like us to include more diets!,This is the assumed diet of the global population that maintains traditional eating habits.,"## Diet Composition Comparison
+id,input type,segmented,viewid,categoryid,input group,combined,secondary type,label,mui icon,second label,varname,empty,description,hover description,markdown file,extensive description,view level,group name,slider min,slider max,slider/switch default,slider step,units,format,reversed,range 2 start,range 3 start,range 4 start,range 5 start,range 1 label,range 2 label,range 3 label,range 4 label,range 5 label,enabled value,disabled value,controlled input ids,listing label
+dxx,switch,,Diet Change,Diet Change,Diet Change Changes,,without,Population Dynamics,,Global Diet Composition,Global Diet Scenario Switch,0,,"Choose EITHER **Global Diet Composition** OR **Population Dynamics** modes—only one can have an impact at a time.<br><br> The **Global Diet Composition** scenario assumes a future where a new average diet is adopted globally. <br><br> In contrast, the **Population Dynamics** scenario explores a future where there are bottom-up shifts in dietary populations, driven by a range of behavioural factors.",,,Primary,switch,0,1,0,1,-,.0f,,,,,,,,,,,1,0,da;db;dc;dd|d1;d2;d3;d4;d5;d6;d7;d8;d9;d10;d11;d12;d13;d14;d15;d16;d17;d18;d19;d20;d21;d22;d23;d24,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+da,slider,,Diet Change,Diet Change,Change in Average Diets,,without,Target Population,,,Target Percentage for Diet Change,0,,This variable represents the proportion of the global population adopting the new diet.,,,Secondary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
+db,slider,yes,Diet Change,Diet Change,Change in Average Diets,,without,Global Diet Compositions,,,Global Diet Composition Switch,0,Reach out if you'd like us to include more diets!,This is the assumed diet of the global population that maintains traditional eating habits.,DietChange_Global.md,"## Global Diet Change Scenario
 
-This table provides four dietary patterns in terms of their **caloric composition** across eight food categories:
+### Overview
+This scenario enables the exploration of diets exogenously, examining the impact of the world transitioning towards a specific diet type, which allows for the exploration of a wide range of impacts across health and the environment.
+
+### Reference Data
+Here, we provide four dietary compositions in terms of their **caloric composition**, based on the FeliX Model's eight food categories:
+
 
 - **Reference Diet**: Represents a baseline or current average dietary intake, based on FAO Diet Composition Statistics ([FAO, 2013](https://www.fao.org/faostat/en/#data/FBS)) calibrated for this analysis  
 - **Healthy Diet**: Updated plant-forward diet with adjusted caloric proportions, based on [WHO Healthy Diet Guidelines](https://www.who.int/news-room/fact-sheets/detail/healthy-diet) estimated by [Springmann et al. (2018)](https://doi.org/10.1038/s41586-018-0594-0) 
 - **Mediterranean Diet**: Plant-forward with olive oil, grains, fruits, and modest meat and dairy, estimated based on general dietary guidelines  
 - **Flexitarian Diet**: Mostly plant-based with moderate amounts of animal products, estimated based on general dietary guidelines  
 
-## Diet Composition Table
 
 | **Category**   | **Reference (%)** | **Healthy (%)** | **Mediterranean (%)** | **Flexitarian (%)** |
 |----------------|------------------:|----------------:|----------------------:|--------------------:|
@@ -22,161 +26,328 @@ This table provides four dietary patterns in terms of their **caloric compositio
 | **Pulses**      | 2.4               | 6.88            | 4.0                   | 7.1                 |
 | **Grains**      | 47.9              | 29.23           | 43.0                  | 30.0                |
 | **Vegetable & Fruits**   | 8.3               | 11.76           | 12.0                  | 12.1                |
-| **Other Crops**  | 26.0              | 37.45           | 24.0                  | 38.4                |",Secondary,Sliders,0,4,0,1,-,.0f,,1,2,3,4,Reference,Healthy,Mediterranean,Flexitarian,,,,,
-dc,slider,,Diet Change,Diet Change,Change in Average Diets,,without,Start Year,,,Start Year of Global Diet,0,,,,Secondary,Sliders,2000,2100,2020,5,-,.0f,,,,,,,,,,,,,,
-dd,slider,,Diet Change,Diet Change,Change in Average Diets,,without,End Year,,,End Year of Global Diet,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,Secondary,Sliders,2000,2100,2040,5,-,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-d1,slider,,Diet Change,Diet Change,Self Efficacy,,dropdown main,Self Efficacy,lock_open,,Self efficacy aggregated multiplier,0,"If you feel confident in yourself to make dietary changes, you are also more likely to shift toward sustainable eating habits.",**Self Efficacy** refers to an individual's belief in their ability to successfully adopt and maintain a different diet.,"## Population Dynamics and Dietary Shifts: Overview
-
-<img src=""https://media.springernature.com/m685/springer-static/image/art%3A10.1038%2Fs41893-019-0331-1/MediaObjects/41893_2019_331_Fig1_HTML.png"" alt=""Behavioral Drivers"" style=""float: left; margin: 0 30px 20px 0; width: 350px;""/>
+| **Other Crops**  | 26.0              | 37.45           | 24.0                  | 38.4                |""",Secondary,Sliders,0,4,0,1,-,.0f,,1,2,3,4,Reference,Healthy,Mediterranean,Flexitarian,,,,,
+dc,slider,,Diet Change,Diet Change,Change in Average Diets Time,,combined,Start Year,,,Start Year of Global Diet,0,,,,,Secondary,Sliders,2000,2100,2020,5,-,.0f,,,,,,,,,,,,,,
+dd,slider,,Diet Change,Diet Change,Change in Average Diets Time,,combined,End Year,,,End Year of Global Diet,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,,Secondary,Sliders,2000,2100,2040,5,-,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+d1,slider,,Diet Change,Diet Change,Self Efficacy,,dropdown main,Self Efficacy,lock_open,,Self efficacy aggregated multiplier,0,"If you feel confident in yourself to make dietary changes, you are also more likely to shift toward sustainable eating habits.",**Self Efficacy** refers to an individual's belief in their ability to successfully adopt and maintain a different diet.,DietChange_Dynamic.md,"## Diet Change Population Dynamics Scenario
+<img src=""https://media.springernature.com/m685/springer-static/image/art%3A10.1038%2Fs41893-019-0331-1/MediaObjects/41893_2019_331_Fig1_HTML.png"" alt=""Behavioral Drivers"" style=""float: left; margin: 0 30px 20px 0; width: 350px;"">
 
 *Based on:* Eker, S., Reese, G., Obersteiner, M. (2019). Modelling the drivers of a widespread shift to sustainable diets. *Nature Sustainability*, 2(8), 725-735. [https://doi.org/10.1038/s41893-019-0331-1](https://doi.org/10.1038/s41893-019-0331-1)
 
-This scenario explores how population-level dietary behaviour evolves through social and psychological drivers, with implications for global consumption patterns and its environmental impacts. Drawing on the behavioural framework by Eker et al. (2019), the model integrates these dynamics into a broader population model to examine the influence of:
+### Overview and Structure
+This **Diet Change Population Dynamics Scenario** explores how population-level dietary behaviour evolves through social and psychological drivers, with implications for global consumption patterns and its environmental impacts. 
+
+Eker et al. (2019) adopt two main feedback mechanisms in the diet change module, grounded in two complementary psychological theories. 
+
+**Social transmission**, is based on the **Theory of Planned Behavior** ([Ajzen, 1991](https://doi.org/10.1016/0749-5978(91)90020-T)), which posits that behavioral intentions are shaped by perceived behavioral control (or self-efficacy), subjective social norms, and individual attitudes-i.e., whether a behavior is evaluated positively or negatively. In this context, diet change driven by social norms forms a **positive feedback loop**: as more individuals adopt a vegetarian diet, the social norm shifts, which in turn further encourages diet change.
+
+**Willingness to change**, draws on the **Protection Motivation Theory** ([Boer & Seydel, 1996](https://psycnet.apa.org/record/1996-97268-004)), where behavior is determined by two types of appraisal: threat appraisal, the individual's evaluation of the severity of a threat, and coping appraisal, the perceived ability and willingness to manage the threat. In this context, the threat appraisal of climate change risk forms a negative feedback loop, where the diet shift to vegetarianism leads to lower emissions, fewer climate events and a lower threat.
+
+### Scenario Inputs
+
+The model incorporates several key scenario inputs that represent the key factors influencing the feedbacks as explained above:
 
 - **Self-efficacy**: individuals' confidence in their ability to adopt a more sustainable diet  
 - **Response efficacy**: belief that dietary change will lead to meaningful environmental or health benefits  
 - **Perceived risks**: awareness of the consequences of consumption on health and climate  
-- **Social norms**: the influence of the dietary behaviours of others within a social group  
+- **Social norms**: the influence of the dietary behaviors of others within a social group  
 
+Each of these input factors differ across population groups based on characteristics such as gender, education level, and age. This variation reflects how different segments of the population perceive their capability, expected benefits, risks, and social influences, which collectively shape patterns of dietary change.
+
+
+---
+
+### Findings
 The findings show that **social norms** and **self-efficacy** are the most influential drivers of widespread dietary change. As more individuals adopt plant-based diets, a tipping point can be reached through social reinforcement, accelerating the transition. This underscores the importance of value-driven actions and group identity over purely risk-based motivations in shaping global dietary patterns and reducing the environmental impacts of the food system.",Primary,Sliders,0,200,100,25,%,.0f,,,,,,,,,,,,,,
-d2,slider,,Diet Change,Diet Change,Self Efficacy,,dropdown assumptions,Self Efficacy Male,,,Self Efficacy Multiplier Male Variation,0,,,,Secondary,Sliders,0,200,80,5,%,.0f,,,,,,,,,,,,,,
-d3,slider,,Diet Change,Diet Change,Self Efficacy,,dropdown assumptions,Self Efficacy Female,,,Self Efficacy Multiplier Female Variation,0,,,,Secondary,Sliders,0,200,120,5,%,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-d4,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown main,Response Efficacy,insights,,Response efficacy aggregated multiplier,0,"If you trust that your actions have impact, you are more likely to change your behavior.",**Response Efficacy** reflects the belief that adopting a different diet will effectively contribute to positive environmental or health outcomes.,,Primary,Sliders,0,200,100,25,%,.0f,,,,,,,,,,,,,,
-d5,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown assumptions,Response Efficacy (No Education),,,Response Efficacy Multiplier NoEd Variation,0,,,,Secondary,Sliders,0,200,80,5,%,.0f,,,,,,,,,,,,,,
-d6,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown assumptions,Response Efficacy (Primary),,,Response Efficacy Multiplier Primary Variation,0,,,,Secondary,Sliders,0,200,90,5,%,.0f,,,,,,,,,,,,,,
-d7,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown assumptions,Response Efficacy (Secondary),,,Response Efficacy Multiplier Secondary Variation,0,,,,Secondary,Sliders,0,200,100,5,%,.0f,,,,,,,,,,,,,,
-d8,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown assumptions,Response Efficacy (Tertiary),,,Response Efficacy Multiplier Tertiary Variation,0,,,,Secondary,Sliders,0,200,120,5,%,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-d9,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown main,Perceived Risks,warning_amber,,Perceived risk aggregated multiplier,0,"If you perceive greater risks from the environment, you may be more likely to adopt dietary changes. ",**Perceived Risks** is affected by both the sensitivity towards extreme events but also its frequency.,,Primary,Sliders,0,200,100,25,%,.0f,,,,,,,,,,,,,,
-d10,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown assumptions,Perceived Risks (No Education),,,Climate Risk Perception Rate NoEd Variation,0,,,,Secondary,Sliders,0,50,10,1,%,.0f,,,,,,,,,,,,,,
-d11,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown assumptions,Perceived Risks (Primary),,,Climate Risk Perception Rate Primary Variation,0,,,,Secondary,Sliders,0,50,13,1,%,.0f,,,,,,,,,,,,,,
-d12,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown assumptions,Perceived Risks (Secondary),,,Climate Risk Perception Rate Secondary Variation,0,,,,Secondary,Sliders,0,50,20,1,%,.0f,,,,,,,,,,,,,,
-d13,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown assumptions,Perceived Risks (Tertiary),,,Climate Risk Perception Rate Tertiary Variation,0,,,,Secondary,Sliders,0,50,33,1,%,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-d14,slider,,Diet Change,Diet Change,Social Norms,,dropdown main,Social Norms,groups,,Subjective norm aggregated multiplier,0,If sustainable eating is widely accepted among your peers you are also more likely to adopt such diets.,**Social Norms** refer to the influence of societal and peer expectations on an individual's diet choices.,,Primary,Sliders,0,200,100,25,%,.0f,,,,,,,,,,,,,,
-d15,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Children),,,"SA x0 social norm reciprocal[""10-14""]",0,,,,Secondary,Sliders,0,300,170,5,%,.0f,,,,,,,,,,,,,,
-d16,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Young),,,"SA x0 social norm reciprocal[""20-24""]",0,,,,Secondary,Sliders,0,300,220,5,%,.0f,,,,,,,,,,,,,,
-d17,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Middle Aged),,,"SA x0 social norm reciprocal[""40-44""]",0,,,,Secondary,Sliders,0,300,180,5,%,.0f,,,,,,,,,,,,,,
-d18,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Elderly),,,"SA x0 social norm reciprocal[""80-84""]",0,,,,Secondary,Sliders,0,300,140,5,%,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-d19,slider,yes,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown main,Conventional Diet Compositions,,,Meat Diet Composition Switch,0,,This is the assumed diet of the global population that maintains traditional eating habits.,,Secondary,Sliders,0,2,0,1,-,.0f,,1,2,3,,Reference,Healthy,Flexitarian,,,,,,
-d20,slider,,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown combined,Start Year,,,Start Year of Meat Diet Switch,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,Secondary,Sliders,2000,2100,2020,1,-,.0f,,,,,,,,,,,,,,
-d21,slider,,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown combined,End Year,,,End Year of Meat Diet Switch,0,,,,Secondary,Sliders,2000,2100,2040,1,-,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-d22,slider,yes,Diet Change,Diet Change,Shifts in Diet Groups 2,,dropdown main,Alternative Diet Compositions,,,Vegetarian Diet Composition Switch,0,,"This is the assumed diet of the global population that deviates from mainstream eating habits, often for health, ethical, or cultural reasons.",,Secondary,Sliders,0,2,0,1,-,.0f,,1,2,3,,Reference,Vegan,Flexitarian,,,,,,
-d23,slider,,Diet Change,Diet Change,Shifts in Diet Groups 2,,dropdown combined,Start Year,,,Start Year of Vegetarian Diet Switch,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,Secondary,Sliders,2000,2100,2020,1,-,.0f,,,,,,,,,,,,,,
-d24,slider,,Diet Change,Diet Change,Shifts in Diet Groups 2,,dropdown combined,End Year,,,End Year of Vegetarian Diet Switch,0,,,,Secondary,Sliders,2000,2100,2040,1,-,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-w22,switch,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Changes,,without,by Food Category,,by Supply Chain,Waste scenario switch,0,,"Choose EITHER **Food Category** OR **Supply Chain modes**—only one can have an impact at a time.<br><br> In the **Food Category** mode, explore food loss and waste fractions across different food types.<br><br> In the **Supply Chain** mode, examine how reducing losses at each stage of the supply chain affects waste levels within various food categories.",,Primary,switch,0,1,0,1,-,.0f,,,,,,,,,,,1,0,w1;w2;w3;w4;w5|w6;w7;w8;w9;w10;w11;w12;w13,
-w20,slider,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Time,,combined,Start Year,,,Start Year of Waste Switch,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,Secondary,Sliders,2000,2100,2020,1,-,.0f,,,,,,,,,,,,,,
-w21,slider,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Time,,combined,End Year,,,End Year of Waste Switch,0,,,,Secondary,Sliders,2000,2100,2040,1,-,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-w1,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,🚜 Primary Production,,agriculture,Supply chain waste variation[PrimaryProduction],"Losses occurring at the farm level due to unharvested crops, pest damage, extreme weather, or overproduction that leads to surplus food being discarded before it enters the supply chain.",,"**Primary Production** is a stage which involves **losses** through *Farmers, Fishers, Ranchers, Agricultural Workers* during initial food production stages.","## Understanding Food Loss and Waste Across the Supply Chain
+d2,slider,,Diet Change,Diet Change,Self Efficacy,,dropdown assumptions,Self Efficacy Male,,,Self Efficacy Multiplier Male Variation,0,,,,,Secondary,Sliders,0,200,80,5,%,.0f,,,,,,,,,,,,,,
+d3,slider,,Diet Change,Diet Change,Self Efficacy,,dropdown assumptions,Self Efficacy Female,,,Self Efficacy Multiplier Female Variation,0,,,,,Secondary,Sliders,0,200,120,5,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+d4,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown main,Response Efficacy,insights,,Response efficacy aggregated multiplier,0,"If you trust that your actions have impact, you are more likely to change your behavior.",**Response Efficacy** reflects the belief that adopting a different diet will effectively contribute to positive environmental or health outcomes.,,,Primary,Sliders,0,200,100,25,%,.0f,,,,,,,,,,,,,,
+d5,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown assumptions,Response Efficacy (No Education),,,Response Efficacy Multiplier NoEd Variation,0,,,,,Secondary,Sliders,0,200,80,5,%,.0f,,,,,,,,,,,,,,
+d6,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown assumptions,Response Efficacy (Primary),,,Response Efficacy Multiplier Primary Variation,0,,,,,Secondary,Sliders,0,200,90,5,%,.0f,,,,,,,,,,,,,,
+d7,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown assumptions,Response Efficacy (Secondary),,,Response Efficacy Multiplier Secondary Variation,0,,,,,Secondary,Sliders,0,200,100,5,%,.0f,,,,,,,,,,,,,,
+d8,slider,,Diet Change,Diet Change,Response Efficacy,,dropdown assumptions,Response Efficacy (Tertiary),,,Response Efficacy Multiplier Tertiary Variation,0,,,,,Secondary,Sliders,0,200,120,5,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+d9,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown main,Perceived Risks,warning_amber,,Perceived risk aggregated multiplier,0,"If you perceive greater risks from the environment, you may be more likely to adopt dietary changes. ",**Perceived Risks** is affected by both the sensitivity towards extreme events but also its frequency.,,,Primary,Sliders,0,200,100,25,%,.0f,,,,,,,,,,,,,,
+d10,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown assumptions,Perceived Risks (No Education),,,Climate Risk Perception Rate NoEd Variation,0,,,,,Secondary,Sliders,0,50,10,1,%,.0f,,,,,,,,,,,,,,
+d11,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown assumptions,Perceived Risks (Primary),,,Climate Risk Perception Rate Primary Variation,0,,,,,Secondary,Sliders,0,50,13,1,%,.0f,,,,,,,,,,,,,,
+d12,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown assumptions,Perceived Risks (Secondary),,,Climate Risk Perception Rate Secondary Variation,0,,,,,Secondary,Sliders,0,50,20,1,%,.0f,,,,,,,,,,,,,,
+d13,slider,,Diet Change,Diet Change,Perceived Risks,,dropdown assumptions,Perceived Risks (Tertiary),,,Climate Risk Perception Rate Tertiary Variation,0,,,,,Secondary,Sliders,0,50,33,1,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+d14,slider,,Diet Change,Diet Change,Social Norms,,dropdown main,Social Norms,groups,,Subjective norm aggregated multiplier,0,If sustainable eating is widely accepted among your peers you are also more likely to adopt such diets.,**Social Norms** refer to the influence of societal and peer expectations on an individual's diet choices.,,,Primary,Sliders,0,200,100,25,%,.0f,,,,,,,,,,,,,,
+d15,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Children),,,"SA x0 social norm reciprocal[""10-14""]",0,,,,,Secondary,Sliders,0,300,170,5,%,.0f,,,,,,,,,,,,,,
+d16,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Young),,,"SA x0 social norm reciprocal[""20-24""]",0,,,,,Secondary,Sliders,0,300,220,5,%,.0f,,,,,,,,,,,,,,
+d17,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Middle Aged),,,"SA x0 social norm reciprocal[""40-44""]",0,,,,,Secondary,Sliders,0,300,180,5,%,.0f,,,,,,,,,,,,,,
+d18,slider,,Diet Change,Diet Change,Social Norms,,dropdown assumptions,Social Norms (Elderly),,,"SA x0 social norm reciprocal[""80-84""]",0,,,,,Secondary,Sliders,0,300,140,5,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+d19,slider,yes,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown main,Conventional Diet Compositions,,,Meat Diet Composition Switch,0,,This is the assumed diet of the global population that maintains traditional eating habits.,,,Secondary,Sliders,0,2,0,1,-,.0f,,1,2,3,,Reference,Healthy,Flexitarian,,,,,,
+d20,slider,,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown combined,Start Year,,,Start Year of Meat Diet Switch,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,,Secondary,Sliders,2000,2100,2020,1,-,.0f,,,,,,,,,,,,,,
+d21,slider,,Diet Change,Diet Change,Shifts in Diet Groups,,dropdown combined,End Year,,,End Year of Meat Diet Switch,0,,,,,Secondary,Sliders,2000,2100,2040,1,-,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+d22,slider,yes,Diet Change,Diet Change,Shifts in Diet Groups 2,,dropdown main,Alternative Diet Compositions,,,Vegetarian Diet Composition Switch,0,,"This is the assumed diet of the global population that deviates from mainstream eating habits, often for health, ethical, or cultural reasons.",,,Secondary,Sliders,0,2,0,1,-,.0f,,1,2,3,,Reference,Vegan,Flexitarian,,,,,,
+d23,slider,,Diet Change,Diet Change,Shifts in Diet Groups 2,,dropdown combined,Start Year,,,Start Year of Vegetarian Diet Switch,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,,Secondary,Sliders,2000,2100,2020,1,-,.0f,,,,,,,,,,,,,,
+d24,slider,,Diet Change,Diet Change,Shifts in Diet Groups 2,,dropdown combined,End Year,,,End Year of Vegetarian Diet Switch,0,,,,,Secondary,Sliders,2000,2100,2040,1,-,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+w22,switch,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Changes,,without,by Food Category,,by Supply Chain,Waste scenario switch,0,,"Choose EITHER **Food Category** OR **Supply Chain modes**—only one can have an impact at a time.<br><br> In the **Food Category** mode, explore food loss and waste fractions across different food types.<br><br> In the **Supply Chain** mode, examine how reducing losses at each stage of the supply chain affects waste levels within various food categories.",,,Primary,switch,0,1,0,1,-,.0f,,,,,,,,,,,1,0,w1;w2;w3;w4;w5|w6;w7;w8;w9;w10;w11;w12;w13,
+w20,slider,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Time,,combined,Start Year,,,Start Year of Waste Switch,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,,Secondary,Sliders,2000,2100,2020,1,-,.0f,,,,,,,,,,,,,,
+w21,slider,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Time,,combined,End Year,,,End Year of Waste Switch,0,,,,,Secondary,Sliders,2000,2100,2040,1,-,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+w1,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,🚜 Primary Production,,agriculture,Supply chain waste variation[PrimaryProduction],"Losses occurring at the farm level due to unharvested crops, pest damage, extreme weather, or overproduction that leads to surplus food being discarded before it enters the supply chain.",,"**Primary Production** is a stage which involves **losses** through *Farmers, Fishers, Ranchers, Agricultural Workers* during initial food production stages.",FLW_SupplyChain.md,"## Food Loss and Waste Scenario (by Supply Chain)
 
+### Overview
 Food loss and waste occur across the entire food supply chain - from initial production to final consumption. According to the Food and Agriculture Organization (FAO), **food loss** refers to the decrease in edible food mass that takes place during production, post-harvest, and processing stages - primarily due to infrastructural, logistical, or technical constraints. In contrast, **food waste** occurs at the retail and consumption stages and is often driven by behavioral or economic factors, such as over-purchasing, portion sizes, or the discarding of food that is still safe and edible ([FAO, 2014](http://www.fao.org/platform-food-loss-waste)).
 
 Earlier stages of the supply chain (e.g., primary production and post-harvest) are typically more prone to **food loss**, while the later stages - particularly **consumption** - are where **food waste** is most prevalent. Each stage presents both challenges and opportunities for reducing inefficiencies and improving the sustainability of food systems.
 
----
 
-1. **Primary Production.** This is the stage where crops are harvested or animals are raised for food. *Losses occur due to:*  
+(1) **Primary Production.** This is the stage where crops are harvested or animals are raised for food. *Losses occur due to:*  
 - Pests, diseases, or extreme weather  
 - Harvesting inefficiencies (e.g., overripe or underripe crops left behind)  
 - Market or price fluctuations (e.g., food not harvested due to low market value)  
 - Cosmetic standards (produce rejected due to shape/appearance)  
 
----
 
-2. **Post-Harvest Handling & Storage.** This is the stage where food is collected, sorted, cleaned, and stored before further processing or transport. *Losses occur due to:*  
+(2) **Post-Harvest Handling & Storage.** This is the stage where food is collected, sorted, cleaned, and stored before further processing or transport. *Losses occur due to:*  
 - Poor storage conditions (e.g., lack of refrigeration or pest protection)  
 - Inadequate infrastructure (e.g., damaged transport, lack of cooling)  
 - Delays that reduce freshness, especially for perishables  
 
----
-
-3. **Processing & Packaging.** This is the stage where raw food is transformed into consumer-ready products (e.g., milling, canning, freezing). *Losses occur due to:*  
+(3) **Processing & Packaging.** This is the stage where raw food is transformed into consumer-ready products (e.g., milling, canning, freezing). *Losses occur due to:*  
 - Trimming and processing waste (e.g., peels, bones, offcuts)  
 - Equipment inefficiencies or downtime  
 - Quality control rejections  
 - Overproduction or batch spoilage  
 
----
-
-4. **Distribution & Retail.** This is the stage where food is transported to retailers and sold to consumers. *Losses occur due to:*  
+(4) **Distribution & Retail.** This is the stage where food is transported to retailers and sold to consumers. *Losses occur due to:*  
 - Damage during transport (e.g., spoilage, packaging failure)  
 - Inadequate temperature control (cold chain issues)  
 - Overstocking and expired goods at retail  
 - Rejection of items that don't meet aesthetic or size standards  
 
----
 
-5. **Consumption.** This is the stage where food is purchased, prepared, and eaten by consumers or served in food services. *Waste occurs due to:*  
+(5) **Consumption.** This is the stage where food is purchased, prepared, and eaten by consumers or served in food services. *Waste occurs due to:*  
 - Over-purchasing or improper storage at home  
-- Confusion over ""best before"" and ""use by"" labels  
+- Confusion over """"best before"""" and """"use by"""" labels  
 - Plate waste in households, restaurants, and cafeterias  
-- Cultural preferences and lack of awareness about waste ",Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
-w2,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,📦 Post Harvest,,warehouse,Supply chain waste variation[PostHarvest],"Losses happening after harvest but before processing or distribution, often due to inadequate storage, transportation issues, spoilage, or inefficiencies in handling and drying.",,"**Post Harvest** is a stage which involves **losses** through *Warehouses, Storage Facilities, Transporters* after harvesting and before processing.",,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
-w3,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,🏭 Processing,,factory,Supply chain waste variation[Processing],"Losses during food manufacturing, including edible portions discarded during trimming, inefficiencies in processing, and overproduction leading to disposal before reaching consumers.",,"**Processing** is a stage which involves **losses** through *Food Manufacturers, Factories, Butchers, Packaging* during food processing.",,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
-w4,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,🚚 Distribution,,local_shipping,Supply chain waste variation[Distribution],"Wastes occurring at the wholesale, retail, and food service levels due to packaging damage, expired goods, improper handling, or rejection of products based on aesthetic standards.",,"**Distribution** is a stage which involves **losses** and **waste** through *Wholesalers, Retailers, Supermarkets, Deliveries* in the supply chain.",,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
-w5,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,🍽️ Consumption,,restaurant,Supply chain waste variation[Consumption],"Wastes generated at the consumer level, including uneaten leftovers, spoiled groceries, and plate waste in households, restaurants, and cafeterias",,"**Consumption** is a stage which involves **wastes** through *Households, Consumers, Restaurants, Cafeterias* at the final consumption stage.",,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-w6,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🥩 Pasture Meat,,outdoor_grill,Waste Fraction Scenarios by Food Category[PasMeat],"Meat from animals raised on grasslands, such as beef and lamb. These meats have a higher environmental impact due to land and water use.",,"**Pasture Meat** includes *Beef, Sheep, Goats*  ","## Understanding Food Loss and Waste for Various Food Categories
-
-Food loss and waste vary significantly across different food categories due to their unique characteristics, production processes, and resource requirements. Understanding these differences is crucial for targeting effective interventions and reducing the overall environmental impact of the food system. Each category's loss and waste have different implications for resource use such as land, water, and energy. Therefore, reducing waste in resource-intensive foods like pasture meat can yield larger environmental benefits compared to other categories. Tailoring food loss and waste reduction strategies to the specific vulnerabilities of each category is key for building a more sustainable food system.
-
-1. **Pasture Meat**  
-Meat from animals raised on grasslands, such as beef and lamb. These meats have a higher environmental impact due to extensive land and water use. Losses at the production stage can be particularly impactful given the long growth cycles and resource intensity.
+- Cultural preferences and lack of awareness about waste ""
 
 ---
 
-2. **Crop Meat**  
-Meat from animals primarily fed on crops like soy and corn, including chicken and pork. Generally, they have a lower environmental footprint than pasture meats but are vulnerable to losses during harvesting, processing, and distribution due to perishability and storage challenges.
+### Formulation
+To estimate food loss and waste across the supply chain, we utilize data from Cecilia et al. ([2019](https://link.springer.com/chapter/10.1007/978-3-030-10961-5_11])), which derives loss and waste proportions based on FAO statistics.
+
+Food losses and waste occur at various stages of the supply chain and differ depending on the type of food. This formula calculates the final food waste and loss for each food category by adjusting for variations within supply chain segments and accounting for their respective contributions:
+
+
+$$
+\text{FWL}_{\text{food}} = \text{FWLVar}_{\text{supplychain}} \times \text{FWLShare}_{\text{supplychain, food}}
+$$
+
+**Where:**
+
+- $\text{FWL}_{\text{food}}$: Final food waste and loss for a specific food category (food)  
+- $\text{FWLVar}_{\text{supplychain}}$: Variation factor in the supply chain segment (expressed as a multiplier, e.g., 1.1 for +10%)  
+- $\text{FWLShare}_{\text{supplychain, food}}$: Share (proportion) of the supply chain segment's contribution to the food waste and loss in the food category (between 0 and 1)  
+
+
 
 ---
 
-3. **Dairy**  
-Products made from milk, such as cheese, yogurt, and butter. Dairy farming contributes significantly to greenhouse gas emissions and water usage. Dairy products are highly perishable, making spoilage a major cause of loss in processing, transport, and retail stages.
 
----
 
-4. **Eggs**  
-A nutrient-rich food source from poultry, including chicken, duck, and quail eggs. Eggs have a lower environmental impact compared to meat but still require feed, water, and careful handling to minimize breakage and spoilage across the supply chain.
+### Estimated Input Data for FeliX
 
----
+| Stage             | PasMeat | CropMeat | Dairy | Eggs | Pulses | Grains | VegFruits | OtherCrops |
+|-------------------|---------|----------|-------|------|--------|--------|-----------|------------|
+| Primary Production | 3.1     | 3        | 7.1   | 7.1  | 1.9    | 14.5   | 9         | 1.9        |
+| Post-Harvest      | 6       | 7        | 4.7   | 4.7  | 1.9    | 2.1    | 6         | 1.9        |
+| Processing        | 4.7     | 5        | 1.2   | 1.2  | 4.8    | 4.1    | 9         | 4.6        |
+| Distribution      | 1.1     | 1        | 2.3   | 2.3  | 3.8    | 5.2    | 7         | 4.2        |
+| Consumption       | 5.1     | 4        | 4.7   | 4.7  | 7.6    | 4.1    | 14        | 7.4        |
+| **Total**         | **20%**  | **20%**   | **20%**|**20%**| **20%** | **30%** | **45%**    | **20%**     |
 
-5. **Pulses**  
-Protein-rich plant foods like lentils, beans, and chickpeas. Pulses improve soil health and have a low carbon footprint. Their longer shelf life makes them less prone to loss, though storage and processing conditions can still cause losses.
+<br>
 
----
+<img src=""https://www.researchgate.net/profile/Ja-Cecilia/publication/332416505/figure/fig1/AS:751882171609088@1556274087304/Percentage-of-food-waste-along-the-food-supply-chain-Source-FAO.png"" alt=""Percentage of food waste along the food supply chain"" style=""margin: 0 20px 20px 0; width: 350px;"" />
 
-6. **Grains**  
+**Source*:  Cecilia et al. ([2019](https://link.springer.com/chapter/10.1007/978-3-030-10961-5_11])) based on FAO Data.
+",Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
+w2,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,📦 Post Harvest,,warehouse,Supply chain waste variation[PostHarvest],"Losses happening after harvest but before processing or distribution, often due to inadequate storage, transportation issues, spoilage, or inefficiencies in handling and drying.",,"**Post Harvest** is a stage which involves **losses** through *Warehouses, Storage Facilities, Transporters* after harvesting and before processing.",,,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
+w3,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,🏭 Processing,,factory,Supply chain waste variation[Processing],"Losses during food manufacturing, including edible portions discarded during trimming, inefficiencies in processing, and overproduction leading to disposal before reaching consumers.",,"**Processing** is a stage which involves **losses** through *Food Manufacturers, Factories, Butchers, Packaging* during food processing.",,,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
+w4,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,🚚 Distribution,,local_shipping,Supply chain waste variation[Distribution],"Wastes occurring at the wholesale, retail, and food service levels due to packaging damage, expired goods, improper handling, or rejection of products based on aesthetic standards.",,"**Distribution** is a stage which involves **losses** and **waste** through *Wholesalers, Retailers, Supermarkets, Deliveries* in the supply chain.",,,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
+w5,slider,,Food Loss and Waste,Food Loss and Waste,by Supply Chain,,without,🍽️ Consumption,,restaurant,Supply chain waste variation[Consumption],"Wastes generated at the consumer level, including uneaten leftovers, spoiled groceries, and plate waste in households, restaurants, and cafeterias",,"**Consumption** is a stage which involves **wastes** through *Households, Consumers, Restaurants, Cafeterias* at the final consumption stage.",,,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+w6,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🥩 Pasture Meat,,outdoor_grill,Waste Fraction Scenarios by Food Category[PasMeat],"Meat from animals raised on grasslands, such as beef and lamb. These meats have a higher environmental impact due to land and water use.",,"**Pasture Meat** includes *Beef, Sheep, Goats*  ",FLW_FoodCategory.md,"## Food Loss and Waste Scenario (by Food Categories)
+
+### Overview
+Food loss and waste vary significantly across different food categories due to their unique characteristics, production processes, and resource requirements. Understanding these differences is crucial for targeting effective interventions and reducing the overall environmental impact of the food system. 
+
+1. **Pasture Meat** : Meat from animals raised on grasslands, such as beef and lamb. These meats have a higher environmental impact due to extensive land and water use. Losses at the production stage can be particularly impactful given the long growth cycles and resource intensity.
+
+2. **Crop Meat**: Meat from animals primarily fed on crops like soy and corn, including chicken and pork. Generally, they have a lower environmental footprint than pasture meats but are vulnerable to losses during harvesting, processing, and distribution due to perishability and storage challenges.
+
+3. **Dairy**: Products made from milk, such as cheese, yogurt, and butter. Dairy farming contributes significantly to greenhouse gas emissions and water usage. Dairy products are highly perishable, making spoilage a major cause of loss in processing, transport, and retail stages.
+
+4. **Eggs**: A nutrient-rich food source from poultry, including chicken, duck, and quail eggs. Eggs have a lower environmental impact compared to meat but still require feed, water, and careful handling to minimize breakage and spoilage across the supply chain.
+
+5. **Pulses**: Protein-rich plant foods like lentils, beans, and chickpeas. Pulses improve soil health and have a low carbon footprint. Their longer shelf life makes them less prone to loss, though storage and processing conditions can still cause losses.
+
+1. **Grains**  
 Staple crops such as wheat, rice, corn, and oats. These are essential for global food security but some require high water usage and are susceptible to losses during harvesting and storage due to pests, moisture, or poor infrastructure.
 
----
-
-7. **Vegetables and Fruits**  
+1. **Vegetables and Fruits**  
 A diverse group including leafy greens, root vegetables, and berries. Generally have a lower environmental impact, but their perishability leads to high losses and waste throughout harvesting, transport, storage, and consumption stages. Transport and refrigeration also contribute to their environmental footprint.
 
+1. **Other Crops**  
+Includes foods like nuts, sugar, and oils (palm, soybean, canola). Some, especially tropical crops like palm oil, have significant land-use impacts. Losses vary widely depending on processing complexity and storage conditions.
+
 ---
 
-8. **Other Crops**  
-Includes foods like nuts, sugar, coffee, and oils (palm, soybean, canola). Some, especially tropical crops like palm oil, have significant land-use impacts. Losses vary widely depending on processing complexity and storage conditions.
+### Formulation
 
----",Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
-w7,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🍗 Crop Meat,,restaurant_menu,Waste Fraction Scenarios by Food Category[CropMeat],"Meat from animals primarily fed on crops like soy and corn, including chicken and pork. Generally, they have a lower footprint than pasture meats.",,"**Crop Meat** includes *Chicken, Pork, Fish*  ",,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
-w8,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🥛 Dairy,,local_drink,Waste Fraction Scenarios by Food Category[Dairy],"Products made from milk, such as cheese, yogurt, and butter. Dairy farming contributes to greenhouse gas emissions and water usage.",,"**Dairy** includes *Milk, Cheese, Butter, Cream*  ",,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
-w9,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🥚 Eggs,,egg_alt,Waste Fraction Scenarios by Food Category[Eggs],"A nutrient-rich food source from poultry, including chicken, duck, and quail eggs. Lower environmental impact compared to meat but still requires feed and water.",,"**Eggs** include *Chicken Eggs, Duck Eggs, Quail Eggs*  ",,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
-w10,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🌱 Pulses,,spa,Waste Fraction Scenarios by Food Category[Pulses],"Protein-rich plant foods like lentils, beans, and chickpeas. They improve soil health and have a low carbon footprint.",,"**Pulses** include *Lentils, Chickpeas, Black Beans, Kidney Beans, Peas*  ",,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
-w11,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🌾 Grains,,rice_bowl,Waste Fraction Scenarios by Food Category[Grains],"Staple crops such as wheat, rice, corn, and oats. Widely consumed and essential for global food security, but some require high water usage.",,"**Grains** include *Wheat, Rice, Corn, Oats, Barley, Quinoa*  ",,Primary,Sliders,0,30,30,5,%,.0f,,,,,,,,,,,,,,
-w12,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🍎🥦 Vegetables and Fruits,,eco,Waste Fraction Scenarios by Food Category[VegFruits],"A diverse group including leafy greens, root vegetables, and berries. Generally have a lower environmental impact, but factors like transport and refrigeration matter.",,"**Vegetables and Fruits** include *Carrots, Spinach, Apples, including Roots and Tubers*  ",,Primary,Sliders,0,45,45,5,%,.0f,,,,,,,,,,,,,,
-w13,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🌿 Other Crops,,seed,Waste Fraction Scenarios by Food Category[OtherCrops],"Includes foods like nuts, sugar, coffee, and oils (palm, soybean, canola). Some have significant land-use impacts, especially tropical crops like palm oil.",,"**Other Crops** include *Oil Crops, Sugar, Nuts, Spices*",,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-ap1,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins,,without,Alternative Proteins Slider 1,,,Fake Value 1,0,Under Construction,Toolkit1,,Primary,Sliders,0,100,100,1,%,.0f,,,,,,,,,,,,,,
-ap2,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins,,without,Alternative Proteins Slider 2,,,Fake Value 2,0,Under Construction,Toolkit2,,Primary,Sliders,0,100,100,1,%,.0f,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-ed2,slider,yes,External Drivers,External Drivers,Emission Trajectories (RCPs),,without,RCP,,,RCP Scenario,0,,"**Representative Concentration Pathways** (RCP) represent different levels of future climate forcing by 2100, from very low (1.9 W/m2) to very high (8.5 W/m2) emissions. <p><p> This serves as a key external driver variable for influencing a wide range of climate impacts including mortality, agricultural productivity and biodiversity.","# Representative Concentration Pathways (RCPs): An Overview
+To estimate baseline food loss and waste across major food categories, we apply average loss rates based on FAO data ([FAO, 2015](https://www.fao.org/save-food/news-and-multimedia/news/news-details/en/c/320086/)). These values represent the proportion of food that is lost or wasted across the supply chain for each category.
+
+The food waste and loss per category is estimated as:
+
+$$
+\text{FLW}_{\text{food}} = \text{TotalSupply}_{\text{food}} \times \text{FLWRate}_{\text{food}}
+$$
+
+**Where:**
+
+- $\text{FLW}_{\text{food}}$: Estimated food waste and loss for a given food category  
+- $\text{TotalSupply}_{\text{food}}$: Total supply of that food category  
+- $\text{FLWRate}_{\text{food}}$: Average food loss and waste rate for that category (from FAO data)
+
+---
+
+### Data Inputs
+
+| Food Category  | FLW Rate |
+|----------------|----------|
+| PasMeat        | 0.20     |
+| CropMeat       | 0.20     |
+| Dairy          | 0.20     |
+| Eggs           | 0.20     |
+| Pulses         | 0.20     |
+| Grains         | 0.30     |
+| VegFruits      | 0.45     |
+| OtherCrops     | 0.20     |
+
+*Source: [FAO (2015)](https://www.fao.org/save-food/news-and-multimedia/news/news-details/en/c/320086/)*
+",Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
+w7,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🍗 Crop Meat,,restaurant_menu,Waste Fraction Scenarios by Food Category[CropMeat],"Meat from animals primarily fed on crops like soy and corn, including chicken and pork. Generally, they have a lower footprint than pasture meats.",,"**Crop Meat** includes *Chicken, Pork, Fish*  ",,,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
+w8,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🥛 Dairy,,local_drink,Waste Fraction Scenarios by Food Category[Dairy],"Products made from milk, such as cheese, yogurt, and butter. Dairy farming contributes to greenhouse gas emissions and water usage.",,"**Dairy** includes *Milk, Cheese, Butter, Cream*  ",,,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
+w9,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🥚 Eggs,,egg_alt,Waste Fraction Scenarios by Food Category[Eggs],"A nutrient-rich food source from poultry, including chicken, duck, and quail eggs. Lower environmental impact compared to meat but still requires feed and water.",,"**Eggs** include *Chicken Eggs, Duck Eggs, Quail Eggs*  ",,,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
+w10,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🌱 Pulses,,spa,Waste Fraction Scenarios by Food Category[Pulses],"Protein-rich plant foods like lentils, beans, and chickpeas. They improve soil health and have a low carbon footprint.",,"**Pulses** include *Lentils, Chickpeas, Black Beans, Kidney Beans, Peas*  ",,,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
+w11,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🌾 Grains,,rice_bowl,Waste Fraction Scenarios by Food Category[Grains],"Staple crops such as wheat, rice, corn, and oats. Widely consumed and essential for global food security, but some require high water usage.",,"**Grains** include *Wheat, Rice, Corn, Oats, Barley, Quinoa*  ",,,Primary,Sliders,0,30,30,5,%,.0f,,,,,,,,,,,,,,
+w12,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🍎🥦 Vegetables and Fruits,,eco,Waste Fraction Scenarios by Food Category[VegFruits],"A diverse group including leafy greens, root vegetables, and berries. Generally have a lower environmental impact, but factors like transport and refrigeration matter.",,"**Vegetables and Fruits** include *Carrots, Spinach, Apples, including Roots and Tubers*  ",,,Primary,Sliders,0,45,45,5,%,.0f,,,,,,,,,,,,,,
+w13,slider,,Food Loss and Waste,Food Loss and Waste,by Food Categories,,without,🌿 Other Crops,,seed,Waste Fraction Scenarios by Food Category[OtherCrops],"Includes foods like nuts, sugar, coffee, and oils (palm, soybean, canola). Some have significant land-use impacts, especially tropical crops like palm oil.",,"**Other Crops** include *Oil Crops, Sugar, Nuts, Spices*",,,Primary,Sliders,0,20,20,5,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ap2,slider,yes,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown main,% Animal Proteins Replaced (by 2050),,,Market Share Multiplier 2050,0,,Replacement % of Animal Foods with APs by Mid Term (Default: 2050),AlternativeProteins.md,"## Alternative Protein Scenario
+*Based on:* Yang, A., Throp, H., & Sherman, S. (2024). How strategic collaboration on the bioeconomy can boost climate and nature action. Chatham House. [https://doi.org/10.55317/9781784136253](https://www.chathamhouse.org/2024/10/how-strategic-collaboration-bioeconomy-can-boost-climate-and-nature-action/04-innovation)
+
+### Overview and Structure 
+The **Alternative Protein Scenario** explores the transition from traditional animal-based proteins to alternative protein technologies. The scenario highlights the technological influences of food production and how they cascade through the agricultural system to influence land use. It allows the exploration of different adoption trajectories and their implications for food system sustainability.
+
+This scenario is structured around four key stages:
+
+1. **Replacement Demand of Animal Proteins with Alternative Proteins**: This are scenario inputs, determining the changing market share of animal proteins replaced by alternative proteins (by 2050 and 2100).
+	* *Animal-based proteins*: [Pasture-based Meat, Crop-based Meat, Dairy, Eggs]
+	* *See below for Replacement Matrix
+2. **Replacement Supply of Alternative Protein Technologies**: This are also scenario input, being able to control the proportion of each animal food that can be met by developing AP technologies.
+	* *Plant-based Proteins* (e.g. soy, pulses, grains)
+	* *Precision Fermentation* (e.g. microbial fermentation to produce dairy and egg analogs)
+	* *Cultivated Meat* (e.g. lab-grown muscle cells)
+	* *See below for Replacement Matrix
+3. **Changing Caloric Demand for Food**: This will be part of the direct ouputs, determining demand for different food categories after replacing animal food with crops that are used for Alternative Proteins technology.
+   * *See below for estimated crop demands for each AP types
+4. **Impacts**: Finally, we examine the wide range of impacts, particularly land use.
+
+### Reference Information
+**Potential Matrix of replacing Animal Proteins with various AP Technology**
+|     | **Plant-based**                                                                  | **Precision Fermentation**                                                         | **Cultivated Meat**                                          |
+|------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| **Pasture-based Meat** | 20-50% replacement (mainly processed/ready meals)                               | 7.5-35% replacement (processed/ready meals and some cuts)                          | 10% of raw cuts, 30% of processed meats                       |
+| **Crop-based Meat**    | 20-25% replacement (processed chicken/pork)                                      | ~5% chicken replacement                                                             | 30% replacement (e.g. chicken breasts)                        |
+| **Dairy**       | 10% of liquid milk, 5% cream, 10% cheese                                         | Up to 90% of milk and cheese, all milk powders                                     | !Cannot replace                                               |
+| **Eggs**               | !Cannot replace                                                                   | Up to 40% of shell eggs (mostly in ingredients, e.g. baking)                       | !Cannot replace                                               |
+
+> *Note*: Plant-based and precision fermentation primarily replace processed foods and ingredient-based uses, while cultivated meat can begin to replace certain whole cuts and **center-of-plate products.
+
+**Feedstock and Crop Demand for Alternative Proteins**
+
+Each technology type shifts demand toward specific crop categories:
+- **Plant-based**: Pulses (peas, lentils), grains (soy, wheat), vegetable oils
+- **Precision Fermentation**: Sugars (glucose, sucrose), microbial substrates (e.g. starches)
+- **Cultivated Meat**: Sugars, amino acids, growth media (often derived from maize, sugarcane, or soy)
+*Based on:* Yang, A., Throp, H., & Sherman, S. (2024). How strategic collaboration on the bioeconomy can boost climate and nature action. Chatham House. [https://doi.org/10.55317/9781784136253](https://www.chathamhouse.org/2024/10/how-strategic-collaboration-bioeconomy-can-boost-climate-and-nature-action/04-innovation)
+
+### Overview and Structure 
+The **Alternative Protein Scenario** explores the transition from traditional animal-based proteins to alternative protein technologies. The scenario highlights the technological influences of food production and how they cascade through the agricultural system to influence land use. It allows the exploration of different adoption trajectories and their implications for food system sustainability.
+
+This scenario is structured around four key stages:
+
+1. **Replacement Demand of Animal Proteins with Alternative Proteins**: This are scenario inputs, determining the changing market share of animal proteins replaced by alternative proteins (by 2050 and 2100).
+	* *Animal-based proteins*: [Pasture-based Meat, Crop-based Meat, Dairy, Eggs]
+	* *See below for Replacement Matrix
+2. **Replacement Supply of Alternative Protein Technologies**: This are also scenario input, being able to control the proportion of each animal food that can be met by developing AP technologies.
+	* *Plant-based Proteins* (e.g. soy, pulses, grains)
+	* *Precision Fermentation* (e.g. microbial fermentation to produce dairy and egg analogs)
+	* *Cultivated Meat* (e.g. lab-grown muscle cells)
+	* *See below for Replacement Matrix
+3. **Changing Caloric Demand for Food**: This will be part of the direct ouputs, determining demand for different food categories after replacing animal food with crops that are used for Alternative Proteins technology.
+   * *See below for estimated crop demands for each AP types
+4. **Impacts**: Finally, we examine the wide range of impacts, particularly land use.
+
+### Reference Information
+**Potential Matrix of replacing Animal Proteins with various AP Technology**
+|     | **Plant-based**                                                                  | **Precision Fermentation**                                                         | **Cultivated Meat**                                          |
+|------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| **Pasture-based Meat** | 20-50% replacement (mainly processed/ready meals)                               | 7.5-35% replacement (processed/ready meals and some cuts)                          | 10% of raw cuts, 30% of processed meats                       |
+| **Crop-based Meat**    | 20-25% replacement (processed chicken/pork)                                      | ~5% chicken replacement                                                             | 30% replacement (e.g. chicken breasts)                        |
+| **Dairy**       | 10% of liquid milk, 5% cream, 10% cheese                                         | Up to 90% of milk and cheese, all milk powders                                     | !Cannot replace                                               |
+| **Eggs**               | !Cannot replace                                                                   | Up to 40% of shell eggs (mostly in ingredients, e.g. baking)                       | !Cannot replace                                               |
+
+> *Note*: Plant-based and precision fermentation primarily replace processed foods and ingredient-based uses, while cultivated meat can begin to replace certain whole cuts and **center-of-plate products.
+
+**Feedstock and Crop Demand for Alternative Proteins**
+
+Each technology type shifts demand toward specific crop categories:
+- **Plant-based**: Pulses (peas, lentils), grains (soy, wheat), vegetable oils
+- **Precision Fermentation**: Sugars (glucose, sucrose), microbial substrates (e.g. starches)
+- **Cultivated Meat**: Sugars, amino acids, growth media (often derived from maize, sugarcane, or soy)",Secondary,Sliders,0,100,0,100,-,.0f,,100,200,,,Off,Reference,,,,,,,
+ap3,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Replacement of 🥩  PasMeat,,,Market share of alternative proteins in 2050[AltPasMeat],0,,,,,Primary,Sliders,0,100,15,5,%,.0f,,,,,,,,,,,,,,
+ap4,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Replacement of 🍗  CropMeat,,,Market share of alternative proteins in 2050[AltCropMeat],0,,,,,Primary,Sliders,0,100,25,5,%,.0f,,,,,,,,,,,,,,
+ap5,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Replacement of 🥛 Dairy,,,Market share of alternative proteins in 2050[AltDairy],0,,,,,Primary,Sliders,0,100,50,5,%,.0f,,,,,,,,,,,,,,
+ap6,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Replacement of 🥚 Eggs,,,Market share of alternative proteins in 2050[Eggs],0,,,,,Primary,Sliders,0,100,5,5,%,.0f,,,,,,,,,,,,,,
+ap7,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Year of Mid Term,,,Year2050,0,,,,,Primary,Sliders,2000,2100,2050,10,-,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ap8,slider,yes,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown main,% Animal Proteins Replaced (by 2100),,,Market Share Multiplier 2100,0,,Replacement % of Animal Foods with APs by End Term (Default: 2100),,,Secondary,Sliders,0,100,0,100,-,.0f,,100,200,,,Off,Reference,,,,,,,
+ap9,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown assumptions,Replacement of 🥩  PasMeat,,,Market share of alternative proteins in 2100[AltPasMeat],0,,,,,Primary,Sliders,0,100,30,5,%,.0f,,,,,,,,,,,,,,
+ap10,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown assumptions,Replacement of 🍗  CropMeat,,,Market share of alternative proteins in 2100[AltCropMeat],0,,,,,Primary,Sliders,0,100,50,5,%,.0f,,,,,,,,,,,,,,
+ap11,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown assumptions,Replacement of 🥛 Dairy,,,Market share of alternative proteins in 2100[AltDairy],0,,,,,Primary,Sliders,0,100,100,5,%,.0f,,,,,,,,,,,,,,
+ap12,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown assumptions,Replacement of 🥚 Eggs,,,Market share of alternative proteins in 2100[Eggs],0,,,,,Primary,Sliders,0,100,5,5,%,.0f,,,,,,,,,,,,,,
+ap13,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown assumptions,Year of End Term,,,Year2100,0,,,,,Primary,Sliders,2000,2100,2100,10,0,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ap15,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥩 PasMeat,,combined2,Plant,,,"Fraction of alternative protein types in the market[AltPasMeat, Plant]",0,,"**Pasture Meat** includes *Beef, Sheep, Goats*  ","What is Plant, What is PrecFerm, What is Cult?",,Primary,Sliders,0,100,80,10,%,.0f,,,,,,,,,,,,,,
+ap16,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥩 PasMeat,,combined2,PrecFerm,,,"Fraction of alternative protein types in the market[AltPasMeat, PrecFerm]",0,,,,,Primary,Sliders,0,100,10,10,%,.0f,,,,,,,,,,,,,,
+ap17,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥩 PasMeat,,combined2,Cult,,,"Fraction of alternative protein types in the market[AltPasMeat, Cult]",0,,,,,Primary,Sliders,0,100,10,10,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ap19,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🍗 CropMeat,,combined2,Plant,,,"Fraction of alternative protein types in the market[AltCropMeat, Plant]",0,,"**Crop Meat** includes *Chicken, Pork, Fish*  ",,,Primary,Sliders,0,100,80,10,%,.0f,,,,,,,,,,,,,,
+ap20,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🍗 CropMeat,,combined2,PrecFerm,,,"Fraction of alternative protein types in the market[AltCropMeat, PrecFerm]",0,,,,,Primary,Sliders,0,100,10,10,%,.0f,,,,,,,,,,,,,,
+ap21,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🍗 CropMeat,,combined2,Cult,,,"Fraction of alternative protein types in the market[AltCropMeat, Cult]",0,,,,,Primary,Sliders,0,100,10,10,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ap23,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥛 Dairy,,combined2,Plant,,,"Fraction of alternative protein types in the market[AltDairy, Plant]",0,,"**Dairy** includes *Milk, Cheese, Butter, Cream*  ",,,Primary,Sliders,0,100,33,10,%,.0f,,,,,,,,,,,,,,
+ap24,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥛 Dairy,,combined2,PrecFerm,,,"Fraction of alternative protein types in the market[AltDairy, PrecFerm]",0,,,,,Primary,Sliders,0,100,67,10,%,.0f,,,,,,,,,,,,,,
+ap25,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥛 Dairy,,combined2,Cult,,,"Fraction of alternative protein types in the market[AltDairy, Cult]",0,,,,,Primary,Sliders,0,100,0,10,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ap27,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥚 Eggs,,combined2,Plant,,,"Fraction of alternative protein types in the market[AltEggs, Plant]",0,,"**Eggs** include *Chicken Eggs, Duck Eggs, Quail Eggs*  ",,,Primary,Sliders,0,100,0,10,%,.0f,,,,,,,,,,,,,,
+ap28,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥚 Eggs,,combined2,PrecFerm,,,"Fraction of alternative protein types in the market[AltEggs, PrecFerm]",0,,,,,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
+ap29,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥚 Eggs,,combined2,Cult,,,"Fraction of alternative protein types in the market[AltEggs, Cult]",0,,,,,Primary,Sliders,0,100,0,10,%,.0f,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ed2,slider,yes,External Drivers,External Drivers,Emission Trajectories (RCPs),,without,RCP,,,RCP Scenario,0,,"**Representative Concentration Pathways** (RCP) represent different levels of future climate forcing by 2100, from very low (1.9 W/m2) to very high (8.5 W/m2) emissions. <p><p> This serves as a key external driver variable for influencing a wide range of climate impacts including mortality, agricultural productivity and biodiversity.",ExternalDrivers_RCP.md,"# Representative Concentration Pathways (RCPs)
 
 Representative Concentration Pathways (RCPs) are greenhouse gas concentration trajectories adopted by the Intergovernmental Panel on Climate Change (IPCC) for its **Fifth Assessment Report (AR5)** in 2014. They serve as standardized scenarios for climate modeling and research, facilitating comparisons across studies by providing consistent assumptions about future **radiative forcing**  -  the difference between incoming solar radiation and the energy radiated back to space  -  measured in **watts per square meter (W/m2)** by the year 2100.
 
@@ -200,5 +371,5 @@ Each RCP includes not just CO? concentrations, but also data on other greenhouse
 
 ## Transition to SSP-RCP Framework
 
-In more recent work, particularly the **Sixth Assessment Report (AR6)**, the RCPs have been paired with **Shared Socioeconomic Pathways (SSPs)** to create a more integrated framework known as the **SSP-RCP matrix**. This combination allows for exploring how socioeconomic developments (like population, GDP, or technological change) interact with climate outcomes.",Secondary,Sliders,0,5,3,1,-,.0f,,1,2,3,4,RCP1.9,RCP2.6,RCP3.4,RCP4.5,RCP6,RCP8.5,,,
-ed1,slider,yes,External Drivers,External Drivers,Socioeconomic Drivers (SSPs),,without,SSP,,,Fake Value 3,0,Under Construction (Awaiting New SSPs) ,"**Shared Socioeconomic Pathways** (SSP) describe alternative future pathways of societal development, including changes in population, economic growth, education, and technology.<p><p> It serve as key external drivers for assessing human vulnerability, adaptive capacity, and the scale of climate impacts and mitigation challenges.",,Secondary,Sliders,0,4,2,1,-,.0f,,1,2,3,4,SSP1,SSP2,SSP3,SSP4,SSP5,,,,
+In more recent work, particularly the **Sixth Assessment Report (AR6)**, the RCPs have been paired with **Shared Socioeconomic Pathways (SSPs)** to create a more integrated framework known as the **SSP-RCP matrix**. This combination allows for exploring how socioeconomic developments (like population, GDP, or technological change) interact with climate outcomes.""",Secondary,Sliders,0,5,3,1,-,.0f,,1,2,3,4,RCP1.9,RCP2.6,RCP3.4,RCP4.5,RCP6,RCP8.5,,,
+ed1,slider,yes,External Drivers,External Drivers,Socioeconomic Drivers (SSPs),,without,SSP,,,Fake Value 3,0,Under Construction (Awaiting New SSPs) ,"**Shared Socioeconomic Pathways** (SSP) describe alternative future pathways of societal development, including changes in population, economic growth, education, and technology.<p><p> It serve as key external drivers for assessing human vulnerability, adaptive capacity, and the scale of climate impacts and mitigation challenges.",,,Secondary,Sliders,0,4,2,1,-,.0f,,1,2,3,4,SSP1,SSP2,SSP3,SSP4,SSP5,,,,
