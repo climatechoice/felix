@@ -40,7 +40,7 @@ p {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 0 8px;
   box-sizing: border-box;
 }
@@ -253,20 +253,34 @@ p {
 
 .scenario-selector-option {
   display: flex;
-  color: rgb(0, 0, 0);
+  color: black;
   width: 100%;
   height: 40px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.1s ease, transform 0.1s ease;
+  transition: background-color 0.2s ease;
   font-size: 16px;
   align-items: center; /* vertical centering for text */
   justify-content: center; /* horizontal centering for text */
+  background-color: #e0e0e0; /* Light grey background */
+}
+
+/* Scenario-1 styles */
+.scenario-selector-option[data-value="Scenario 1"]:hover,
+.scenario-selector-option[data-value="Scenario 1"].selected {
+  background-color: #b19cd9; /* Light purple */
+  color: black;
+}
+
+/* Scenario-2 styles */
+.scenario-selector-option[data-value="Scenario 2"]:hover,
+.scenario-selector-option[data-value="Scenario 2"].selected {
+  background-color: #ffb366; /* Light orange */
+  color: black;
 }
 
 .scenario-selector-option.selected {
-  /* set top/right/bottom to 2px, left to 0 */
-  border-width: 2px 2px 2px 0;
+  border-width: 3px 3px 3px 0;
   border-style: solid;
   border-color: #000;
   box-shadow: 0 0 10px rgba(19, 19, 19, 0.3);
@@ -290,30 +304,6 @@ p {
   border-radius: 6px;
   transition: background-color 0.2s ease;
 }
-
-/* Scenario-1 styles */
-/* .scenario-selector-option[data-value="Scenario 1"] {
-  background-color: #868686;
-}
-.scenario-selector-option[data-value="Scenario 1"]:hover {
-  background-color: #444;
-}
-.scenario-selector-option[data-value="Scenario 1"].selected {
-  border: 2px solid #000;
-  box-shadow: 0 0 10px rgba(19, 19, 19, 0.3);
-} */
-
-/* Scenario-2 styles */
-/* .scenario-selector-option[data-value="Scenario 2"] {
-  background-color: #868686;
-}
-.scenario-selector-option[data-value="Scenario 2"]:hover {
-  background-color: #444;
-}
-.scenario-selector-option[data-value="Scenario 2"].selected {
-  border: 2px solid #8a3c00;
-  box-shadow: 0 0 10px rgba(19, 19, 19, 0.3);
-} */
 
 /* Orange slider highlight colour for Scenario 2 */
 .scenario-2 .slider-rangeHighlight {
@@ -565,12 +555,12 @@ p {
 
 .input-value {
   font-weight: bold;
-  font-size: 1.2em;
+  font-size: 1.1em;
   color: #111;
 }
 
 .input-units {
-  margin-left: 5px;
+  margin-left: 3px;
   font-size: 1em;
   color: #111;
 }
@@ -710,10 +700,25 @@ p {
   cursor: pointer;
   border-radius: 4px;
 }
+
+/* Default active state (for single scenario mode and default values) */
 .segmented-button.active {
   background: #000;
   color: white;
   border-color: #000;
+}
+
+/* Multi-scenario mode styles */
+.multi-scenario .segmented-button.active:not([data-is-default="true"]) {
+  background: #6a3d9a; /* Purple from colors.csv */
+  color: white;
+  border-color: #6a3d9a;
+}
+
+.scenario-2 .segmented-button.active:not([data-is-default="true"]) {
+  background: #e66100; /* Orange from colors.csv */
+  color: white;
+  border-color: #e66100;
 }
 
 /*
@@ -778,9 +783,9 @@ p {
 .tooltip {
   visibility: hidden;
   position: fixed;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
-  padding: 8px 12px;
+  padding: 8px 12px 0px 12px;
   border-radius: 4px;
   font-size: 12px;
   line-height: 1.4;
@@ -868,25 +873,36 @@ p {
  * Toggle Buttons (for switch inputs)
  */
 
+/* Switch Button Container */
 .switch-button-container {
   display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  margin-bottom: 10px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  padding: 6px;
+  gap: 8px;
+  margin: 10px auto 15px auto;
+  width: fit-content;
+  justify-content: center;
 }
 
+/* Switch Buttons */
 .switch-button {
-  padding: 8px 15px;
-  border: 1px solid #ccc;
-  background: #f5f5f5;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 15px;
   cursor: pointer;
-  transition: all 0.1s;
+  transition: all 0.1s ease;
+  background: transparent;
+  color: #666;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
 }
 
 .switch-button.active {
-  background: #000;
+  background: #000000;
   color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /*
@@ -1100,4 +1116,66 @@ p {
   color: #666;
   white-space: nowrap;
   margin-bottom: 4px;
+}
+
+/* App Title */
+.app-title {
+  font-family: "arial", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+  font-size: 26px;
+  color: #2c3e50;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  background: linear-gradient(0deg, #1a1a1a, #7d7d7d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 0 15px;
+  position: relative;
+  display: inline-block;
+}
+
+/* Logo Container */
+.logo-container {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 6px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo-container a {
+  display: flex;
+  align-items: center;
+}
+
+.logo-container img {
+  transition: transform 0.2s ease;
+}
+
+.logo-container img:hover {
+  transform: scale(1.05);
+}
+
+.logo-container .sde-link {
+  font-size: 11px;
+  color: #666;
+  text-decoration: none;
+  margin-left: 4px;
+  padding-left: 8px;
+  border-left: 1px solid #ccc;
+  transition: color 0.2s ease;
+}
+
+.logo-container .sde-link:hover {
+  color: #000;
 }

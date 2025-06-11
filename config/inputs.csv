@@ -1,8 +1,7 @@
 id,input type,segmented,viewid,categoryid,input group,combined,secondary type,label,mui icon,second label,varname,empty,description,hover description,markdown file,extensive description,view level,group name,slider min,slider max,slider/switch default,slider step,units,format,reversed,range 2 start,range 3 start,range 4 start,range 5 start,range 1 label,range 2 label,range 3 label,range 4 label,range 5 label,enabled value,disabled value,controlled input ids,listing label
 dxx,switch,,Diet Change,Diet Change,Diet Change Changes,,without,Population Dynamics,,Global Diet Composition,Global Diet Scenario Switch,0,,"Choose EITHER **Global Diet Composition** OR **Population Dynamics** modes—only one can have an impact at a time.<br><br> The **Global Diet Composition** scenario assumes a future where a new average diet is adopted globally. <br><br> In contrast, the **Population Dynamics** scenario explores a future where there are bottom-up shifts in dietary populations, driven by a range of behavioural factors.",,,Primary,switch,0,1,0,1,-,.0f,,,,,,,,,,,1,0,da;db;dc;dd|d1;d2;d3;d4;d5;d6;d7;d8;d9;d10;d11;d12;d13;d14;d15;d16;d17;d18;d19;d20;d21;d22;d23;d24,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-da,slider,,Diet Change,Diet Change,Change in Average Diets,,without,Target Population,,,Target Percentage for Diet Change,0,,This variable represents the proportion of the global population adopting the new diet.,,,Secondary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
-db,slider,yes,Diet Change,Diet Change,Change in Average Diets,,without,Global Diet Compositions,,,Global Diet Composition Switch,0,Reach out if you'd like us to include more diets!,This is the assumed diet of the global population that maintains traditional eating habits.,DietChange_Global.md,"## Global Diet Change Scenario
+da,slider,yes,Diet Change,Diet Change,Change in Average Diets,,without,Global Diet Compositions,,,Global Diet Composition Switch,0,Reach out if you'd like us to include more diets!,This is the assumed diet of the global population that maintains traditional eating habits.,DietChange_Global.md,"## Global Diet Change Scenario
 
 ### Overview
 This scenario enables the exploration of diets exogenously, examining the impact of the world transitioning towards a specific diet type, which allows for the exploration of a wide range of impacts across health and the environment.
@@ -26,9 +25,10 @@ Here, we provide four dietary compositions in terms of their **caloric compositi
 | **Pulses**      | 2.4               | 6.88            | 4.0                   | 7.1                 |
 | **Grains**      | 47.9              | 29.23           | 43.0                  | 30.0                |
 | **Vegetable & Fruits**   | 8.3               | 11.76           | 12.0                  | 12.1                |
-| **Other Crops**  | 26.0              | 37.45           | 24.0                  | 38.4                |""",Secondary,Sliders,0,4,0,1,-,.0f,,1,2,3,4,Reference,Healthy,Mediterranean,Flexitarian,,,,,
-dc,slider,,Diet Change,Diet Change,Change in Average Diets Time,,combined,Start Year,,,Start Year of Global Diet,0,,,,,Secondary,Sliders,2000,2100,2020,5,-,.0f,,,,,,,,,,,,,,
-dd,slider,,Diet Change,Diet Change,Change in Average Diets Time,,combined,End Year,,,End Year of Global Diet,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,,Secondary,Sliders,2000,2100,2040,5,-,.0f,,,,,,,,,,,,,,
+| **Other Crops**  | 26.0              | 37.45           | 24.0                  | 38.4                |""",Primary,Sliders,0,4,0,1,-,.0f,,1,2,3,4,Reference,Healthy,Mediterranean,Flexitarian,,,,,
+db,slider,,Diet Change,Diet Change,Change in Average Diets Time,,without,Target Population,,,Target Percentage for Diet Change,0,,This variable represents the proportion of the global population adopting the new diet.,,,Secondary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
+dc,slider,,Diet Change,Diet Change,Change in Average Diets Time,,without,Start Year,,,Start Year of Global Diet,0,,,,,Secondary,Sliders,2000,2100,2020,5,-,.0f,,,,,,,,,,,,,,
+dd,slider,,Diet Change,Diet Change,Change in Average Diets Time,,without,End Year,,,End Year of Global Diet,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,,Secondary,Sliders,2000,2100,2040,5,-,.0f,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 d1,slider,,Diet Change,Diet Change,Self Efficacy,,dropdown main,Self Efficacy,lock_open,,Self efficacy aggregated multiplier,0,"If you feel confident in yourself to make dietary changes, you are also more likely to shift toward sustainable eating habits.",**Self Efficacy** refers to an individual's belief in their ability to successfully adopt and maintain a different diet.,DietChange_Dynamic.md,"## Diet Change Population Dynamics Scenario
 <img src=""https://media.springernature.com/m685/springer-static/image/art%3A10.1038%2Fs41893-019-0331-1/MediaObjects/41893_2019_331_Fig1_HTML.png"" alt=""Behavioral Drivers"" style=""float: left; margin: 0 30px 20px 0; width: 350px;"">
@@ -89,7 +89,8 @@ d22,slider,yes,Diet Change,Diet Change,Shifts in Diet Groups 2,,dropdown main,Al
 d23,slider,,Diet Change,Diet Change,Shifts in Diet Groups 2,,dropdown combined,Start Year,,,Start Year of Vegetarian Diet Switch,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,,Secondary,Sliders,2000,2100,2020,1,-,.0f,,,,,,,,,,,,,,
 d24,slider,,Diet Change,Diet Change,Shifts in Diet Groups 2,,dropdown combined,End Year,,,End Year of Vegetarian Diet Switch,0,,,,,Secondary,Sliders,2000,2100,2040,1,-,.0f,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-w22,switch,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Changes,,without,by Food Category,,by Supply Chain,Waste scenario switch,0,,"Choose EITHER **Food Category** OR **Supply Chain modes**—only one can have an impact at a time.<br><br> In the **Food Category** mode, explore food loss and waste fractions across different food types.<br><br> In the **Supply Chain** mode, examine how reducing losses at each stage of the supply chain affects waste levels within various food categories.",,,Primary,switch,0,1,0,1,-,.0f,,,,,,,,,,,1,0,w1;w2;w3;w4;w5|w6;w7;w8;w9;w10;w11;w12;w13,
+w22,switch,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Changes,,without,by Food Category,,by Supply Chain,Waste scenario switch,0,,"Choose EITHER **Food Category** OR **Supply Chain modes**—only one can have an impact at a time.<br><br> In the **Food Category** mode, explore food loss and waste fractions across different food types.<br><br> In the **Supply Chain** mode, examine how reducing losses at each stage of the supply chain affects waste levels within various food categories.",,,Primary,switch,0,1,0,1,-,.0f,,,,,,,,,,,1,0,w23;w1;w2;w3;w4;w5|w6;w7;w8;w9;w10;w11;w12;w13,
+w23,slider,yes,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Changes,,without,Food Loss and Waste,,,Waste Multiplier,0,,,,,Secondary,Sliders,0,100,0,50,-,.0f,,50,100,,,Reference,Half Waste,No Waste,,,,,,
 w20,slider,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Time,,combined,Start Year,,,Start Year of Waste Switch,0,,"This slider controls the start and end year of the food waste scenario, assuming that changes will follow an S-shaped curve.",,,Secondary,Sliders,2000,2100,2020,1,-,.0f,,,,,,,,,,,,,,
 w21,slider,,Food Loss and Waste,Food Loss and Waste,Food Waste & Losses Time,,combined,End Year,,,End Year of Waste Switch,0,,,,,Secondary,Sliders,2000,2100,2040,1,-,.0f,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -281,50 +282,14 @@ This scenario is structured around four key stages:
 Each technology type shifts demand toward specific crop categories:
 - **Plant-based**: Pulses (peas, lentils), grains (soy, wheat), vegetable oils
 - **Precision Fermentation**: Sugars (glucose, sucrose), microbial substrates (e.g. starches)
-- **Cultivated Meat**: Sugars, amino acids, growth media (often derived from maize, sugarcane, or soy)
-*Based on:* Yang, A., Throp, H., & Sherman, S. (2024). How strategic collaboration on the bioeconomy can boost climate and nature action. Chatham House. [https://doi.org/10.55317/9781784136253](https://www.chathamhouse.org/2024/10/how-strategic-collaboration-bioeconomy-can-boost-climate-and-nature-action/04-innovation)
-
-### Overview and Structure 
-The **Alternative Protein Scenario** explores the transition from traditional animal-based proteins to alternative protein technologies. The scenario highlights the technological influences of food production and how they cascade through the agricultural system to influence land use. It allows the exploration of different adoption trajectories and their implications for food system sustainability.
-
-This scenario is structured around four key stages:
-
-1. **Replacement Demand of Animal Proteins with Alternative Proteins**: This are scenario inputs, determining the changing market share of animal proteins replaced by alternative proteins (by 2050 and 2100).
-	* *Animal-based proteins*: [Pasture-based Meat, Crop-based Meat, Dairy, Eggs]
-	* *See below for Replacement Matrix
-2. **Replacement Supply of Alternative Protein Technologies**: This are also scenario input, being able to control the proportion of each animal food that can be met by developing AP technologies.
-	* *Plant-based Proteins* (e.g. soy, pulses, grains)
-	* *Precision Fermentation* (e.g. microbial fermentation to produce dairy and egg analogs)
-	* *Cultivated Meat* (e.g. lab-grown muscle cells)
-	* *See below for Replacement Matrix
-3. **Changing Caloric Demand for Food**: This will be part of the direct ouputs, determining demand for different food categories after replacing animal food with crops that are used for Alternative Proteins technology.
-   * *See below for estimated crop demands for each AP types
-4. **Impacts**: Finally, we examine the wide range of impacts, particularly land use.
-
-### Reference Information
-**Potential Matrix of replacing Animal Proteins with various AP Technology**
-|     | **Plant-based**                                                                  | **Precision Fermentation**                                                         | **Cultivated Meat**                                          |
-|------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| **Pasture-based Meat** | 20-50% replacement (mainly processed/ready meals)                               | 7.5-35% replacement (processed/ready meals and some cuts)                          | 10% of raw cuts, 30% of processed meats                       |
-| **Crop-based Meat**    | 20-25% replacement (processed chicken/pork)                                      | ~5% chicken replacement                                                             | 30% replacement (e.g. chicken breasts)                        |
-| **Dairy**       | 10% of liquid milk, 5% cream, 10% cheese                                         | Up to 90% of milk and cheese, all milk powders                                     | !Cannot replace                                               |
-| **Eggs**               | !Cannot replace                                                                   | Up to 40% of shell eggs (mostly in ingredients, e.g. baking)                       | !Cannot replace                                               |
-
-> *Note*: Plant-based and precision fermentation primarily replace processed foods and ingredient-based uses, while cultivated meat can begin to replace certain whole cuts and **center-of-plate products.
-
-**Feedstock and Crop Demand for Alternative Proteins**
-
-Each technology type shifts demand toward specific crop categories:
-- **Plant-based**: Pulses (peas, lentils), grains (soy, wheat), vegetable oils
-- **Precision Fermentation**: Sugars (glucose, sucrose), microbial substrates (e.g. starches)
-- **Cultivated Meat**: Sugars, amino acids, growth media (often derived from maize, sugarcane, or soy)",Secondary,Sliders,0,100,0,100,-,.0f,,100,200,,,Off,Reference,,,,,,,
+- **Cultivated Meat**: Sugars, amino acids, growth media (often derived from maize, sugarcane, or soy)",Secondary,Sliders,0,100,0,100,-,.0f,,100,200,,,No APs,Reference Goals,,,,,,,
 ap3,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Replacement of 🥩  PasMeat,,,Market share of alternative proteins in 2050[AltPasMeat],0,,,,,Primary,Sliders,0,100,15,5,%,.0f,,,,,,,,,,,,,,
 ap4,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Replacement of 🍗  CropMeat,,,Market share of alternative proteins in 2050[AltCropMeat],0,,,,,Primary,Sliders,0,100,25,5,%,.0f,,,,,,,,,,,,,,
 ap5,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Replacement of 🥛 Dairy,,,Market share of alternative proteins in 2050[AltDairy],0,,,,,Primary,Sliders,0,100,50,5,%,.0f,,,,,,,,,,,,,,
 ap6,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Replacement of 🥚 Eggs,,,Market share of alternative proteins in 2050[Eggs],0,,,,,Primary,Sliders,0,100,5,5,%,.0f,,,,,,,,,,,,,,
 ap7,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins Mid Year,,dropdown assumptions,Year of Mid Term,,,Year2050,0,,,,,Primary,Sliders,2000,2100,2050,10,-,.0f,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-ap8,slider,yes,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown main,% Animal Proteins Replaced (by 2100),,,Market Share Multiplier 2100,0,,Replacement % of Animal Foods with APs by End Term (Default: 2100),,,Secondary,Sliders,0,100,0,100,-,.0f,,100,200,,,Off,Reference,,,,,,,
+ap8,slider,yes,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown main,% Animal Proteins Replaced (by 2100),,,Market Share Multiplier 2100,0,,Replacement % of Animal Foods with APs by End Term (Default: 2100),,,Secondary,Sliders,0,100,0,100,-,.0f,,100,200,,,No APs,Reference Goals,,,,,,,
 ap9,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown assumptions,Replacement of 🥩  PasMeat,,,Market share of alternative proteins in 2100[AltPasMeat],0,,,,,Primary,Sliders,0,100,30,5,%,.0f,,,,,,,,,,,,,,
 ap10,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown assumptions,Replacement of 🍗  CropMeat,,,Market share of alternative proteins in 2100[AltCropMeat],0,,,,,Primary,Sliders,0,100,50,5,%,.0f,,,,,,,,,,,,,,
 ap11,slider,,Alternative Proteins,Alternative Proteins,Alternative Proteins End Year,,dropdown assumptions,Replacement of 🥛 Dairy,,,Market share of alternative proteins in 2100[AltDairy],0,,,,,Primary,Sliders,0,100,100,5,%,.0f,,,,,,,,,,,,,,
@@ -347,7 +312,7 @@ ap27,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥚 Eggs,,co
 ap28,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥚 Eggs,,combined2,PrecFerm,,,"Fraction of alternative protein types in the market[AltEggs, PrecFerm]",0,,,,,Primary,Sliders,0,100,100,10,%,.0f,,,,,,,,,,,,,,
 ap29,slider,,Alternative Proteins,Alternative Proteins,AP Tech for 🥚 Eggs,,combined2,Cult,,,"Fraction of alternative protein types in the market[AltEggs, Cult]",0,,,,,Primary,Sliders,0,100,0,10,%,.0f,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-ed2,slider,yes,External Drivers,External Drivers,Emission Trajectories (RCPs),,without,RCP,,,RCP Scenario,0,,"**Representative Concentration Pathways** (RCP) represent different levels of future climate forcing by 2100, from very low (1.9 W/m2) to very high (8.5 W/m2) emissions. <p><p> This serves as a key external driver variable for influencing a wide range of climate impacts including mortality, agricultural productivity and biodiversity.",ExternalDrivers_RCP.md,"# Representative Concentration Pathways (RCPs)
+ed2,slider,yes,External Drivers,External Drivers,Emission Trajectories (RCPs),,without,RCP,,,RCP Scenario,0,,"**Representative Concentration Pathways** (RCP) represent different levels of future climate forcing by 2100, from very low (1.9 W/m2) to very high (8.5 W/m2) emissions. <p><p> This serves as a key external driver variable for influencing a wide range of climate impacts including mortality, agricultural productivity and biodiversity.",ExternalDrivers_RCP.md,"## Representative Concentration Pathways (RCPs)
 
 Representative Concentration Pathways (RCPs) are greenhouse gas concentration trajectories adopted by the Intergovernmental Panel on Climate Change (IPCC) for its **Fifth Assessment Report (AR5)** in 2014. They serve as standardized scenarios for climate modeling and research, facilitating comparisons across studies by providing consistent assumptions about future **radiative forcing**  -  the difference between incoming solar radiation and the energy radiated back to space  -  measured in **watts per square meter (W/m2)** by the year 2100.
 

@@ -276,37 +276,11 @@ function loadNavBar() {
   $sect1.append($resetAllBtn);
 
   /*
-   * Section 2
+   * Section 2 - Title
    */
   const $sect2 = $('<div class="nav-section second"></div>');
-
-  // Logos link + image
-  const $logo1Link = $(
-    '<a href="https://www.climatechoice.eu/" target="_blank" rel="noopener noreferrer"></a>'
-  );
-  const $logo1Img = $(
-    `<img src="${choiceLogo}" alt="Choice Logo" style="height: 25px;">`
-  );
-
-    const $logo2Link = $(
-    '<a href="https://iiasa.ac.at/" target="_blank" rel="noopener noreferrer"></a>'
-  );
-  const $logo2Img = $(
-    `<img src="${iiasaLogo}" alt="IIASA Logo" style="height: 30px;">`
-  );
-
-    const $logo3Link = $(
-    '<a href="https://iiasa.ac.at/models-tools-data/felix" target="_blank" rel="noopener noreferrer"></a>'
-  );
-  const $logo3Img = $(
-    `<img src="${felixLogo}" alt="FeliX Logo" style="height: 25px;">`
-  );
-
-
-  $logo1Link.append($logo1Img);
-  $logo2Link.append($logo2Img);
-  $logo3Link.append($logo3Img);
-  $sect2.append($logo1Link,$logo2Link,$logo3Link);
+  const $title = $('<div class="app-title">FeliX²</div>');
+  $sect2.append($title);
 
   /*
    * Section 3
@@ -321,7 +295,7 @@ function loadNavBar() {
         (n) => `<option value="${n}" ${
           n == selectedGraphCount ? "selected" : ""
         }>
-                   ${n} graph${n > 1 ? "s" : ""}
+                   ${n} Graph${n > 1 ? "s" : ""}
                  </option>`
       )
       .join("")}
@@ -356,22 +330,13 @@ function loadNavBar() {
     $layoutSelect
   );
 
-  // Language selector
-  const $langSelect = $(`
-    <select>
-      <option value="en">English</option>
-    </select>
-  `);
-  $langSelect.on("change", (e) => console.log(e.target.value));
-  $sect3.append($langSelect);
-
   const $documentationBtn = $("<button>Documentation</button>");
   $documentationBtn.on("click", () => {
     window.open("https://iiasa.github.io/felix_docs/", "_blank");
   });
   $sect3.append($documentationBtn);
 
-  const $bugBtn = $("<button>Submit a bug</button>");
+  const $bugBtn = $("<button>Submit a Bug</button>");
   $bugBtn.on("click", () => {
     window.open("https://github.com/ntantaroudas/choice-web/issues", "_blank");
   });
@@ -391,6 +356,41 @@ function loadNavBar() {
 
   // Final assembly
   $nav.append($sect1, $sect2, $sect3);
+
+  // Add logos to bottom left
+  const $logoContainer = $('<div class="logo-container"></div>');
+  
+  // Logos link + image
+  const $logo1Link = $(
+    '<a href="https://www.climatechoice.eu/" target="_blank" rel="noopener noreferrer"></a>'
+  );
+  const $logo1Img = $(
+    `<img src="${choiceLogo}" alt="Choice Logo" style="height: 20px;">`
+  );
+
+  const $logo2Link = $(
+    '<a href="https://iiasa.ac.at/" target="_blank" rel="noopener noreferrer"></a>'
+  );
+  const $logo2Img = $(
+    `<img src="${iiasaLogo}" alt="IIASA Logo" style="height: 24px;">`
+  );
+
+  const $logo3Link = $(
+    '<a href="https://iiasa.ac.at/models-tools-data/felix" target="_blank" rel="noopener noreferrer"></a>'
+  );
+  const $logo3Img = $(
+    `<img src="${felixLogo}" alt="FeliX Logo" style="height: 20px;">`
+  );
+
+  const $sdeLink = $(
+    '<a href="https://github.com/climateinteractive/SDEverywhere" target="_blank" rel="noopener noreferrer" class="sde-link">Powered by SDEverywhere</a>'
+  );
+
+  $logo1Link.append($logo1Img);
+  $logo2Link.append($logo2Img);
+  $logo3Link.append($logo3Img);
+  $logoContainer.append($logo1Link, $logo2Link, $logo3Link, $sdeLink);
+  $("body").append($logoContainer);
 }
 
 // Function to reset all inputs of the active model
@@ -722,18 +722,17 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
 
   // ——— Segmented buttons ———
   const segmentsContainer = $('<div class="segmented-buttons"/>');
+  const defaultValue = spec.defaultValue || spec.minValue; // Get the actual default value
   spec.rangeLabelKeys.forEach((labelKey, idx) => {
     const targetValue = segmentValues[idx];
+    const isDefaultValue = targetValue === defaultValue; // Check against actual default value
     const btn = $(
-      `<button type="button" class="segmented-button">${str(labelKey)}</button>`
+      `<button type="button" class="segmented-button" data-value="${targetValue}" data-is-default="${isDefaultValue}">${str(labelKey)}</button>`
     );
     if (currentValue === targetValue) btn.addClass("active");
 
     btn.on("click", () => {
-      // console.log("target value is: ", targetValue);
       inputInstance.set(targetValue);
-      // const valueAfterChange = inputInstance.get();
-      // console.log("valueAfterChange: ", valueAfterChange);
       segmentsContainer.find(".segmented-button").removeClass("active");
       btn.addClass("active");
     });
@@ -1010,13 +1009,22 @@ function createDropdownGroup(
 
 $(function () {
   const $container = $("#scenario-selector-container");
-  const maxScenarios = 4; // or whatever limit
+  const maxScenarios = 2; // or whatever limit
+  let isSingleScenarioMode = false; // Flag for single scenario mode
+
+  // Function to check if we're in single scenario mode
+  function checkSingleScenarioMode() {
+    // You can modify this condition based on your requirements
+    // For example, you might want to check a URL parameter, localStorage, or other conditions
+    return isSingleScenarioMode;
+  }
 
   // 1) Inject the first scenario button on load
   addScenarioButton(1);
 
   // 2) "+" button handler
   $container.on("click", "#add-scenario", function () {
+    if (checkSingleScenarioMode()) return; // Don't allow adding scenarios in single mode
     const existing = $container.find(".scenario-selector-option").length;
     const next = existing + 1;
     if (next <= maxScenarios) {
@@ -1026,6 +1034,7 @@ $(function () {
 
   // 3) Delegate selection clicks
   $container.on("click", ".scenario-selector-option", function () {
+    if (checkSingleScenarioMode()) return; // Don't allow changing scenarios in single mode
     const $btn = $(this);
     if ($btn.hasClass("selected")) return;
     $(".scenario-selector-option").removeClass("selected");
@@ -1048,6 +1057,18 @@ $(function () {
     // if it's the very first, select it
     if (n === 1) $btn.addClass("selected");
   }
+
+  // Function to set single scenario mode
+  window.setSingleScenarioMode = function(enabled) {
+    isSingleScenarioMode = enabled;
+    if (enabled) {
+      // Remove all scenario buttons except Scenario 1
+      $(".scenario-selector-option").not("[data-value='Scenario 1']").remove();
+      // Ensure Scenario 1 is selected
+      $(".scenario-selector-option[data-value='Scenario 1']").addClass("selected");
+      updateScenario("Scenario 1");
+    }
+  };
 
   // your existing scenario-change logic
   function updateScenario(selectedScenario) {

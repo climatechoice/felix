@@ -3,6 +3,9 @@
 ### Overview
 Food loss and waste occur across the entire food supply chain - from initial production to final consumption. According to the Food and Agriculture Organization (FAO), **food loss** refers to the decrease in edible food mass that takes place during production, post-harvest, and processing stages - primarily due to infrastructural, logistical, or technical constraints. In contrast, **food waste** occurs at the retail and consumption stages and is often driven by behavioral or economic factors, such as over-purchasing, portion sizes, or the discarding of food that is still safe and edible ([FAO, 2014](http://www.fao.org/platform-food-loss-waste)).
 
+### Supply Chain Stages
+![Drivers of Food Loss and Waste Throughout the Supply Chain](https://champions123.org/sites/default/files/inline-images/drivers-of-food-loss-and-waste-throughout-the-supply-chain.png)
+
 Earlier stages of the supply chain (e.g., primary production and post-harvest) are typically more prone to **food loss**, while the later stages - particularly **consumption** - are where **food waste** is most prevalent. Each stage presents both challenges and opportunities for reducing inefficiencies and improving the sustainability of food systems.
 
 

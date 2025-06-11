@@ -1,4 +1,4 @@
-## Diet Change Population Dynamics
+## Diet Change Population Dynamics Scenario
 <img src="https://media.springernature.com/m685/springer-static/image/art%3A10.1038%2Fs41893-019-0331-1/MediaObjects/41893_2019_331_Fig1_HTML.png" alt="Behavioral Drivers" style="float: left; margin: 0 30px 20px 0; width: 350px;">
 
 *Based on:* Eker, S., Reese, G., Obersteiner, M. (2019). Modelling the drivers of a widespread shift to sustainable diets. *Nature Sustainability*, 2(8), 725-735. [https://doi.org/10.1038/s41893-019-0331-1](https://doi.org/10.1038/s41893-019-0331-1)
