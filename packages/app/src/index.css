@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap');
+
 html,
 body {
   display: flex;
@@ -8,7 +10,11 @@ body {
   overflow: hidden;
   box-sizing: border-box;
   background-color: #fff;
-  font-family: Helvetica, sans-serif;
+  font-family: "arial", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
   font-size: 13px;
 }
 
@@ -612,15 +618,14 @@ p {
 .input-dropdown-group {
   padding: 0px 5px 0px 5px;
   margin: 12px 0;
-  border: 1px solid #989898;
+  border: 1px solid #efefef;
   border-radius: 8px;
   background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.1s ease;
 }
 
 .input-dropdown-group:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* Removed hover shadow effect */
 }
 
 /* Dropdown header containing main input */
@@ -1120,17 +1125,19 @@ p {
 
 /* App Title */
 .app-title {
-  font-family: "arial", sans-serif;
+  font-family: 'Roboto', sans-serif;
+  font-style: italic;
   font-optical-sizing: auto;
   font-weight: 700;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-  font-size: 26px;
-  color: #2c3e50;
+  font-size: 24px;
+  color: #231f20;
   text-align: center;
+  margin: 0;
+  padding: 0;
+  line-height: 50px;
   letter-spacing: 0.5px;
   text-transform: none;
-  background: linear-gradient(0deg, #1a1a1a, #7d7d7d);
+  background: linear-gradient(30deg, #474947, #c1c0c0);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   padding: 0 15px;
@@ -1178,4 +1185,36 @@ p {
 
 .logo-container .sde-link:hover {
   color: #000;
+}
+
+.input-icon {
+  font-size: 20px;
+  vertical-align: middle;
+  margin-right: 8px;
+  color: #666;
+}
+
+.input-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.dropdown-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dropdown-main .material-icons {
+  font-size: 20px;
+  color: #666;
 }

@@ -279,7 +279,7 @@ function loadNavBar() {
    * Section 2 - Title
    */
   const $sect2 = $('<div class="nav-section second"></div>');
-  const $title = $('<div class="app-title">FeliX²</div>');
+  const $title = $('<div class="app-title">FeliXSim</div>');
   $sect2.append($title);
 
   /*
@@ -877,11 +877,20 @@ function addSimpleLabelItem(sliderInput, container = $("#inputs-content")) {
   // and Position it correctly, inside the viewport (!).
   const infoIcon = createInfoIcon(spec.hoverDescription);
 
+  // Create Material Icon element if defined
+  let muiIconElem = null;
+  if (spec.muiIcon) {
+    muiIconElem = $(
+      `<span class="material-icons-two-tone mui-icon">${spec.muiIcon}</span>`
+    );
+  }
+
   // Title + Info Icon container. This should be in the far left.
   const sliderTitleAndInfoContainer = $(
     '<div class="slider-title-and-info-container"/>'
   ).append(
     [
+      muiIconElem,
       $(`<div class="input-title">${str(spec.labelKey)}</div>`),
       infoIcon,
     ].filter((el) => el !== null)
@@ -909,6 +918,7 @@ function createDropdownGroup(
   mainInputSpec,
   assumptionInputs,
   assumptionCombinedSliders,
+  assumptionCombined2Sliders,
   container = $("#inputs-content")
 ) {
   // Add main input
@@ -980,13 +990,42 @@ function createDropdownGroup(
   // Add assumption inputs
   assumptionInputs.forEach((inputSpec) => {
     const input = activeModel.getInputForId(inputSpec.id);
-    if (input.kind === "slider") addSliderItem(input, dropdownContent);
+    if (input.kind === "slider") {
+      if (inputSpec.isSegmented === "yes") {
+        addSegmentedItem(input, dropdownContent);
+      } else {
+        addSliderItem(input, dropdownContent);
+      }
+    }
     else if (input.kind === "switch") addSwitchItem(input, dropdownContent);
   });
 
   // Add assumption combined sliders
   if (assumptionCombinedSliders.length > 0) {
     addCombinedSlider(assumptionCombinedSliders, dropdownContent);
+  }
+
+  // Add assumption combined2 sliders
+  if (assumptionCombined2Sliders.length > 0) {
+    // Group combined2 sliders by their title
+    const combined2Groups = {};
+    assumptionCombined2Sliders.forEach(inputSpec => {
+      const titleMatch = inputSpec.secondaryType.match(/dropdown combined2 \((.*?)\)/);
+      if (titleMatch) {
+        const title = titleMatch[1];
+        if (!combined2Groups[title]) {
+          combined2Groups[title] = [];
+        }
+        combined2Groups[title].push(inputSpec);
+      }
+    });
+
+    // Add each group of combined2 sliders
+    Object.values(combined2Groups).forEach(group => {
+      if (group.length >= 2) {
+        addCombined2Slider(group, dropdownContent);
+      }
+    });
   }
 
   // Toggle handler
@@ -1160,9 +1199,20 @@ function renderInputGroup(
   }
 
   // Handle combined2 sliders
-  if (groupInputs[0]?.secondaryType === "combined2") {
-    addCombined2Slider(groupInputs, container);
-    return;
+  if (groupInputs[0]?.secondaryType?.startsWith("dropdown combined2")) {
+    // Extract the title from secondaryType (format: "dropdown combined2 (title)")
+    const titleMatch = groupInputs[0].secondaryType.match(/dropdown combined2 \((.*?)\)/);
+    if (titleMatch) {
+      const combinedTitle = titleMatch[1];
+      // Find all inputs that share this title
+      const combinedInputs = groupInputs.filter(input => 
+        input.secondaryType === `dropdown combined2 (${combinedTitle})`
+      );
+      if (combinedInputs.length >= 2) {
+        addCombined2Slider(combinedInputs, container);
+        return;
+      }
+    }
   }
 
   // Handle dropdowns
@@ -1170,6 +1220,7 @@ function renderInputGroup(
   let mainInput = null;
   const assumptionInputs = [];
   const assumptionCombinedSliders = [];
+  const assumptionCombined2Sliders = [];
 
   groupInputs.forEach((inputSpec) => {
     if (inputSpec.secondaryType === "without") {
@@ -1183,6 +1234,8 @@ function renderInputGroup(
       assumptionInputs.push(inputSpec);
     } else if (inputSpec.secondaryType === "dropdown combined") {
       assumptionCombinedSliders.push(inputSpec);
+    } else if (inputSpec.secondaryType?.startsWith("dropdown combined2")) {
+      assumptionCombined2Sliders.push(inputSpec);
     }
   });
 
@@ -1192,6 +1245,7 @@ function renderInputGroup(
       mainInput,
       assumptionInputs,
       assumptionCombinedSliders,
+      assumptionCombined2Sliders,
       container
     );
   }
@@ -1686,11 +1740,15 @@ function addCombined2Slider(groupInputs, container = $("#inputs-content")) {
   // Create container
   const div = $(`<div class="input-item combined2-slider-group"/>`);
 
-  // Create title row using the inputGroup value
+  // Extract title from secondaryType
+  const titleMatch = groupInputs[0].secondaryType.match(/dropdown combined2 \((.*?)\)/);
+  const title = titleMatch ? titleMatch[1] : groupInputs[0].inputGroup;
+
+  // Create title row using the extracted title
   const titleRow = $(`
     <div class="input-title-row">
       <div class="slider-title-and-info-container">
-        <div class="input-title">${groupInputs[0].inputGroup}</div>
+        <div class="input-title">${title}</div>
       </div>
     </div>
   `);
