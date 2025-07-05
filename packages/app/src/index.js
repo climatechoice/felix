@@ -15,8 +15,15 @@ import enStrings from "@core-strings/en";
 // import { initOverlay } from "./dev-overlay";
 import { GraphView } from "./graph-view";
 
+// Import markdown files (as raw files)
 const markdownModules = import.meta.glob("./markdowns/*.md", {
   query: "?raw",
+  import: "default",
+});
+
+// Import markdown diagrams as URLs (not raw)
+const imageModules = import.meta.glob("./markdowns/diagrams/*", {
+  eager: true,
   import: "default",
 });
 
@@ -87,6 +94,23 @@ async function loadMarkdownByName(name) {
     return null;
   }
   return await loader(); // Loads and returns the content as string
+}
+
+/*
+ * This function processes the markdown content and
+ * replaces all the relative image paths with the final Vite asset URLs.
+ */
+function resolveLocalImages(mdContent) {
+  // Replace src="diagrams/..." with resolved Vite asset paths
+  return mdContent.replace(/src="diagrams\/([^"]+)"/g, (match, filename) => {
+    const relativePath = `./markdowns/diagrams/${filename}`;
+    const imageUrl = imageModules[relativePath];
+    if (!imageUrl) {
+      console.warn(`Image "${filename}" not found in diagrams folder.`);
+      return match;
+    }
+    return `src="${imageUrl}"`;
+  });
 }
 
 /*
@@ -481,7 +505,8 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
     bookIcon.on("click", async function () {
       const mdContent = await loadMarkdownByName(spec.extensiveDescription);
       if (mdContent) {
-        createPopupBox(mdContent);
+        const resolvedContent = resolveLocalImages(mdContent);
+        createPopupBox(resolvedContent);
       }
     });
 
@@ -717,7 +742,8 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
     bookIcon.on("click", async function () {
       const mdContent = await loadMarkdownByName(spec.extensiveDescription);
       if (mdContent) {
-        createPopupBox(mdContent);
+        const resolvedContent = resolveLocalImages(mdContent);
+        createPopupBox(resolvedContent);
       }
     });
 
