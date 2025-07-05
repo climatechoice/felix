@@ -15,6 +15,11 @@ import enStrings from "@core-strings/en";
 // import { initOverlay } from "./dev-overlay";
 import { GraphView } from "./graph-view";
 
+const markdownModules = import.meta.glob("./markdowns/*.md", {
+  query: "?raw",
+  import: "default",
+});
+
 let model;
 let modelB;
 let activeModel;
@@ -71,6 +76,17 @@ function format(num, formatString) {
     default:
       return num.toString();
   }
+}
+
+/* Function to load markdown file dynamically by name */
+async function loadMarkdownByName(name) {
+  const filePath = `./markdowns/${name}.md`;
+  const loader = markdownModules[filePath];
+  if (!loader) {
+    console.warn(`Markdown file "${name}.md" not found.`);
+    return null;
+  }
+  return await loader(); // Loads and returns the content as string
 }
 
 /*
@@ -462,8 +478,11 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
     <span class="material-icons-two-tone book-popup-icon">menu_book</span>
   `);
 
-    bookIcon.on("click", function () {
-      createPopupBox(spec.extensiveDescription);
+    bookIcon.on("click", async function () {
+      const mdContent = await loadMarkdownByName(spec.extensiveDescription);
+      if (mdContent) {
+        createPopupBox(mdContent);
+      }
     });
 
     iconContainer.append(bookIcon);
@@ -695,8 +714,11 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
     <span class="material-icons-two-tone book-popup-icon">menu_book</span>
   `);
 
-    bookIcon.on("click", function () {
-      createPopupBox(spec.extensiveDescription);
+    bookIcon.on("click", async function () {
+      const mdContent = await loadMarkdownByName(spec.extensiveDescription);
+      if (mdContent) {
+        createPopupBox(mdContent);
+      }
     });
 
     iconContainer.append(bookIcon);
