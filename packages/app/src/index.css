@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap");
 
 html,
 body {
@@ -624,9 +624,9 @@ p {
   transition: all 0.1s ease;
 }
 
-.input-dropdown-group:hover {
-  /* Removed hover shadow effect */
-}
+/* Removed hover shadow effect from input-dropdown-group */
+/* .input-dropdown-group:hover {
+} */
 
 /* Dropdown header containing main input */
 /* .dropdown-header {
@@ -907,7 +907,7 @@ p {
 .switch-button.active {
   background: #000000;
   color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /*
@@ -1125,7 +1125,7 @@ p {
 
 /* App Title */
 .app-title {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-style: italic;
   font-optical-sizing: auto;
   font-weight: 700;
@@ -1139,6 +1139,7 @@ p {
   text-transform: none;
   background: linear-gradient(30deg, #474947, #c1c0c0);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   padding: 0 15px;
   position: relative;

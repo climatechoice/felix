@@ -177,7 +177,7 @@ function createPopupBox(extensiveText) {
   popup.prepend(closeBtn);
   overlay.append(popup);
   $("body").append(overlay);
-      
+
   return overlay;
 }
 
@@ -242,14 +242,16 @@ function loadNavBar() {
     document.body.classList.toggle("multi-scenario", isOn);
     // update the label
     $modeLabel.text(isOn ? "Multi-scenario mode" : "Single-scenario mode");
-    
+
     // Refresh all sliders to update their colors
-    $(".slider").each(function() {
-      const slider = $(this).data('slider');
+    $(".slider").each(function () {
+      const slider = $(this).data("slider");
       if (slider) {
         const currentValue = slider.getValue();
         const defaultValue = slider.options.rangeHighlights[0].start;
-        slider.setAttribute("rangeHighlights", [{ start: defaultValue, end: currentValue }]);
+        slider.setAttribute("rangeHighlights", [
+          { start: defaultValue, end: currentValue },
+        ]);
       }
     });
   });
@@ -359,7 +361,7 @@ function loadNavBar() {
 
   // Add logos to bottom left
   const $logoContainer = $('<div class="logo-container"></div>');
-  
+
   // Logos link + image
   const $logo1Link = $(
     '<a href="https://www.climatechoice.eu/" target="_blank" rel="noopener noreferrer"></a>'
@@ -727,7 +729,9 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
     const targetValue = segmentValues[idx];
     const isDefaultValue = targetValue === defaultValue; // Check against actual default value
     const btn = $(
-      `<button type="button" class="segmented-button" data-value="${targetValue}" data-is-default="${isDefaultValue}">${str(labelKey)}</button>`
+      `<button type="button" class="segmented-button" data-value="${targetValue}" data-is-default="${isDefaultValue}">${str(
+        labelKey
+      )}</button>`
     );
     if (currentValue === targetValue) btn.addClass("active");
 
@@ -858,6 +862,148 @@ function addCombinedSlider(groupInputs, container) {
     startInput.set(startValue);
     endInput.set(endValue);
   });
+}
+
+function addCombined2Slider(groupInputs, container = $("#inputs-content")) {
+  if (groupInputs.length < 2) {
+    console.error("Combined2 slider group must contain at least 2 sliders");
+    return;
+  }
+
+  // Check for duplicates
+  if (groupInputs.some((spec) => addedSliderIds.has(spec.id))) {
+    return;
+  }
+  groupInputs.forEach((spec) => addedSliderIds.add(spec.id));
+
+  // Get input instances
+  const inputs = groupInputs.map((spec) => activeModel.getInputForId(spec.id));
+
+  // Get hover description and normal description from first spec that has it
+  const hoverDescription = groupInputs.find(
+    (spec) => spec.hoverDescription
+  )?.hoverDescription;
+  const description = groupInputs.find(
+    (spec) => spec.descriptionKey
+  )?.descriptionKey;
+
+  const infoIcon = createInfoIcon(hoverDescription);
+
+  // Create container
+  const div = $(`<div class="input-item combined2-slider-group"/>`);
+
+  // Extract title from secondaryType
+  const titleMatch = groupInputs[0].secondaryType.match(
+    /dropdown combined2 \((.*?)\)/
+  );
+  const title = titleMatch ? titleMatch[1] : groupInputs[0].inputGroup;
+
+  // Create title row using the extracted title
+  const titleRow = $(`
+    <div class="input-title-row">
+      <div class="slider-title-and-info-container">
+        <div class="input-title">${title}</div>
+      </div>
+    </div>
+  `);
+
+  // Add info icon to title container
+  titleRow.find(".slider-title-and-info-container").append(infoIcon);
+
+  // Create the single range slider with inline labels
+  const sliderId = `combined2-${groupInputs[0].id}`;
+  const sliderContainer = $(`
+    <div class="combined2-slider-container">
+      <div class="slider-with-labels">
+        <div class="inline-labels names">
+          ${groupInputs
+            .map((spec, i) => {
+              const position = (i * 100) / (groupInputs.length - 1);
+              return `
+              <div class="inline-label" data-index="${i}" style="top: 0; left: ${position}%">
+                <span class="label-text">${str(spec.labelKey)}</span>
+              </div>
+            `;
+            })
+            .join("")}
+        </div>
+        <div class="input-slider-row">
+          <input id="${sliderId}" class="slider" type="text"/>
+        </div>
+        <div class="inline-labels values">
+          ${groupInputs
+            .map((spec, i) => {
+              const position = (i * 100) / (groupInputs.length - 1);
+              return `
+              <div class="inline-label" data-index="${i}" style="bottom: 0; left: ${position}%">
+                <span class="label-value">${inputs[i].get()}%</span>
+              </div>
+            `;
+            })
+            .join("")}
+        </div>
+      </div>
+    </div>
+  `);
+
+  // Add description if available
+  const descRow = $(
+    `<div class="input-desc">${description ? str(description) : ""}</div>`
+  );
+
+  // Assemble the UI
+  div.append(titleRow, sliderContainer, descRow);
+  container.append(div);
+
+  // Initialize the range slider
+  const slider = new Slider(`#${sliderId}`, {
+    min: 0,
+    max: 100,
+    value: groupInputs.slice(0, -1).map((_, i) => {
+      // Calculate cumulative values for the knobs
+      return inputs
+        .slice(0, i + 1)
+        .reduce((sum, input) => sum + input.get(), 0);
+    }),
+    range: true,
+    tooltip: "hide",
+    step: 1,
+    selection: "none",
+  });
+
+  // Function to update segment values and display
+  function updateSegments(values) {
+    // Calculate segment values
+    const segments = [];
+    let lastValue = 0;
+    values.forEach((value) => {
+      segments.push(value - lastValue);
+      lastValue = value;
+    });
+    segments.push(100 - lastValue); // Last segment
+
+    // Update model values
+    segments.forEach((value, i) => {
+      inputs[i].set(value);
+    });
+
+    // Update segment labels
+    segments.forEach((value, i) => {
+      sliderContainer
+        .find(
+          `.inline-labels.values .inline-label[data-index="${i}"] .label-value`
+        )
+        .text(`${value}%`);
+    });
+  }
+
+  // Add change handler
+  slider.on("change", (change) => {
+    updateSegments(change.newValue);
+  });
+
+  // Initial update
+  updateSegments(slider.getValue());
 }
 
 /*
@@ -996,8 +1142,7 @@ function createDropdownGroup(
       } else {
         addSliderItem(input, dropdownContent);
       }
-    }
-    else if (input.kind === "switch") addSwitchItem(input, dropdownContent);
+    } else if (input.kind === "switch") addSwitchItem(input, dropdownContent);
   });
 
   // Add assumption combined sliders
@@ -1009,8 +1154,10 @@ function createDropdownGroup(
   if (assumptionCombined2Sliders.length > 0) {
     // Group combined2 sliders by their title
     const combined2Groups = {};
-    assumptionCombined2Sliders.forEach(inputSpec => {
-      const titleMatch = inputSpec.secondaryType.match(/dropdown combined2 \((.*?)\)/);
+    assumptionCombined2Sliders.forEach((inputSpec) => {
+      const titleMatch = inputSpec.secondaryType.match(
+        /dropdown combined2 \((.*?)\)/
+      );
       if (titleMatch) {
         const title = titleMatch[1];
         if (!combined2Groups[title]) {
@@ -1021,7 +1168,7 @@ function createDropdownGroup(
     });
 
     // Add each group of combined2 sliders
-    Object.values(combined2Groups).forEach(group => {
+    Object.values(combined2Groups).forEach((group) => {
       if (group.length >= 2) {
         addCombined2Slider(group, dropdownContent);
       }
@@ -1098,13 +1245,15 @@ $(function () {
   }
 
   // Function to set single scenario mode
-  window.setSingleScenarioMode = function(enabled) {
+  window.setSingleScenarioMode = function (enabled) {
     isSingleScenarioMode = enabled;
     if (enabled) {
       // Remove all scenario buttons except Scenario 1
       $(".scenario-selector-option").not("[data-value='Scenario 1']").remove();
       // Ensure Scenario 1 is selected
-      $(".scenario-selector-option[data-value='Scenario 1']").addClass("selected");
+      $(".scenario-selector-option[data-value='Scenario 1']").addClass(
+        "selected"
+      );
       updateScenario("Scenario 1");
     }
   };
@@ -1191,22 +1340,26 @@ function renderInputGroup(
   groupInputs,
   container = $("#inputs-content")
 ) {
-  // Handle combined sliders first
+  // Handle "standalone" combined sliders first
   if (groupInputs[0]?.secondaryType === "combined") {
     // ! check what happens here when container is not $("#inputs-content")
     addCombinedSlider(groupInputs, container);
     return;
   }
 
-  // Handle combined2 sliders
+  // TODO: These should be similar to the above, where we only check if secondaryType === "combined2".
+  // Handle "standalone" combined2 sliders
   if (groupInputs[0]?.secondaryType?.startsWith("dropdown combined2")) {
     // Extract the title from secondaryType (format: "dropdown combined2 (title)")
-    const titleMatch = groupInputs[0].secondaryType.match(/dropdown combined2 \((.*?)\)/);
+    const titleMatch = groupInputs[0].secondaryType.match(
+      /dropdown combined2 \((.*?)\)/
+    );
     if (titleMatch) {
       const combinedTitle = titleMatch[1];
       // Find all inputs that share this title
-      const combinedInputs = groupInputs.filter(input => 
-        input.secondaryType === `dropdown combined2 (${combinedTitle})`
+      const combinedInputs = groupInputs.filter(
+        (input) =>
+          input.secondaryType === `dropdown combined2 (${combinedTitle})`
       );
       if (combinedInputs.length >= 2) {
         addCombined2Slider(combinedInputs, container);
@@ -1715,127 +1868,3 @@ async function initApp() {
 
 // Initialize the app when this script is loaded
 initApp();
-
-function addCombined2Slider(groupInputs, container = $("#inputs-content")) {
-  if (groupInputs.length < 2) {
-    console.error("Combined2 slider group must contain at least 2 sliders");
-    return;
-  }
-
-  // Check for duplicates
-  if (groupInputs.some(spec => addedSliderIds.has(spec.id))) {
-    return;
-  }
-  groupInputs.forEach(spec => addedSliderIds.add(spec.id));
-
-  // Get input instances
-  const inputs = groupInputs.map(spec => activeModel.getInputForId(spec.id));
-  
-  // Get hover description and normal description from first spec that has it
-  const hoverDescription = groupInputs.find(spec => spec.hoverDescription)?.hoverDescription;
-  const description = groupInputs.find(spec => spec.descriptionKey)?.descriptionKey;
-
-  const infoIcon = createInfoIcon(hoverDescription);
-
-  // Create container
-  const div = $(`<div class="input-item combined2-slider-group"/>`);
-
-  // Extract title from secondaryType
-  const titleMatch = groupInputs[0].secondaryType.match(/dropdown combined2 \((.*?)\)/);
-  const title = titleMatch ? titleMatch[1] : groupInputs[0].inputGroup;
-
-  // Create title row using the extracted title
-  const titleRow = $(`
-    <div class="input-title-row">
-      <div class="slider-title-and-info-container">
-        <div class="input-title">${title}</div>
-      </div>
-    </div>
-  `);
-
-  // Add info icon to title container
-  titleRow.find(".slider-title-and-info-container").append(infoIcon);
-
-  // Create the single range slider with inline labels
-  const sliderId = `combined2-${groupInputs[0].id}`;
-  const sliderContainer = $(`
-    <div class="combined2-slider-container">
-      <div class="slider-with-labels">
-        <div class="inline-labels names">
-          ${groupInputs.map((spec, i) => {
-            const position = (i * 100) / (groupInputs.length - 1);
-            return `
-              <div class="inline-label" data-index="${i}" style="top: 0; left: ${position}%">
-                <span class="label-text">${str(spec.labelKey)}</span>
-              </div>
-            `;
-          }).join('')}
-        </div>
-        <div class="input-slider-row">
-          <input id="${sliderId}" class="slider" type="text"/>
-        </div>
-        <div class="inline-labels values">
-          ${groupInputs.map((spec, i) => {
-            const position = (i * 100) / (groupInputs.length - 1);
-            return `
-              <div class="inline-label" data-index="${i}" style="bottom: 0; left: ${position}%">
-                <span class="label-value">${inputs[i].get()}%</span>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    </div>
-  `);
-
-  // Add description if available
-  const descRow = $(`<div class="input-desc">${description ? str(description) : ""}</div>`);
-
-  // Assemble the UI
-  div.append(titleRow, sliderContainer, descRow);
-  container.append(div);
-
-  // Initialize the range slider
-  const slider = new Slider(`#${sliderId}`, {
-    min: 0,
-    max: 100,
-    value: groupInputs.slice(0, -1).map((_, i) => {
-      // Calculate cumulative values for the knobs
-      return inputs.slice(0, i + 1).reduce((sum, input) => sum + input.get(), 0);
-    }),
-    range: true,
-    tooltip: "hide",
-    step: 1,
-    selection: "none"
-  });
-
-  // Function to update segment values and display
-  function updateSegments(values) {
-    // Calculate segment values
-    const segments = [];
-    let lastValue = 0;
-    values.forEach(value => {
-      segments.push(value - lastValue);
-      lastValue = value;
-    });
-    segments.push(100 - lastValue); // Last segment
-
-    // Update model values
-    segments.forEach((value, i) => {
-      inputs[i].set(value);
-    });
-
-    // Update segment labels
-    segments.forEach((value, i) => {
-      sliderContainer.find(`.inline-labels.values .inline-label[data-index="${i}"] .label-value`).text(`${value}%`);
-    });
-  }
-
-  // Add change handler
-  slider.on("change", (change) => {
-    updateSegments(change.newValue);
-  });
-
-  // Initial update
-  updateSegments(slider.getValue());
-}
