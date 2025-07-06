@@ -326,6 +326,16 @@ function loadNavBar() {
   $resetAllBtn.on("click", () => resetAllModelsInputs());
   $sect1.append($resetAllBtn);
 
+  // Show input changes summary button
+  const $showChangedInputsBtn = $(`
+    <button>
+      <span class="material-icons">summarize</span>
+      <span>Summary</span>
+    </button>
+  `);
+  $showChangedInputsBtn.on("click", () => showChangedInputs());
+  $sect1.append($showChangedInputsBtn);
+
   /*
    * Section 2 - Title
    */
@@ -476,6 +486,89 @@ function resetAllModelsInputs() {
     "value"
   );
   initInputsUI(selectedCategory);
+}
+
+/*
+ * Finds which inputs have been changed for each model instance,
+ * creates a markdown table with these changes and shows a popup
+ * with the table.
+ */
+function showChangedInputs() {
+  const modelInstances = [model, modelB];
+  const allChanged = modelInstances.map((modelInstance, index) => {
+    const changedInputs = [];
+
+    coreConfig.inputs.forEach((spec) => {
+      const input = modelInstance.getInputForId(spec.id);
+      if (!input) return;
+
+      const currentValue = input.get();
+      const defaultValue = spec.defaultValue;
+
+      if (currentValue !== defaultValue) {
+        changedInputs.push(formatInputChange(spec, defaultValue, currentValue));
+      }
+    });
+
+    return changedInputs;
+  });
+
+  const markdownTable = createSummaryMarkdownTable(
+    allChanged[0],
+    allChanged[1]
+  );
+  // we use the existing createPopupBox function
+  createPopupBox(markdownTable);
+}
+
+// Function to handle the presentation format of the input change for all kinds of inputs.
+function formatInputChange(spec, defaultValue, currentValue) {
+  const label = `**${str(spec.labelKey)}**`;
+  // if input slider is a segmented button, then show the labels, not the ranges' number values.
+  if (spec.isSegmented === "yes" && Array.isArray(spec.rangeLabelKeys)) {
+    const segmentValues = buildSegmentValues(spec);
+    const valueToLabel = segmentValues.reduce((acc, val, idx) => {
+      acc[val] = str(spec.rangeLabelKeys[idx]);
+      return acc;
+    }, {});
+    const formattedDefault = valueToLabel[defaultValue] ?? defaultValue;
+    const formattedCurrent = valueToLabel[currentValue] ?? currentValue;
+    return `${label}: ${formattedDefault} → ${formattedCurrent}`;
+  }
+
+  return `${label}: ${defaultValue} → ${currentValue}`;
+}
+
+// Helper function to generate segment value list
+function buildSegmentValues(spec) {
+  let values = [spec.minValue, ...spec.rangeDividers];
+  if (values.length < spec.rangeLabelKeys.length) {
+    values.push(spec.maxValue);
+  }
+  return values.slice(0, spec.rangeLabelKeys.length);
+}
+
+/*
+ * Function that creates and returns markdown which contains a table
+ * with all the changed inputs for both models.
+ */
+
+function createSummaryMarkdownTable(model1Changes, model2Changes) {
+  const maxRows = Math.max(model1Changes.length, model2Changes.length);
+  const lines = [];
+
+  lines.push("## Summary of input changes");
+
+  lines.push("| Model 1 | Model 2 |");
+  lines.push("| ------- | ------- |");
+
+  for (let i = 0; i < maxRows; i++) {
+    const cell1 = model1Changes[i] || "";
+    const cell2 = model2Changes[i] || "";
+    lines.push(`| ${cell1} | ${cell2} |`);
+  }
+
+  return lines.join("\n");
 }
 
 /*
