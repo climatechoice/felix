@@ -1343,10 +1343,22 @@ function createDropdownGroup(
  * Initialize the UI for the inputs menu and panel.
  */
 
-$(function () {
+function initScenarioSelectorUI() {
   const $container = $("#scenario-selector-container");
   const maxScenarios = 2; // or whatever limit
   let isSingleScenarioMode = false; // Flag for single scenario mode
+
+  // Create the "+" button
+  const $addBtn = $(`
+    <button id="add-scenario" class="add-scenario-btn">
+      <span class="material-icons">add</span>
+    </button>
+  `);
+
+  const $infoContainer = $('<div id="scenario-info-container"></div>'); // ! not being used at the moment
+
+  // Append "+" button and info container to scenario container
+  $container.append($addBtn, $infoContainer);
 
   // Function to check if we're in single scenario mode
   function checkSingleScenarioMode() {
@@ -1426,7 +1438,7 @@ $(function () {
     );
     initInputsUI(selectedCategory);
   }
-});
+}
 
 // jquery Click event for Selecting Input Category (Diet Change, Food Waste, Alternative Protein)
 $("#input-category-selector-container").on(
@@ -1982,6 +1994,7 @@ async function initApp() {
   const defaultInputCategory =
     inputCategories.values().next().value || "Diet Change";
 
+  initScenarioSelectorUI(); // this is the side-bar on the left
   initGraphsUI(defaultGraphCategory); // default layout contains 4 graphs
   initInputsUI(defaultInputCategory);
 
