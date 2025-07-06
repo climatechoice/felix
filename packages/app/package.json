@@ -18,7 +18,9 @@
     "chart.js": "^2.9.4",
     "chartjs-plugin-annotation": "0.5.7",
     "jquery": "^3.5.1",
+    "katex": "^0.16.22",
     "marked": "^15.0.11",
+    "marked-katex-extension": "^5.1.5",
     "material-icons": "^1.13.14"
   },
   "devDependencies": {

@@ -3,6 +3,9 @@ import Slider from "bootstrap-slider";
 import "bootstrap-slider/dist/css/bootstrap-slider.css";
 import "material-icons/iconfont/material-icons.css";
 import { marked } from "marked";
+import katexExtension from "marked-katex-extension";
+import "katex/dist/katex.min.css"; // Import KaTeX CSS
+
 import "./index.css";
 
 import choiceLogo from "./imgs/choice-png.png";
@@ -26,6 +29,12 @@ const imageModules = import.meta.glob("./markdowns/diagrams/*", {
   eager: true,
   import: "default",
 });
+
+/*
+ * Here, we tell marked to use KaTeX in order to
+ * render latex equations in markdown files correctly.
+ */
+marked.use(katexExtension());
 
 let model;
 let modelB;

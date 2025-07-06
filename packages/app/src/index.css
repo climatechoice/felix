@@ -874,6 +874,29 @@ p {
   padding: 1px;
 }
 
+/* Styles for Tables inside popups */
+.popup table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.popup th,
+.popup td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.popup th {
+  background-color: #f5f5f5;
+}
+
+/* Styles for links (urls) inside popups */
+.popup a {
+  color: #3fc51d;
+}
+
 /*
  * Toggle Buttons (for switch inputs)
  */
