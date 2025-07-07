@@ -192,7 +192,7 @@ function createInfoIcon(hoverText) {
 /*
  * Function to add Popup Box w/ extensive Markdown Description
  */
-function createPopupBox(extensiveText) {
+function createPopupBox(extensiveText, position = "middle") {
   if (!extensiveText) return null;
 
   // Remove any existing popup
@@ -204,8 +204,8 @@ function createPopupBox(extensiveText) {
   // Create overlay
   const overlay = $('<div class="popup-overlay">');
 
-  // Create popup box
-  const popup = $('<div class="popup">').html(parsedHTML);
+  // Create popup box, with "position" class added dynamically
+  const popup = $(`<div class="popup popup-${position}">`).html(parsedHTML);
 
   // Add close button with Material Icon
   const closeBtn = $(`
@@ -518,7 +518,8 @@ function showChangedInputs() {
     allChanged[1]
   );
   // we use the existing createPopupBox function
-  createPopupBox(markdownTable);
+  // use position = left for this popup
+  createPopupBox(markdownTable, "left");
 }
 
 // Function to handle the presentation format of the input change for all kinds of inputs.
