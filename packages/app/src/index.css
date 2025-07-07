@@ -825,7 +825,7 @@ p {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -836,28 +836,32 @@ p {
   background: white;
   color: black;
   width: 55vw;
-  max-height: 80vh;
+
   overflow-y: auto;
   /* So that padding is included inside, and therefore popup-left is aligned with input panel */
   box-sizing: border-box;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   position: relative;
   z-index: 1001;
 }
 
 .popup-middle {
   margin: 0 auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  max-height: 80vh;
 }
 
 .popup-left {
-  margin-left: 0;
-  margin-right: auto;
-  align-self: flex-start;
-  margin-top: 40px; /* same as nav-bar */
+  position: fixed; /* important */
+  top: 40px;
+  left: 0;
+  margin: 0;
   width: 33.333vw;
-  max-height: 95vh;
+  height: 95vh;
+  border-width: 0 1px 0 0;
+  border-style: solid;
+  border-color: #c9c9c9;
 }
 
 .popup-right {

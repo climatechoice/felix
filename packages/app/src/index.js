@@ -191,18 +191,17 @@ function createInfoIcon(hoverText) {
 
 /*
  * Function to add Popup Box w/ extensive Markdown Description
+ * and position, which can be "left", "middle" (default), "right".
+ * When position = "left", no popup-overlay is added.
  */
 function createPopupBox(extensiveText, position = "middle") {
   if (!extensiveText) return null;
 
-  // Remove any existing popup
-  $(".popup-overlay").remove();
+  // Remove any existing popup or overlay
+  $(".popup-overlay, .popup").remove();
 
   // Parse Markdown to HTML
   const parsedHTML = marked.parse(extensiveText);
-
-  // Create overlay
-  const overlay = $('<div class="popup-overlay">');
 
   // Create popup box, with "position" class added dynamically
   const popup = $(`<div class="popup popup-${position}">`).html(parsedHTML);
@@ -213,6 +212,24 @@ function createPopupBox(extensiveText, position = "middle") {
       <span class="material-icons">close</span>
     </button>
   `);
+  // Always remove the popup itself when X is clicked
+  closeBtn.on("click", () => popup.remove());
+  popup.prepend(closeBtn);
+
+  // If "left", skip overlay entirely
+  // TODO: perhaps add position === "right" here
+  if (position === "left") {
+    // Append the popup directly, no overlay, so clicks pass through
+    $("body").append(popup);
+    return popup;
+  }
+
+  // otherwise (middle/right popups) stay the same.
+
+  // Create overlay
+  const overlay = $('<div class="popup-overlay">');
+
+  // Remove the overlay when clicking the X button
   closeBtn.on("click", () => overlay.remove());
 
   // Close on clicking outside the popup
@@ -223,7 +240,6 @@ function createPopupBox(extensiveText, position = "middle") {
   });
 
   // Assemble and show popup
-  popup.prepend(closeBtn);
   overlay.append(popup);
   $("body").append(overlay);
 
