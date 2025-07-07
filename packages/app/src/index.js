@@ -557,9 +557,9 @@ function createSummaryMarkdownTable(model1Changes, model2Changes) {
   const maxRows = Math.max(model1Changes.length, model2Changes.length);
   const lines = [];
 
-  lines.push("## Summary of input changes");
+  lines.push("## Summary of Scenario Inputs");
 
-  lines.push("| Model 1 | Model 2 |");
+  lines.push("| Scenario 1 🟪 | Scenario 2 🟧 |");
   lines.push("| ------- | ------- |");
 
   for (let i = 0; i < maxRows; i++) {
