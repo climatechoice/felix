@@ -21,28 +21,6 @@ import { GraphView } from "./graph-view";
 // TODO: All store imports will go here:
 import { selectedGraphCount, layoutConfig } from "./stores/graph-store";
 
-// ! removed these, since they're defined in the graph-store now.
-// /*
-//  * These are the Graph Layout definitions.
-//  * New entries can easily be added here for whichever number of graphs
-//  * to show. Simply:
-//  * 1) define the number of graphs (N), the amount of rows, and the amount of columns
-//  * 2) add a new #graphs-container.graphs-N .graph-container
-//  *    class in index.css where you define the vh and vw of each graph-container
-//  */
-// const layoutConfig = {
-//   1: { rows: 1, cols: 1 },
-//   2: { rows: 1, cols: 2 },
-//   4: { rows: 2, cols: 2 },
-//   6: { rows: 2, cols: 3 },
-//   9: { rows: 3, cols: 3 },
-//   // 16: { rows: 4, cols: 4 },
-// };
-
-// // default layout contains 4 graphs
-
-// let selectedGraphCount = 4;
-
 // Import markdown files (as raw files)
 const markdownModules = import.meta.glob("./markdowns/*.md", {
   query: "?raw",
@@ -298,33 +276,20 @@ function loadNavBar() {
 
   // Toggle switch
   const $toggleSwitch = $(`
-    <label class="toggle-switch">
-      <input type="checkbox">
-      <span class="slider"></span>
-    </label>
-  `);
+  <label class="toggle-switch">
+    <input type="checkbox">
+    <span class="slider"></span>
+  </label>
+`);
   // Mode text
   const $modeLabel = $('<span class="mode-label">Single-scenario mode</span>');
-  $toggleSwitch.find("input").on("change", function () {
-    const isOn = this.checked;
-    $("#inputs-graphs-section").toggleClass("expanded", isOn);
-    // Add/remove multi-scenario class to body
-    document.body.classList.toggle("multi-scenario", isOn);
-    // update the label
-    $modeLabel.text(isOn ? "Multi-scenario mode" : "Single-scenario mode");
 
-    // Refresh all sliders to update their colors
-    $(".slider").each(function () {
-      const slider = $(this).data("slider");
-      if (slider) {
-        const currentValue = slider.getValue();
-        const defaultValue = slider.options.rangeHighlights[0].start;
-        slider.setAttribute("rangeHighlights", [
-          { start: defaultValue, end: currentValue },
-        ]);
-      }
-    });
-  });
+  // Attach event listener
+  $toggleSwitch
+    .find("input")
+    .on("change", (e) => handleModeToggle(e, $modeLabel));
+
+  // Append to section
   $sect1.append($toggleSwitch, $modeLabel);
 
   // Reset current scenario button
@@ -408,7 +373,7 @@ function loadNavBar() {
     const selectedCategory = $(".graph-category-selector-option.selected").data(
       "value"
     );
-    // TODO: should this also get updated from selectedGraphCount to selectedGraphCount.get() ??
+
     console.log(
       "Nanostore value of selectedGraphCount: ",
       selectedGraphCount.get()
@@ -429,7 +394,7 @@ function loadNavBar() {
 
   const $bugBtn = $("<button>Submit a Bug</button>");
   $bugBtn.on("click", () => {
-    window.open("https://github.com/ntantaroudas/choice-web/issues", "_blank");
+    window.open("https://github.com/climatechoice/felix/issues", "_blank");
   });
   $sect3.append($bugBtn);
 
@@ -447,7 +412,9 @@ function loadNavBar() {
 
   // Final assembly
   $nav.append($sect1, $sect2, $sect3);
+}
 
+function loadFloatingLogos() {
   // Add logos to bottom left
   const $logoContainer = $('<div class="logo-container"></div>');
 
@@ -482,6 +449,28 @@ function loadNavBar() {
   $logo3Link.append($logo3Img);
   $logoContainer.append($logo1Link, $logo2Link, $logo3Link, $sdeLink);
   $("body").append($logoContainer);
+}
+
+// Function to switch from single to multi-scenario mode
+function handleModeToggle(event, $labelEl) {
+  const isOn = event.target.checked;
+
+  $("#inputs-graphs-section").toggleClass("expanded", isOn);
+  document.body.classList.toggle("multi-scenario", isOn);
+
+  $labelEl.text(isOn ? "Multi-scenario mode" : "Single-scenario mode");
+
+  // Refresh all sliders
+  $(".slider").each(function () {
+    const slider = $(this).data("slider");
+    if (slider) {
+      const currentValue = slider.getValue();
+      const defaultValue = slider.options.rangeHighlights[0].start;
+      slider.setAttribute("rangeHighlights", [
+        { start: defaultValue, end: currentValue },
+      ]);
+    }
+  });
 }
 
 // Function to reset all inputs of the active model
@@ -2049,6 +2038,8 @@ async function initApp() {
 
   // Load the navigation bar
   loadNavBar();
+  // Load the floating logos
+  loadFloatingLogos();
 
   console.log(coreConfig);
 
