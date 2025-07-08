@@ -21,7 +21,8 @@
     "katex": "^0.16.22",
     "marked": "^15.0.11",
     "marked-katex-extension": "^5.1.5",
-    "material-icons": "^1.13.14"
+    "material-icons": "^1.13.14",
+    "nanostores": "^1.0.1"
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.34",

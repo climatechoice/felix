@@ -18,6 +18,31 @@ import enStrings from "@core-strings/en";
 // import { initOverlay } from "./dev-overlay";
 import { GraphView } from "./graph-view";
 
+// TODO: All store imports will go here:
+import { selectedGraphCount, layoutConfig } from "./stores/graph-store";
+
+// ! removed these, since they're defined in the graph-store now.
+// /*
+//  * These are the Graph Layout definitions.
+//  * New entries can easily be added here for whichever number of graphs
+//  * to show. Simply:
+//  * 1) define the number of graphs (N), the amount of rows, and the amount of columns
+//  * 2) add a new #graphs-container.graphs-N .graph-container
+//  *    class in index.css where you define the vh and vw of each graph-container
+//  */
+// const layoutConfig = {
+//   1: { rows: 1, cols: 1 },
+//   2: { rows: 1, cols: 2 },
+//   4: { rows: 2, cols: 2 },
+//   6: { rows: 2, cols: 3 },
+//   9: { rows: 3, cols: 3 },
+//   // 16: { rows: 4, cols: 4 },
+// };
+
+// // default layout contains 4 graphs
+
+// let selectedGraphCount = 4;
+
 // Import markdown files (as raw files)
 const markdownModules = import.meta.glob("./markdowns/*.md", {
   query: "?raw",
@@ -52,26 +77,6 @@ let graphViews = [];
  * I first check if this slider has already been added, to prevent duplicates.
  */
 const addedSliderIds = new Set(); // Track which slider IDs have been added
-
-/*
- * These are the Graph Layout definitions.
- * New entries can easily be added here for whichever number of graphs
- * to show. Simply:
- * 1) define the number of graphs (N), the amount of rows, and the amount of columns
- * 2) add a new #graphs-container.graphs-N .graph-container
- *    class in index.css where you define the vh and vw of each graph-container
- */
-const layoutConfig = {
-  1: { rows: 1, cols: 1 },
-  2: { rows: 1, cols: 2 },
-  4: { rows: 2, cols: 2 },
-  6: { rows: 2, cols: 3 },
-  9: { rows: 3, cols: 3 },
-  // 16: { rows: 4, cols: 4 },
-};
-
-// default layout contains 4 graphs
-let selectedGraphCount = 4;
 
 /**
  * Return the base (English) string for the given key.
@@ -364,13 +369,14 @@ function loadNavBar() {
    */
   const $sect3 = $('<div class="nav-section third"></div>');
 
+  // ! simply changed from selectedGraphCount to selectedGraphCount.get()
   // Layout selector (based on layoutConfig)
   const $layoutSelect = $(`
   <select id="layout-select" aria-label="Number of graphs to display">
     ${Object.keys(layoutConfig)
       .map(
         (n) => `<option value="${n}" ${
-          n == selectedGraphCount ? "selected" : ""
+          n == selectedGraphCount.get() ? "selected" : ""
         }>
                    ${n} Graph${n > 1 ? "s" : ""}
                  </option>`
@@ -380,6 +386,7 @@ function loadNavBar() {
 `);
 
   // Change handler updates the global variable "selectedGraphCount"
+  // ! IT NOW UPDATES THE STORE.
   $layoutSelect.on("change", (e) => {
     const chosen = parseInt(e.target.value, 10);
     if (!layoutConfig[chosen]) {
@@ -390,16 +397,23 @@ function loadNavBar() {
       );
       // This shouldn't ever be needed, but
       // if selected option is unsupported, then fallback to 4.
-      selectedGraphCount = 4;
+      // ! changed to this for store:
+      // // selectedGraphCount = 4;
+      selectedGraphCount.set(4);
     } else {
-      selectedGraphCount = chosen;
+      selectedGraphCount.set(chosen); // ! updates store
       // console.log("chosen layout: ", selectedGraphCount);
     }
     // Refresh graphs section to apply the selected graph layout
     const selectedCategory = $(".graph-category-selector-option.selected").data(
       "value"
     );
-    initGraphsUI(selectedCategory, selectedGraphCount);
+    // TODO: should this also get updated from selectedGraphCount to selectedGraphCount.get() ??
+    console.log(
+      "Nanostore value of selectedGraphCount: ",
+      selectedGraphCount.get()
+    );
+    initGraphsUI(selectedCategory, selectedGraphCount.get());
   });
 
   $sect3.append(
@@ -1645,7 +1659,7 @@ $("#graph-category-selector-container").on(
     const selectedCategory = $(this).data("value");
 
     // Call the function to update the graphs
-    initGraphsUI(selectedCategory, selectedGraphCount);
+    initGraphsUI(selectedCategory, selectedGraphCount.get());
   }
 );
 
@@ -1917,6 +1931,7 @@ function initGraphsUI(category, amountOfGraphs = 4) {
 
   // Define the rows and columns from global layoutConfig
   // acording to the amountOfGraphs asked
+  // ! Now, layoutConfig is from the STORE
   const { rows, cols } = layoutConfig[amountOfGraphs];
 
   // Dynamically build graph categories based on coreConfig.graphs
