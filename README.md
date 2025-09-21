@@ -1,6 +1,6 @@
 # FeliX ISE
 
-FeliX Interactive Simulation Environment (FeliX ISE) builds upon the robust FeliX model, a global system dynamics-based Integrated Assessment Model (IAM) developed by IIASA, designed to simulate complex interactions among population, economy, energy, land, food, climate, biodiversity, and more. 
+FeliX Interactive Simulation Environment (FeliX ISE) builds upon the robust [FeliX](https://github.com/iiasa/Felix-Model) model, a global system dynamics-based Integrated Assessment Model (IAM) developed by IIASA, designed to simulate complex interactions among population, economy, energy, land, food, climate, biodiversity, and more. 
 
 FeliX is one of the very few models that explicitly model human behaviors in the human-earth system, considering dynamic interactions of socio-economic and environmental sectors. The model is calibrated with data from 1900 to 2020 and projects through to 2100.
 
