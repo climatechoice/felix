@@ -3,6 +3,7 @@ import $ from "jquery";
 import Slider from "bootstrap-slider";
 import "bootstrap-slider/dist/css/bootstrap-slider.css";
 
+// TODO: perhaps remove these, since I'm using them in lib/utils.js
 import { marked } from "marked";
 import katexExtension from "marked-katex-extension";
 import "katex/dist/katex.min.css"; // Import KaTeX CSS
