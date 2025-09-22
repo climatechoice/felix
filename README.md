@@ -5,7 +5,7 @@ FeliX Interactive Simulation Environment (FeliX ISE) builds upon the robust [Fel
 FeliX is one of the very few models that explicitly model human behaviors in the human-earth system, considering dynamic interactions of socio-economic and environmental sectors. The model is calibrated with data from 1900 to 2020 and projects through to 2100.
 
 ## The interface
-<img width="2308" height="1257" alt="image" src="https://github.com/user-attachments/assets/900fcdbb-51d7-4b49-ade5-dce31813bfe2" />  
+<img width="2306" height="1257" alt="image" src="https://github.com/user-attachments/assets/76bb73ac-37b4-4702-a949-e5af94cfdcc4" />  
 Visit it yourself:  https://climatechoice.github.io/felix/
 
 ## Instructions for setting up the project
