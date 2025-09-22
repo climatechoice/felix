@@ -67,6 +67,37 @@ export function loadNavBar() {
   $showChangedInputsBtn.on("click", () => showChangedInputs());
   $sect1.append($showChangedInputsBtn);
 
+  // Export inputs to CSV file button
+  const $exportInputsBtn = $(`
+    <button>
+      <span class="material-icons">download</span>
+    </button>
+  `);
+  $exportInputsBtn.on("click", () => exportInputsToCSV());
+  $sect1.append($exportInputsBtn);
+
+  // Import inputs from CSV file button
+  const $importInputsBtn = $(`
+  <button title="Import Inputs from CSV">
+    <span class="material-icons">upload</span>
+  </button>
+`);
+  $importInputsBtn.on("click", () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".csv";
+
+    fileInput.onchange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        processCSVFile(file);
+      }
+    };
+
+    fileInput.click();
+  });
+  $sect1.append($importInputsBtn);
+
   /*
    * Section 2 - Title
    */
@@ -79,8 +110,6 @@ export function loadNavBar() {
    */
   const $sect3 = $('<div class="nav-section third"></div>');
 
-  // ! THE FOLLOWING NEEDS THE STORE graph-store.js:
-  // TODO:  Is this wise, or should I split this too?
   // Layout selector (based on layoutConfig)
   const $layoutSelect = $(`
   <select id="layout-select" aria-label="Number of graphs to display">
@@ -96,8 +125,6 @@ export function loadNavBar() {
   </select>
 `);
 
-  // Change handler updates the STORE variable "selectedGraphCount"
-  // ! IT NOW UPDATES THE STORE.
   $layoutSelect.on("change", (e) => {
     const chosen = parseInt(e.target.value, 10);
     if (!layoutConfig[chosen]) {
@@ -108,12 +135,9 @@ export function loadNavBar() {
       );
       // This shouldn't ever be needed, but
       // if selected option is unsupported, then fallback to 4.
-      // ! changed to this for store:
-      // // selectedGraphCount = 4;
       selectedGraphCount.set(4);
     } else {
-      selectedGraphCount.set(chosen); // ! updates store
-      // console.log("chosen layout: ", selectedGraphCount);
+      selectedGraphCount.set(chosen);
     }
     // Refresh graphs section to apply the selected graph layout
     const selectedCategory = $(".graph-category-selector-option.selected").data(
@@ -298,4 +322,213 @@ function createSummaryMarkdownTable(model1Changes, model2Changes) {
   }
 
   return lines.join("\n");
+}
+
+// ---------------- helpers ----------------
+
+// Escape a single cell for CSV
+function csvEscape(value) {
+  if (value === null || value === undefined) return "";
+  const s = String(value);
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+// Minimal CSV parser that supports quotes and double-quote escaping
+function parseCSV(text) {
+  const s = String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const rows = [];
+  let row = [];
+  let field = "";
+  let i = 0;
+  let inQuotes = false;
+
+  while (i < s.length) {
+    const ch = s[i];
+
+    if (inQuotes) {
+      if (ch === '"') {
+        if (s[i + 1] === '"') {
+          field += '"';
+          i += 2;
+        } else {
+          inQuotes = false;
+          i++;
+        }
+      } else {
+        field += ch;
+        i++;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+        i++;
+      } else if (ch === ",") {
+        row.push(field);
+        field = "";
+        i++;
+      } else if (ch === "\n") {
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = "";
+        i++;
+      } else {
+        field += ch;
+        i++;
+      }
+    }
+  }
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+// Coerce CSV string to the type expected by the input (based on defaultValue)
+function coerceValueForSpec(raw, spec) {
+  const dv = spec?.defaultValue;
+  if (typeof dv === "number") {
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : dv;
+  }
+  if (typeof dv === "boolean") {
+    const t = String(raw).trim().toLowerCase();
+    return t === "true" || t === "1" || t === "yes";
+  }
+  return raw; // strings and everything else
+}
+
+// Since coreConfig.inputs may not be a plain Array (no .find), scan manually.
+function getSpecByVarName(varName) {
+  let found = null;
+  coreConfig.inputs.forEach((spec) => {
+    if (!found && spec.varName === varName) found = spec;
+  });
+  return found;
+}
+
+// ---------------- export ----------------
+
+function exportInputsToCSV() {
+  const modelInstances = [model.get(), modelB.get()];
+
+  const rows = [["Model", "Input Id", "VarName", "Value"]];
+
+  modelInstances.forEach((modelInstance, modelIndex) => {
+    if (!modelInstance) return;
+    coreConfig.inputs.forEach((spec) => {
+      const input = modelInstance.getInputForId(spec.id);
+      if (!input) return;
+
+      const inputId = spec.id;
+      const varName = spec.varName; // use VarName
+      const value = input.get();
+
+      rows.push([`Model ${modelIndex + 1}`, inputId, varName, value]);
+    });
+  });
+
+  const csvContent = rows.map((r) => r.map(csvEscape).join(",")).join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "input_values.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ---------------- import ----------------
+
+function processCSVFile(file) {
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    const csvText = e.target.result;
+    const rows = parseCSV(csvText);
+    if (!rows.length) {
+      console.error("CSV file appears to be empty.");
+      return;
+    }
+
+    // Strip BOM from first header cell if present
+    if (rows[0] && rows[0][0]) rows[0][0] = rows[0][0].replace(/^\uFEFF/, "");
+
+    const headers = rows[0].map((h) => (h || "").trim());
+    const modelIdx = headers.indexOf("Model");
+    const varNameIdx = headers.indexOf("VarName");
+    const valueIdx = headers.indexOf("Value");
+
+    if (modelIdx === -1 || varNameIdx === -1 || valueIdx === -1) {
+      console.error(
+        "CSV must contain 'Model', 'VarName', and 'Value' columns."
+      );
+      return;
+    }
+
+    const modelInstances = [model.get(), modelB.get()];
+    let applied = 0;
+    let warnings = 0;
+
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      if (!row || row.length === 0) continue;
+
+      const modelLabel = (row[modelIdx] ?? "").trim();
+      const varName = (row[varNameIdx] ?? "").trim();
+      const rawValue = (row[valueIdx] ?? "").trim();
+      if (!modelLabel || !varName) continue;
+
+      const mMatch = /(\d+)/.exec(modelLabel);
+      const mIndex = mMatch ? Number(mMatch[1]) - 1 : -1;
+      const modelInstance = modelInstances[mIndex];
+
+      if (!modelInstance) {
+        console.warn(`Unknown model label at row ${r + 1}: "${modelLabel}"`);
+        warnings++;
+        continue;
+      }
+
+      const spec = getSpecByVarName(varName);
+      if (!spec) {
+        console.warn(
+          `Input not found for VarName "${varName}" in ${modelLabel}`
+        );
+        warnings++;
+        continue;
+      }
+
+      const input = modelInstance.getInputForId(spec.id);
+      if (!input) {
+        console.warn(
+          `Input id "${spec.id}" not present on ${modelLabel} for VarName "${varName}"`
+        );
+        warnings++;
+        continue;
+      }
+
+      try {
+        const coerced = coerceValueForSpec(rawValue, spec);
+        input.set(coerced);
+        applied++;
+      } catch (err) {
+        console.error(
+          `Failed to set value for VarName "${varName}" in ${modelLabel}:`,
+          err
+        );
+        warnings++;
+      }
+    }
+
+    // Refresh Inputs UI so changes are visible
+    const selectedCategory = $(".input-category-selector-option.selected").data(
+      "value"
+    );
+    initInputsUI(selectedCategory);
+
+    console.log(`Import finished. Applied: ${applied}. Warnings: ${warnings}.`);
+  };
+
+  reader.readAsText(file);
 }
