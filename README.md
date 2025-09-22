@@ -51,9 +51,18 @@ You should see that the default SDEverywhere project runs as expected. If there 
 
 If you've followed all the previous instructions correctly, setting up the FeliX ISE should be as simple as the steps below:  
 ```sh
+cd ..          # go to the parent directory *
 git clone https://github.com/climatechoice/felix.git
 cd felix
 npm install
 npm run dev
 ```
 and then navigate to http://localhost:8080/index.html
+
+<sup>*</sup> Your folder structure should look like this:
+```
+/parent-directory
+  ├─ emsdk/
+  ├─ my-project-folder/
+  └─ felix/
+```
