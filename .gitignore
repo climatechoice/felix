@@ -1,7 +1,8 @@
 baselines
 node_modules
 sde-prep
-_Calculations
+_DOCUMENTATION
+_MODELDEVELOPMENT
 *.vdf
 *.vdfx
 *.3vmfx
