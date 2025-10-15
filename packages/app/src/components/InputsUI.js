@@ -21,6 +21,7 @@ import {
 import { config as coreConfig } from "@core";
 
 import { addedSliderIds } from "../stores/inputs-store.js";
+import { undoStack, redoStack } from "../stores/undo-redo-store.js";
 /*
  * model and modelB are not used in the inputs.
  * Only activeModel is used.
@@ -154,11 +155,18 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
 
   // Update the model input when the slider is dragged or the track is clicked
   slider.on("change", (change) => {
+    const prevValue = sliderInput.get();
+    const newValue = change.newValue;
     const start = spec.defaultValue;
-    const end = change.newValue;
+    const end = newValue;
     slider.setAttribute("rangeHighlights", [{ start, end }]);
-    updateValueElement(change.newValue);
-    sliderInput.set(change.newValue);
+    updateValueElement(newValue);
+    // Push to undo stack, clear redo stack
+    const undoArr = [...undoStack.get()];
+    undoArr.push({ id: spec.id, prevValue, newValue });
+    undoStack.set(undoArr);
+    redoStack.set([]);
+    sliderInput.set(newValue);
   });
   return div; // fm
 }
@@ -197,7 +205,13 @@ function addSwitchItem(switchInput) {
     offSlidersContainer.toggle(!isOn);
 
     // Update model value
-    switchInput.set(isOn ? spec.onValue : spec.offValue);
+    const prevValue = switchInput.get();
+    const newValue = isOn ? spec.onValue : spec.offValue;
+    const undoArr = [...undoStack.get()];
+    undoArr.push({ id: spec.id, prevValue, newValue });
+    undoStack.set(undoArr);
+    redoStack.set([]);
+    switchInput.set(newValue);
   }
 
   // Initial setup
@@ -349,7 +363,13 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
     if (currentValue === targetValue) btn.addClass("active");
 
     btn.on("click", () => {
-      inputInstance.set(targetValue);
+      const prevValue = inputInstance.get();
+      const newValue = targetValue;
+      const undoArr = [...undoStack.get()];
+      undoArr.push({ id: spec.id, prevValue, newValue });
+      undoStack.set(undoArr);
+      redoStack.set([]);
+      inputInstance.set(newValue);
       segmentsContainer.find(".segmented-button").removeClass("active");
       btn.addClass("active");
     });
@@ -408,19 +428,26 @@ function addCombinedSlider(groupInputs, container) {
   // Slider row with existing styling
   const sliderId = `combined-${startSpec.id}-${endSpec.id}`;
 
+  // Determine the title for the combined slider
+  let title = `${str(startSpec.labelKey)} - ${str(endSpec.labelKey)}`; // Default title
+  // Regex to match "combined (title)" or "dropdown combined (title)"
+  const combinedTitleRegex = /(?:dropdown )?combined \((.*?)\)/;
+  const titleMatch = startSpec.secondaryType?.match(combinedTitleRegex);
+  if (titleMatch && titleMatch[1]) {
+    title = titleMatch[1];
+  }
+
   // Title row matching existing style
   const titleRow = $(`
     <div class="input-title-row">
       <div class="slider-title-and-info-container">
-        <div class="input-title">${str(startSpec.labelKey)} - ${str(
-    endSpec.labelKey
-  )}</div>
+        <div class="input-title">${title}</div>
       </div>
       <div class="input-slider-row">
       <input id="${sliderId}" class="slider" type="text"/>
     </div>
       <div class="value-units-container">
-        <div class="input-value">${startInput.get()} - ${endInput.get()}</div>
+        <div class="input-value"></div>
         <div class="input-units">${str(startSpec.unitsKey)}</div>
       </div>
     </div>
@@ -460,10 +487,18 @@ function addCombinedSlider(groupInputs, container) {
     ],
   });
 
+  // Show the initial value and update the value when the slider is changed
+  const inputValueElement = titleRow.find(".input-value");
+  const updateValueElement = (startVal, endVal) => {
+    inputValueElement.text(`${format(startVal, startSpec.format)} - ${format(endVal, endSpec.format)}`);
+  };
+  updateValueElement(startInput.get(), endInput.get());
+
   // Update logic
   slider.on("change", (change) => {
+    const prevValues = [startInput.get(), endInput.get()];
     const [startValue, endValue] = change.newValue;
-    titleRow.find(".input-value").text(`${startValue} - ${endValue}`);
+    updateValueElement(startValue, endValue);
 
     // Update range highlight
     slider.setAttribute("rangeHighlights", [
@@ -473,6 +508,12 @@ function addCombinedSlider(groupInputs, container) {
         class: "slider-rangeHighlight",
       },
     ]);
+
+    // Push to undo stack, clear redo stack
+    const undoArr = [...undoStack.get()];
+    undoArr.push({ ids: [startSpec.id, endSpec.id], prevValues, newValues: [startValue, endValue] });
+    undoStack.set(undoArr);
+    redoStack.set([]);
 
     // Update model values
     startInput.set(startValue);
@@ -619,7 +660,17 @@ function addCombined2Slider(groupInputs, container = $("#inputs-content")) {
 
   // Add change handler
   slider.on("change", (change) => {
+    // Save previous values for all inputs
+    const prevValues = inputs.map(input => input.get());
     updateSegments(change.newValue);
+    // After update, get new values
+    const newValues = inputs.map(input => input.get());
+    // Push to undo stack, clear redo stack
+    const undoArr = [...undoStack.get()];
+    const ids = groupInputs.map(spec => spec.id);
+    undoArr.push({ ids, prevValues, newValues });
+    undoStack.set(undoArr);
+    redoStack.set([]);
   });
 
   // Initial update
@@ -680,6 +731,167 @@ function addSimpleLabelItem(sliderInput, container = $("#inputs-content")) {
   return div; // fm
 }
 
+/**
+ * Renders a numeric textbox input instead of a slider.
+ * Behaves similarly to addSliderItem but uses an <input type="number"> allowing
+ * the user to type values. It respects spec.minValue, spec.maxValue, spec.step
+ * and spec.format for display. Works for standalone and dropdown contexts.
+ */
+function addTextboxItem(textboxInput, container = $("#inputs-content")) {
+  const spec = textboxInput.spec;
+
+  // Debug: log when attempting to add a textbox
+  try {
+    // debug log removed
+  } catch (e) {
+    /* ignore */
+  }
+
+  // Prevent duplicates
+  if (addedSliderIds.get().includes(spec.id)) return;
+  addedSliderIds.set([...addedSliderIds.get(), spec.id]);
+
+  const inputElemId = `input-${spec.id}`;
+
+  const inputValue = $(`<div class="input-value"/>`);
+
+  const infoIcon = createInfoIcon(spec.hoverDescription);
+
+  let muiIconElem = null;
+  if (spec.muiIcon) {
+    muiIconElem = $(
+      `<span class="material-icons-two-tone mui-icon">${spec.muiIcon}</span>`
+    );
+  }
+
+  const sliderTitleAndInfoContainer = $(
+    '<div class="slider-title-and-info-container"/>'
+  ).append([
+    muiIconElem,
+    $(`<div class="input-title">${str(spec.labelKey)}</div>`),
+    infoIcon,
+  ].filter((el) => el !== null));
+
+  // For textbox we don't want to repeat the numeric value on the right (the
+  // value is already shown in the textbox). Only show units on the right.
+  // Create the right side container and append the textbox input into it so
+  // the textbox is flushed to the right next to the units.
+  const valueUnitsContainer = $(`<div class="value-units-container"/>`);
+
+  // Determine decimal precision from spec.format (preferred) or spec.step (fallback)
+  const getDecimals = () => {
+    try {
+      if (spec.format && typeof spec.format === 'string') {
+        const m = spec.format.match(/\.(0+)/);
+        if (m && m[1]) return m[1].length;
+      }
+      if (spec.step !== undefined && spec.step !== null) {
+        const s = String(spec.step);
+        if (s.includes('.')) return s.split('.')[1].length;
+      }
+    } catch (e) {
+      /* ignore */
+    }
+    return 0;
+  };
+  const decimals = getDecimals();
+
+  // Create the numeric textbox element (compact). Use a subtle gray border instead of red.
+  const stepAttr = spec.step !== undefined && spec.step !== null ? spec.step : 1;
+  // Compact textbox: height ~20px per user's request
+  const $textboxInputElem = $(`<input id="${inputElemId}" class="textbox-input" type="number" step="${stepAttr}" />`);
+
+  // Append textbox first, then units so both appear on the right
+  valueUnitsContainer.append($textboxInputElem, $(`<div class="input-units">${str(spec.unitsKey)}</div>`));
+
+  // Title row: left = title/info, middle = flexible spacer, right = valueUnitsContainer
+  const spacer = $(`<div class="input-slider-spacer" style="flex:1;"></div>`);
+  const titleRow = $(`<div class="input-title-row"/>`).append([
+    sliderTitleAndInfoContainer,
+    spacer,
+    valueUnitsContainer,
+  ]);
+
+  const div = $(`<div class="input-item textbox-item"/>`).append([
+    titleRow,
+    $(`<div class="input-desc">${spec.descriptionKey ? str(spec.descriptionKey) : ""}</div>`),
+  ]);
+
+  container.append(div);
+
+  // Initialize value (rounded to the computed decimals)
+  const currentValue = textboxInput.get();
+  const $inputElem = $(`#${inputElemId}`);
+  if (currentValue !== null && currentValue !== undefined && String(currentValue) !== "") {
+    const n = Number(currentValue);
+    if (!Number.isNaN(n)) {
+      $inputElem.val(n.toFixed(decimals));
+    } else {
+      $inputElem.val(currentValue);
+    }
+  }
+
+  const updateValueElement = (v) => {
+    inputValue.text(format(v, spec.format));
+  };
+  updateValueElement(currentValue);
+
+  // When typing or changing the textbox, update the model and displayed value.
+  function parseAndClamp(val) {
+    if (val === null || val === undefined || val === "") return null;
+    let n = Number(val);
+    if (Number.isNaN(n)) return null;
+    if (spec.minValue !== undefined && n < spec.minValue) n = spec.minValue;
+    if (spec.maxValue !== undefined && n > spec.maxValue) n = spec.maxValue;
+    // Align to step if provided
+    if (spec.step) {
+      const step = spec.step;
+      const base = spec.minValue !== undefined ? spec.minValue : 0;
+      n = Math.round((n - base) / step) * step + base;
+    }
+    return n;
+  }
+
+  $inputElem.on("change", function () {
+    const raw = $(this).val();
+    const parsed = parseAndClamp(raw);
+    if (parsed === null) {
+      // restore previous valid value
+      const prev = textboxInput.get();
+      if (prev !== null && prev !== undefined && String(prev) !== "") {
+        const pn = Number(prev);
+        if (!Number.isNaN(pn)) $(this).val(pn.toFixed(decimals));
+        else $(this).val(prev);
+      } else {
+        $(this).val("");
+      }
+      return;
+    }
+    // Format the committed value to the desired decimal places
+    const formatted = typeof parsed === 'number' && Number.isFinite(parsed) ? parsed.toFixed(decimals) : parsed;
+    $(this).val(formatted);
+    updateValueElement(parsed);
+    const prevValue = textboxInput.get();
+    const newValue = parsed;
+    const undoArr = [...undoStack.get()];
+    undoArr.push({ id: spec.id, prevValue, newValue });
+    undoStack.set(undoArr);
+    redoStack.set([]);
+    textboxInput.set(newValue);
+  });
+
+  // Also handle Enter key to commit
+  $inputElem.on("keydown", function (e) {
+    if (e.key === "Enter") {
+      $(this).trigger("change");
+      // optional: blur to hide mobile keyboards
+      $(this).blur();
+    }
+  });
+
+  return div;
+}
+
 function createDropdownGroup(
   mainInputSpec,
   assumptionInputs,
@@ -708,6 +920,7 @@ function createDropdownGroup(
       <span class="material-icons">expand_more</span>
     </button>
   `);
+  let allowArrowToggle = true;
 
   // Append dropdownContainer to DOM first
   container.append(dropdownContainer);
@@ -719,7 +932,7 @@ function createDropdownGroup(
     if (mainInputSpec.secondaryType === "dropdown main") {
       // this is a normal slider
       // console.log("main input spec: ", mainInputSpec);
-      const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
+  const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
 
       // Add expand button
       if (sliderDiv) {
@@ -740,16 +953,46 @@ function createDropdownGroup(
       } else {
         console.error("Simple Label not created for:", mainInputSpec.id);
       }
+    } else if (mainInputSpec.secondaryType === "dropdown main textbox" || (mainInputSpec.secondaryType && mainInputSpec.secondaryType.includes("textbox"))) {
+      // main is a textbox instead of a slider
+      const textboxDiv = addTextboxItem(mainInputInstance, dropdownHeader);
+      if (textboxDiv) {
+        textboxDiv.find(".input-title-row").prepend(expandButton);
+        // Auto-expand dropdown so textbox is visible for debugging
+        dropdownContent.show();
+        expandButton.find('.material-icons').text('expand_less');
+      } else {
+        console.error("Textbox not created for:", mainInputSpec.id);
+      }
     } else {
       console.warn("this secondary type is not yet supported.");
     }
   } else {
     // this is a segmented button
     const segmentedDiv = addSegmentedItem(mainInputInstance, dropdownHeader);
-    if (segmentedDiv) {
-      segmentedDiv.find(".input-title-row").prepend(expandButton);
-    } else {
+    if (!segmentedDiv) {
       console.error("segmentedDiv not created for:", mainInputSpec.id);
+    } else {
+      // Bind click handler: open on 'Custom', close only if another segment (not Custom) in this group is clicked
+      segmentedDiv.find('.segmented-button').on('click', function (e) {
+        e.stopPropagation();
+        const isCustom = $(this).text().trim().toLowerCase() === 'custom';
+        if (isCustom) {
+          // Open this dropdown (if not already open)
+          if (!dropdownContent.is(':visible')) {
+            dropdownContent.slideDown(200);
+            dropdownContainer.find('.expand-button .material-icons').text('expand_less');
+          }
+        } else {
+          // Only close if this dropdown is open and the click is for a non-Custom segment in this group
+          if (dropdownContent.is(':visible')) {
+            dropdownContent.slideUp(150);
+            dropdownContainer.find('.expand-button .material-icons').text('expand_more');
+          }
+        }
+      });
+      // Disable arrow toggle for segmented mains and do not prepend the arrow
+      allowArrowToggle = false;
     }
   }
 
@@ -760,14 +1003,38 @@ function createDropdownGroup(
       if (inputSpec.isSegmented === "yes") {
         addSegmentedItem(input, dropdownContent);
       } else {
-        addSliderItem(input, dropdownContent);
+        // If this assumption is defined to be a textbox, render textbox
+        if (inputSpec.secondaryType && inputSpec.secondaryType.includes("textbox")) {
+          addTextboxItem(input, dropdownContent);
+        } else {
+          addSliderItem(input, dropdownContent);
+        }
       }
     } else if (input.kind === "switch") addSwitchItem(input, dropdownContent);
   });
 
   // Add assumption combined sliders
   if (assumptionCombinedSliders.length > 0) {
-    addCombinedSlider(assumptionCombinedSliders, dropdownContent);
+    // Group combined sliders by their title (if specified)
+    const combinedGroups = {};
+    const combinedTitleRegex = /dropdown combined(?: \((.*?)\))?$/;
+    assumptionCombinedSliders.forEach((inputSpec) => {
+      const titleMatch = inputSpec.secondaryType.match(combinedTitleRegex);
+      const titleKey = titleMatch && titleMatch[1] ? titleMatch[1] : inputSpec.inputGroup; // Use inputGroup as fallback key
+      if (!combinedGroups[titleKey]) {
+        combinedGroups[titleKey] = [];
+      }
+      combinedGroups[titleKey].push(inputSpec);
+    });
+
+    // Add each group of combined sliders
+    Object.values(combinedGroups).forEach((group) => {
+      if (group.length === 2) { // Combined sliders expect exactly 2 inputs
+        addCombinedSlider(group, dropdownContent);
+      } else {
+        console.warn("Combined slider group in dropdown has an unexpected number of inputs:", group);
+      }
+    });
   }
 
   // Add assumption combined2 sliders
@@ -795,16 +1062,24 @@ function createDropdownGroup(
     });
   }
 
-  // Toggle handler
-  let isExpanded = false;
-  expandButton.on("click", () => {
-    isExpanded = !isExpanded;
-    dropdownContent.slideToggle(200);
-    // expandButton.text(isExpanded ? "▼" : "▶");
-    expandButton
-      .find(".material-icons")
-      .text(isExpanded ? "expand_less" : "expand_more");
-  });
+  // Toggle handler (disabled when main segmented requests custom toggle)
+  if (allowArrowToggle) {
+    let isExpanded = false;
+    expandButton.on("click", (e) => {
+      e.stopPropagation();
+      isExpanded = !dropdownContent.is(':visible');
+      dropdownContent.slideToggle(200);
+      expandButton
+        .find(".material-icons")
+        .text(isExpanded ? "expand_less" : "expand_more");
+    });
+  } else {
+    // Prevent arrow from toggling; keep icon static (still attached in DOM elsewhere)
+    expandButton.on("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  }
 
   return dropdownContainer;
 }
@@ -831,6 +1106,7 @@ $("#input-category-selector-container").on(
   }
 );
 
+
 /*
  * Calls the appropriate add{X}Item function
  * according to the type of input.
@@ -838,20 +1114,30 @@ $("#input-category-selector-container").on(
  */
 function renderStandaloneInput(inputSpec, container = $("#inputs-content")) {
   const input = activeModel.get().getInputForId(inputSpec.id);
+  // renderStandaloneInput called for debugging removed
 
   if (input.kind === "slider") {
     // both normal sliders and segmented buttons
     // are defined as sliders in inputs.csv
     if (inputSpec.isSegmented === "yes") {
+      // segmented log removed
       // slider as segmented button
       addSegmentedItem(input, container);
     } else {
       // normal slider
-      addSliderItem(input, container);
+      // If the spec requests a textbox UI instead of a slider, render textbox
+      if (inputSpec.secondaryType && inputSpec.secondaryType.includes("textbox")) {
+        addTextboxItem(input, container);
+      } else {
+        addSliderItem(input, container);
+      }
     }
   } else if (input.kind === "switch") {
     // ! switch currently can only have as its container the #inputs-section
     addSwitchItem(input);
+  } else if (input.kind === "textbox") {
+    // Support explicit textbox kind (if defined elsewhere)
+    addTextboxItem(input, container);
   } else {
     console.warn("This input kind is not supported.");
   }
@@ -871,11 +1157,18 @@ function renderInputGroup(
   groupInputs,
   container = $("#inputs-content")
 ) {
+  // Define the regex for combined types once
+  const combinedTypeCheckPattern = /^(?:dropdown )?combined(?: \((.*?)\))?$/;
+
   // Handle "standalone" combined sliders first
-  if (groupInputs[0]?.secondaryType === "combined") {
-    // ! check what happens here when container is not $("#inputs-content")
-    addCombinedSlider(groupInputs, container);
-    return;
+  const firstInputSecondaryType = groupInputs[0]?.secondaryType;
+  if (firstInputSecondaryType && combinedTypeCheckPattern.test(firstInputSecondaryType)) {
+    // If it matches the combined pattern (e.g., "combined" or "combined (title)")
+    // and it's not a dropdown combined (which is handled later)
+    if (!firstInputSecondaryType.startsWith("dropdown ")) {
+      addCombinedSlider(groupInputs, container);
+      return;
+    }
   }
 
   // TODO: These should be similar to the above, where we only check if secondaryType === "combined2".
@@ -907,16 +1200,22 @@ function renderInputGroup(
   const assumptionCombined2Sliders = [];
 
   groupInputs.forEach((inputSpec) => {
-    if (inputSpec.secondaryType === "without") {
+    // Treat explicit 'textbox' secondaryType as a standalone input
+    if (inputSpec.secondaryType === "without" || inputSpec.secondaryType === "textbox") {
+      if (inputSpec.secondaryType === "textbox") {
+        // standalone textbox log removed
+      }
       standaloneInputs.push(inputSpec);
     } else if (
       inputSpec.secondaryType === "dropdown main" ||
       inputSpec.secondaryType === "dropdown main label"
     ) {
       mainInput = inputSpec;
-    } else if (inputSpec.secondaryType === "dropdown assumptions") {
+    } else if (inputSpec.secondaryType === "dropdown assumptions" || (inputSpec.secondaryType && inputSpec.secondaryType.includes("dropdown assumptions"))) {
       assumptionInputs.push(inputSpec);
-    } else if (inputSpec.secondaryType === "dropdown combined") {
+    } else if (inputSpec.secondaryType === "dropdown combined" || 
+               (inputSpec.secondaryType?.startsWith("dropdown combined (") && !inputSpec.secondaryType?.startsWith("dropdown combined2"))) {
+      // This will catch "dropdown combined" and "dropdown combined (title)" but NOT "dropdown combined2"
       assumptionCombinedSliders.push(inputSpec);
     } else if (inputSpec.secondaryType?.startsWith("dropdown combined2")) {
       assumptionCombined2Sliders.push(inputSpec);
@@ -962,7 +1261,7 @@ export function initInputsUI(category) {
   }
 
   const categoryGroups = dynamicInputCategories[category] || {};
-  // console.log("categoryGroups: ", categoryGroups);
+  // init logs removed
 
   if (coreConfig.inputs.size > 0) {
     // for each "input group", render a dropdown

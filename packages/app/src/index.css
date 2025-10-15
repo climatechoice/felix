@@ -1256,3 +1256,17 @@ p {
   font-size: 20px;
   color: #666;
 }
+
+/* Textbox input used as an alternative to sliders. Moved from inline styles in InputsUI.js */
+.textbox-input {
+  width: 72px;
+  height: 20px;
+  line-height: 1;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.95rem;
+  text-align: right; /* numeric inputs look better right-aligned */
+  font-family: inherit;
+}

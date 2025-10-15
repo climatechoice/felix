@@ -3,6 +3,7 @@ import { config as coreConfig } from "@core";
 import { str, createPopupBox } from "../lib/utils.js";
 import { selectedGraphCount, layoutConfig } from "../stores/layout-store";
 import { model, modelB, activeModel } from "../stores/model-store";
+import { undoStack, redoStack } from "../stores/undo-redo-store.js";
 import { initInputsUI } from "./InputsUI";
 import { initGraphsUI } from "./GraphsUI";
 
@@ -37,15 +38,26 @@ export function loadNavBar() {
   // Append to section
   $sect1.append($toggleSwitch, $modeLabel);
 
-  // Reset current scenario button
-  const $resetCurrentBtn = $(`
+
+  // Undo button
+  const $undoBtn = $(`
     <button>
-      <span class="material-icons">refresh</span>
-      <span>Current</span>
+      <span class="material-icons">undo</span>
+      <span>Undo</span>
     </button>
   `);
-  $resetCurrentBtn.on("click", () => resetActiveModelInputs());
-  $sect1.append($resetCurrentBtn);
+  $undoBtn.on("click", () => undoInputChange());
+  $sect1.append($undoBtn);
+
+  // Redo button
+  const $redoBtn = $(`
+    <button>
+      <span class="material-icons">redo</span>
+      <span>Redo</span>
+    </button>
+  `);
+  $redoBtn.on("click", () => redoInputChange());
+  $sect1.append($redoBtn);
 
   // Reset all scenarios button
   const $resetAllBtn = $(`
@@ -182,7 +194,6 @@ export function loadNavBar() {
 
   // Final assembly
   $nav.append($sect1, $sect2, $sect3);
-}
 
 // Function to switch from single to multi-scenario mode
 function handleModeToggle(event, $labelEl) {
@@ -206,19 +217,125 @@ function handleModeToggle(event, $labelEl) {
   });
 }
 
-// Function to reset all inputs of the active model
-function resetActiveModelInputs() {
-  coreConfig.inputs.forEach((spec) => {
-    const input = activeModel.get().getInputForId(spec.id);
+
+// Multi-step undo
+
+function undoInputChange() {
+  const stack = [...undoStack.get()];
+  if (stack.length === 0) return;
+  const last = stack.pop();
+  // Multi-input undo (combined/combo sliders)
+  if (last.ids && Array.isArray(last.ids)) {
+    const redoArr = [...redoStack.get()];
+    // Gather current values for redo
+    const currentValues = last.ids.map(id => {
+      const input = activeModel.get().getInputForId(id);
+      return input ? input.get() : undefined;
+    });
+    redoArr.push({ ids: last.ids, prevValues: currentValues, newValues: last.newValues });
+    redoStack.set(redoArr);
+    // Undo: set all prevValues
+    last.ids.forEach((id, idx) => {
+      const input = activeModel.get().getInputForId(id);
+      if (input) input.set(last.prevValues[idx]);
+    });
+  } else {
+    // Single input undo
+    const input = activeModel.get().getInputForId(last.id);
     if (input) {
-      input.reset();
+      const redoArr = [...redoStack.get()];
+      redoArr.push({ id: last.id, prevValue: input.get(), newValue: last.newValue });
+      redoStack.set(redoArr);
+      input.set(last.prevValue);
     }
+  }
+  undoStack.set(stack);
+  refreshInputsUI();
+}
+
+// Multi-step redo
+
+function redoInputChange() {
+  const stack = [...redoStack.get()];
+  if (stack.length === 0) return;
+  const last = stack.pop();
+  // Multi-input redo (combined/combo sliders)
+  if (last.ids && Array.isArray(last.ids)) {
+    const undoArr = [...undoStack.get()];
+    // Gather current values for undo
+    const currentValues = last.ids.map(id => {
+      const input = activeModel.get().getInputForId(id);
+      return input ? input.get() : undefined;
+    });
+    undoArr.push({ ids: last.ids, prevValues: currentValues, newValues: last.newValues });
+    undoStack.set(undoArr);
+    // Redo: set all newValues
+    last.ids.forEach((id, idx) => {
+      const input = activeModel.get().getInputForId(id);
+      if (input) input.set(last.newValues[idx]);
+    });
+  } else {
+    // Single input redo
+    const input = activeModel.get().getInputForId(last.id);
+    if (input) {
+      const undoArr = [...undoStack.get()];
+      undoArr.push({ id: last.id, prevValue: input.get(), newValue: last.newValue });
+      undoStack.set(undoArr);
+      input.set(last.newValue);
+    }
+  }
+  redoStack.set(stack);
+  refreshInputsUI();
+}
+
+// Preserve open dropdowns after UI refresh (including combined and combined2)
+function refreshInputsUI() {
+  let selectedCategory = $(".input-category-selector-option.selected").data("value");
+  if (!selectedCategory) {
+    const $first = $("#input-category-selector-container .input-category-selector-option").first();
+    if ($first && $first.length) {
+      selectedCategory = $first.data("value");
+      $(".input-category-selector-option").removeClass("selected");
+      $first.addClass("selected");
+    } else {
+      selectedCategory = Array.from(coreConfig.inputs.values())[0]
+        ? Array.from(coreConfig.inputs.values())[0].categoryId
+        : "Diet Change";
+    }
+  }
+  // Record which dropdowns are open (by unique group selector)
+  const openDropdowns = [];
+  $(".input-dropdown-group .dropdown-content:visible").each(function() {
+    // Try to find a unique selector for the group
+    let $group = $(this).closest('.input-dropdown-group');
+    let selector = null;
+    // Prefer a main input id if present
+    const mainId = $group.find('[id^=\"input-\"]').attr('id');
+    if (mainId) selector = `#${mainId}`;
+    // Otherwise, try to use a combined/combo id
+    else {
+      const combinedId = $group.find('input.slider').attr('id');
+      if (combinedId) selector = `#${combinedId}`;
+    }
+    if (selector) openDropdowns.push(selector);
   });
-  // Refresh the inputs UI to show the default values
-  const selectedCategory = $(".input-category-selector-option.selected").data(
-    "value"
-  );
+  // Save scroll position
+  const $inputsContent = $("#inputs-content");
+  const prevScroll = $inputsContent.scrollTop();
   initInputsUI(selectedCategory);
+  // After re-render, re-open the same dropdowns and restore scroll
+  setTimeout(() => {
+    openDropdowns.forEach(selector => {
+      const $dropdown = $(selector).closest('.input-dropdown-group').find('.dropdown-content');
+      if ($dropdown.length && !$dropdown.is(':visible')) {
+        $dropdown.show();
+        $(selector).closest('.input-dropdown-group').find('.expand-button .material-icons').text('expand_less');
+      }
+    });
+    // Restore scroll position
+    $inputsContent.scrollTop(prevScroll);
+  }, 0);
+}
 }
 
 // Function to reset all inputs for BOTH models
@@ -234,9 +351,23 @@ function resetAllModelsInputs() {
   });
 
   // Refresh the UI to show updated values
-  const selectedCategory = $(".input-category-selector-option.selected").data(
+  let selectedCategory = $(".input-category-selector-option.selected").data(
     "value"
   );
+  if (!selectedCategory) {
+    const $first = $(
+      "#input-category-selector-container .input-category-selector-option"
+    ).first();
+    if ($first && $first.length) {
+      selectedCategory = $first.data("value");
+      $(".input-category-selector-option").removeClass("selected");
+      $first.addClass("selected");
+    } else {
+      selectedCategory = Array.from(coreConfig.inputs.values())[0]
+        ? Array.from(coreConfig.inputs.values())[0].categoryId
+        : "Diet Change";
+    }
+  }
   initInputsUI(selectedCategory);
 }
 
