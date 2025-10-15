@@ -412,6 +412,48 @@ function updateLineChartJsData(
   viewModel: GraphViewModel,
   chartData: ChartData
 ): void {
+  // Read per-graph scale multiplier. The CSV generator may not emit a `modes` field.
+  // Fallbacks: allow numeric values to be placed in `subClassification` or `graphType`.
+  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  const specAny = viewModel.spec as unknown as MaybeScaleCarrier;
+
+  function coerceToNumber(value: unknown): number | undefined {
+    if (value == null) return undefined;
+    if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+    if (typeof value === "string") {
+      // Extract first numeric token, supporting scientific notation (e.g., 1e-06)
+      // Matches: -12, 3.45, -0.001, 1e6, -2.5e-03, etc.
+      const match = value.match(/(-?\d+(?:\.\d+)?(?:e[+-]?\d+)?)/i);
+      if (match) {
+        const n = Number(match[1]);
+        if (Number.isFinite(n)) return n;
+      }
+    }
+    return undefined;
+  }
+
+  const rawScale =
+    specAny?.modes ?? specAny?.subClassification ?? specAny?.graphType ?? undefined;
+  const candidate = coerceToNumber(rawScale);
+  const scaleMultiplier = candidate != null ? candidate : 1;
+
+  function applyScale(points: unknown): unknown {
+    if (!points || scaleMultiplier === 1) return points;
+    // Support both number[] and ChartPoint[] shapes defensively
+    if (Array.isArray(points)) {
+      return points.map((p) => {
+        if (typeof p === "number") return p * scaleMultiplier;
+        if (p && typeof p === "object") {
+          const pt = p as { x?: number; y?: number };
+          if (typeof pt.y === "number") {
+            return { ...pt, y: pt.y * scaleMultiplier };
+          }
+        }
+        return p;
+      });
+    }
+    return points;
+  }
   function getSeries(
     varId: OutputVarId,
     sourceName?: string
@@ -448,7 +490,7 @@ function updateLineChartJsData(
         // TODO: change to a better "if statement"
 
         // series.points has both seriesA, seriesB data. (eg. 402 total)
-        const allPoints = series.points || [];
+        const allPoints = applyScale(series.points || []) as unknown[];
         const mid = Math.floor(allPoints.length / 2); // (eg. 201)
         const firstHalf = allPoints.slice(0, mid); // modelA's points
         const secondHalf = allPoints.slice(mid); // modelB's points
@@ -478,7 +520,9 @@ function updateLineChartJsData(
         // console.log("Model B Dataset:", chartData.datasets[modelBIndex]);
       } else {
         // Here "scenario display" is not "combined"
-        chartData.datasets[varIndex].data = series.points;
+        chartData.datasets[varIndex].data = applyScale(series.points) as
+          | number[]
+          | { x: number; y: number }[];
       }
     }
     const visible = visibleDatasetSpecs.find(

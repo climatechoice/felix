@@ -35,16 +35,16 @@ export async function config() {
     genFormat,
 
     // Specify the Vensim model to read
-    modelFiles: ["testing/FeliX3_YoGL_v25_fixedV1d.mdl"],
+    modelFiles: ["testing/FeliX3_YoGL_v25_fixedV1e.mdl"],
 
     // The following files will be hashed to determine whether the model needs
     // to be rebuilt when watch mode is active
-    modelInputPaths: ["testing/FeliX3_YoGL_v25_fixedV1d.mdl"],
+    modelInputPaths: ["testing/FeliX3_YoGL_v25_fixedV1e.mdl"],
 
     // The following files will cause the model to be rebuilt when watch mode is
     // is active.  Note that these are globs so we use forward slashes regardless
     // of platform.
-    watchPaths: ["config/**", "testing/FeliX3_YoGL_v25_fixedV1d.mdl"],
+    watchPaths: ["config/**", "testing/FeliX3_YoGL_v25_fixedV1e.mdl"],
 
     // Read csv files from `config` directory
     modelSpec: configProcessor({
