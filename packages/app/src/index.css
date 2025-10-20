@@ -85,6 +85,13 @@ p {
   cursor: pointer;
 }
 
+/* Icon-only buttons (smaller width) */
+#nav-bar button:has(.material-icons):not(:has(span:not(.material-icons))) {
+  padding: 0 4px;
+  min-width: 32px;
+  width: 32px;
+}
+
 #nav-bar button:hover,
 #nav-bar select:hover {
   background-color: rgba(0, 0, 0, 0.05);

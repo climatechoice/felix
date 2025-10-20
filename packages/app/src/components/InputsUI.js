@@ -153,21 +153,34 @@ function addSliderItem(sliderInput, container = $("#inputs-content")) {
   };
   updateValueElement(value);
 
+  // Track the value when drag starts for undo history
+  let dragStartValue = value;
+  
+  slider.on("slideStart", () => {
+    dragStartValue = sliderInput.get();
+  });
+
   // Update the model input when the slider is dragged or the track is clicked
   slider.on("change", (change) => {
-    const prevValue = sliderInput.get();
     const newValue = change.newValue;
     const start = spec.defaultValue;
     const end = newValue;
     slider.setAttribute("rangeHighlights", [{ start, end }]);
     updateValueElement(newValue);
-    // Push to undo stack, clear redo stack
-    const undoArr = [...undoStack.get()];
-    undoArr.push({ id: spec.id, prevValue, newValue });
-    undoStack.set(undoArr);
-    redoStack.set([]);
     sliderInput.set(newValue);
   });
+  
+  // Only record to undo stack when drag ends (performance optimization)
+  slider.on("slideStop", (change) => {
+    const newValue = change.newValue;
+    if (dragStartValue !== newValue) {
+      const undoArr = [...undoStack.get()];
+      undoArr.push({ id: spec.id, prevValue: dragStartValue, newValue });
+      undoStack.set(undoArr);
+      redoStack.set([]);
+    }
+  });
+  
   return div; // fm
 }
 
@@ -494,9 +507,15 @@ function addCombinedSlider(groupInputs, container) {
   };
   updateValueElement(startInput.get(), endInput.get());
 
-  // Update logic
+  // Track values when drag starts for undo history
+  let dragStartValues = [startInput.get(), endInput.get()];
+  
+  slider.on("slideStart", () => {
+    dragStartValues = [startInput.get(), endInput.get()];
+  });
+
+  // Update logic - handles real-time updates during drag
   slider.on("change", (change) => {
-    const prevValues = [startInput.get(), endInput.get()];
     const [startValue, endValue] = change.newValue;
     updateValueElement(startValue, endValue);
 
@@ -509,15 +528,20 @@ function addCombinedSlider(groupInputs, container) {
       },
     ]);
 
-    // Push to undo stack, clear redo stack
-    const undoArr = [...undoStack.get()];
-    undoArr.push({ ids: [startSpec.id, endSpec.id], prevValues, newValues: [startValue, endValue] });
-    undoStack.set(undoArr);
-    redoStack.set([]);
-
     // Update model values
     startInput.set(startValue);
     endInput.set(endValue);
+  });
+  
+  // Only record to undo stack when drag ends (performance optimization)
+  slider.on("slideStop", () => {
+    const currentValues = [startInput.get(), endInput.get()];
+    if (dragStartValues[0] !== currentValues[0] || dragStartValues[1] !== currentValues[1]) {
+      const undoArr = [...undoStack.get()];
+      undoArr.push({ ids: [startSpec.id, endSpec.id], prevValues: dragStartValues, newValues: currentValues });
+      undoStack.set(undoArr);
+      redoStack.set([]);
+    }
   });
 }
 
@@ -658,19 +682,31 @@ function addCombined2Slider(groupInputs, container = $("#inputs-content")) {
     });
   }
 
-  // Add change handler
+  // Track values when drag starts for undo history
+  let dragStartValues = inputs.map(input => input.get());
+  
+  slider.on("slideStart", () => {
+    dragStartValues = inputs.map(input => input.get());
+  });
+
+  // Add change handler - updates model and UI during drag
   slider.on("change", (change) => {
-    // Save previous values for all inputs
-    const prevValues = inputs.map(input => input.get());
     updateSegments(change.newValue);
-    // After update, get new values
+  });
+  
+  // Only record to undo stack when drag ends (performance optimization)
+  slider.on("slideStop", () => {
     const newValues = inputs.map(input => input.get());
-    // Push to undo stack, clear redo stack
-    const undoArr = [...undoStack.get()];
-    const ids = groupInputs.map(spec => spec.id);
-    undoArr.push({ ids, prevValues, newValues });
-    undoStack.set(undoArr);
-    redoStack.set([]);
+    
+    // Check if any value changed
+    const hasChanged = newValues.some((val, i) => val !== dragStartValues[i]);
+    if (hasChanged) {
+      const undoArr = [...undoStack.get()];
+      const ids = groupInputs.map(spec => spec.id);
+      undoArr.push({ ids, prevValues: dragStartValues, newValues });
+      undoStack.set(undoArr);
+      redoStack.set([]);
+    }
   });
 
   // Initial update

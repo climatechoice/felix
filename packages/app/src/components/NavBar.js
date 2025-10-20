@@ -42,9 +42,8 @@ export function loadNavBar() {
 
   // Undo button
   const $undoBtn = $(`
-    <button>
+    <button title="Undo">
       <span class="material-icons">undo</span>
-      <span>Undo</span>
     </button>
   `);
   $undoBtn.on("click", () => undoInputChange());
@@ -52,9 +51,8 @@ export function loadNavBar() {
 
   // Redo button
   const $redoBtn = $(`
-    <button>
+    <button title="Redo">
       <span class="material-icons">redo</span>
-      <span>Redo</span>
     </button>
   `);
   $redoBtn.on("click", () => redoInputChange());
@@ -62,9 +60,8 @@ export function loadNavBar() {
 
   // Reset all scenarios button
   const $resetAllBtn = $(`
-    <button>
+    <button title="Reset All">
       <span class="material-icons">refresh</span>
-      <span>All</span>
     </button>
   `);
   $resetAllBtn.on("click", () => resetAllModelsInputs());
@@ -72,9 +69,8 @@ export function loadNavBar() {
 
   // Show input changes summary button
   const $showChangedInputsBtn = $(`
-    <button>
+    <button title="Summary">
       <span class="material-icons">summarize</span>
-      <span>Summary</span>
     </button>
   `);
   $showChangedInputsBtn.on("click", () => showChangedInputs());
@@ -232,6 +228,7 @@ function handleModeToggle(event, $labelEl) {
 function undoInputChange() {
   const stack = [...undoStack.get()];
   if (stack.length === 0) return;
+  
   const last = stack.pop();
   // Multi-input undo (combined/combo sliders)
   if (last.ids && Array.isArray(last.ids)) {
@@ -267,6 +264,7 @@ function undoInputChange() {
 function redoInputChange() {
   const stack = [...redoStack.get()];
   if (stack.length === 0) return;
+  
   const last = stack.pop();
   // Multi-input redo (combined/combo sliders)
   if (last.ids && Array.isArray(last.ids)) {
@@ -328,12 +326,9 @@ function refreshInputsUI() {
     }
     if (selector) openDropdowns.push(selector);
   });
-  // Save scroll position
-  const $inputsContent = $("#inputs-content");
-  const prevScroll = $inputsContent.scrollTop();
   initInputsUI(selectedCategory);
-  // After re-render, re-open the same dropdowns and restore scroll
-  setTimeout(() => {
+  // Use requestAnimationFrame for smoother UI updates
+  requestAnimationFrame(() => {
     openDropdowns.forEach(selector => {
       const $dropdown = $(selector).closest('.input-dropdown-group').find('.dropdown-content');
       if ($dropdown.length && !$dropdown.is(':visible')) {
@@ -341,9 +336,7 @@ function refreshInputsUI() {
         $(selector).closest('.input-dropdown-group').find('.expand-button .material-icons').text('expand_less');
       }
     });
-    // Restore scroll position
-    $inputsContent.scrollTop(prevScroll);
-  }, 0);
+  });
 }
 }
 
