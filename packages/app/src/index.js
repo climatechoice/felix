@@ -7,9 +7,10 @@ import { config as coreConfig, createModel } from "@core";
 // Store imports
 import { model, modelB, activeModel } from "./stores/model-store";
 import { graphViews } from "./stores/graphs-store";
+import { selectedGraphCount } from "./stores/layout-store";
 // Component imports
 import { initInputsUI } from "./components/InputsUI";
-import { initGraphsUI } from "./components/GraphsUI";
+import { initGraphsUI, getDefaultGraphCountForCategory } from "./components/GraphsUI";
 import { loadNavBar } from "./components/NavBar";
 import { loadFloatingLogos } from "./components/FloatingLogos";
 import { initScenarioSelectorUI } from "./components/ScenarioSelector";
@@ -66,18 +67,22 @@ async function initApp() {
   const defaultInputCategory =
     inputCategories.values().next().value || "Diet Change";
 
+  // Get the default graph count for the default category
+  const defaultGraphCount = getDefaultGraphCountForCategory(defaultGraphCategory);
+  selectedGraphCount.set(defaultGraphCount);
+
   initScenarioSelectorUI(); // this is the side-bar on the left
-  initGraphsUI(defaultGraphCategory); // default layout contains 4 graphs
+  initGraphsUI(defaultGraphCategory, defaultGraphCount); // use category-specific default
   initInputsUI(defaultInputCategory);
 
   // initOverlay();
 
   // Also, mark the default buttons as "selected"
   $(
-    "#input-category-selector-container .input-category-selector-option[data-value='Diet Change']"
+    `#input-category-selector-container .input-category-selector-option[data-value='${defaultInputCategory}']`
   ).addClass("selected");
   $(
-    "#graph-category-selector-container .graph-category-selector-option[data-value='Food']"
+    `#graph-category-selector-container .graph-category-selector-option[data-value='${defaultGraphCategory}']`
   ).addClass("selected");
   $(
     "#scenario-selector-container .scenario-selector-option[data-value='Scenario 1']"

@@ -5,6 +5,7 @@ import { GraphView } from "../graph-view";
 import { selectedGraphCount, layoutConfig } from "../stores/layout-store.js";
 import { model, modelB } from "../stores/model-store.js";
 import { graphViews } from "../stores/graphs-store.js";
+import { categoryLayouts } from "../stores/category-layout-store.js";
 
 // jquery Click event for Selecting Graph Category (Food, Climate, LandUse, Fertilizer)
 $("#graph-category-selector-container").on(
@@ -23,10 +24,50 @@ $("#graph-category-selector-container").on(
     // Get the selected category value
     const selectedCategory = $(this).data("value");
 
-    // Call the function to update the graphs
-    initGraphsUI(selectedCategory, selectedGraphCount.get());
+    // Check if this category has a saved layout preference
+    const layouts = categoryLayouts.get();
+    let graphCount;
+    
+    if (layouts[selectedCategory] !== undefined) {
+      // Use the saved layout for this category
+      graphCount = layouts[selectedCategory];
+    } else {
+      // Use the default graph count for this category
+      graphCount = getDefaultGraphCountForCategory(selectedCategory);
+    }
+    
+    // Update the selected graph count and call the function to update the graphs
+    selectedGraphCount.set(graphCount);
+    
+    // Update the navbar layout selector to match this category's layout
+    $("#layout-select").val(graphCount);
+    
+    initGraphsUI(selectedCategory, graphCount);
   }
 );
+
+/*
+ * Get the default number of graphs for a given category.
+ * This reads from the graphType field in the graph spec.
+ * Falls back to 4 if not specified.
+ */
+export function getDefaultGraphCountForCategory(category) {
+  // Find any graph in this category and get its graphType (repurposed for default count)
+  const graphInCategory = Array.from(coreConfig.graphs.values()).find(
+    (spec) => spec.graphCategory === category
+  );
+  
+  if (graphInCategory && graphInCategory.graphType) {
+    const count = parseInt(graphInCategory.graphType, 10);
+    // Ensure it's a valid layout option (1, 2, 4, 6, or 9)
+    if (layoutConfig[count]) {
+      return count;
+    }
+  }
+  
+  // Default to 4 graphs if not specified or invalid
+  return 4;
+}
 
 function createGraphViewModel(graphSpec, modelToUse) {
   /*

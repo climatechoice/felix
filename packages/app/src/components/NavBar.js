@@ -4,6 +4,7 @@ import { str, createPopupBox } from "../lib/utils.js";
 import { selectedGraphCount, layoutConfig } from "../stores/layout-store";
 import { model, modelB, activeModel } from "../stores/model-store";
 import { undoStack, redoStack } from "../stores/undo-redo-store.js";
+import { categoryLayouts } from "../stores/category-layout-store.js";
 import { initInputsUI } from "./InputsUI";
 import { initGraphsUI } from "./GraphsUI";
 
@@ -151,10 +152,18 @@ export function loadNavBar() {
     } else {
       selectedGraphCount.set(chosen);
     }
-    // Refresh graphs section to apply the selected graph layout
+    
+    // Get current category and save the layout preference
     const selectedCategory = $(".graph-category-selector-option.selected").data(
       "value"
     );
+    
+    // Save this category's layout preference
+    const layouts = categoryLayouts.get();
+    categoryLayouts.set({
+      ...layouts,
+      [selectedCategory]: chosen
+    });
 
     console.log(
       "Nanostore value of selectedGraphCount: ",
