@@ -133,12 +133,7 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
 
   // Create custom dropdown container
   const dropdownContainer = $('<div class="custom-graph-selector"></div>');
-  const $expandIcon = $(
-    '<span class="material-icons expand-icon">expand_more</span>'
-  );
-  const selectedOption = $('<div class="selected-option"></div>').append(
-    $expandIcon
-  );
+  const selectedOption = $('<div class="selected-option"></div>');
   const dropdownMenu = $('<div class="dropdown-menu"></div>').hide();
 
   // Add classification groups to the dropdown
@@ -163,25 +158,32 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
 
       // Set the initially selected graph
       if (spec.id === currentGraphId) {
+        const $expandIcon = $(
+          '<span class="material-icons expand-icon">expand_more</span>'
+        );
         const selectedTitle = title.clone();
         const selectedInfoIcon = createInfoIcon(str(spec.descriptionKey));
-        selectedOption.append(selectedTitle, selectedInfoIcon);
+        selectedOption.append($expandIcon, selectedTitle, selectedInfoIcon);
       }
     });
   });
 
   // Handle option selection
-  dropdownMenu.on("click", ".dropdown-option", function () {
+  dropdownMenu.on("click", ".dropdown-option", function (e) {
+    e.stopPropagation(); // Prevent event from bubbling
     const graphId = $(this).data("value");
     const graphSpec = coreConfig.graphs.get(graphId);
     if (!graphSpec) return;
 
     // Update selected option display
+    const $expandIcon = $(
+      '<span class="material-icons expand-icon">expand_more</span>'
+    );
     const newTitle = $(
       `<span class="option-title">${str(graphSpec.titleKey)}</span>`
     );
     const newInfoIcon = createInfoIcon(str(graphSpec.descriptionKey));
-    selectedOption.empty().append(newTitle, newInfoIcon);
+    selectedOption.empty().append($expandIcon, newTitle, newInfoIcon);
     dropdownMenu.hide();
 
     // Trigger graph change callback
@@ -191,17 +193,28 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
   // Toggle dropdown visibility
   selectedOption.on("click", function (e) {
     e.stopPropagation();
-    dropdownMenu.toggle();
+    const isVisible = dropdownMenu.is(":visible");
+    
+    // Close all other graph dropdowns first
+    $(".custom-graph-selector .dropdown-menu").hide();
+    
+    // Toggle this dropdown
+    if (!isVisible) {
+      dropdownMenu.show();
+    }
   });
 
-  // Close dropdown when clicking outside
-  $(document).on("click", function (e) {
+  // Close dropdown when clicking outside - use event delegation to avoid multiple handlers
+  // Only add this handler once per dropdown by using a unique namespace
+  $(document).off("click.graphDropdown" + currentGraphId).on("click.graphDropdown" + currentGraphId, function (e) {
     // Only close if clicking outside the dropdown container
     if (
       !dropdownContainer.is(e.target) &&
       dropdownContainer.has(e.target).length === 0
     ) {
       dropdownMenu.hide();
+      // Clean up the handler when dropdown is closed
+      $(document).off("click.graphDropdown" + currentGraphId);
     }
   });
 

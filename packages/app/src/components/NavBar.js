@@ -5,6 +5,7 @@ import { selectedGraphCount, layoutConfig } from "../stores/layout-store";
 import { model, modelB, activeModel } from "../stores/model-store";
 import { undoStack, redoStack } from "../stores/undo-redo-store.js";
 import { categoryLayouts } from "../stores/category-layout-store.js";
+import { isMultiScenarioMode } from "../stores/scenario-mode-store.js";
 import { initInputsUI } from "./InputsUI";
 import { initGraphsUI } from "./GraphsUI";
 
@@ -78,7 +79,7 @@ export function loadNavBar() {
 
   // Export inputs to CSV file button
   const $exportInputsBtn = $(`
-    <button>
+    <button title="Export Scenario">
       <span class="material-icons">download</span>
     </button>
   `);
@@ -87,10 +88,10 @@ export function loadNavBar() {
 
   // Import inputs from CSV file button
   const $importInputsBtn = $(`
-  <button title="Import Inputs from CSV">
-    <span class="material-icons">upload</span>
-  </button>
-`);
+    <button title="Import Scenario">
+      <span class="material-icons">upload</span>
+    </button>
+  `);
   $importInputsBtn.on("click", () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
@@ -111,8 +112,20 @@ export function loadNavBar() {
    * Section 2 - Title
    */
   const $sect2 = $('<div class="nav-section second"></div>');
-  const $title = $('<div class="app-title">FeliXSim</div>');
-  $sect2.append($title);
+  
+  // Logo and title container
+  const $titleContainer = $('<div class="title-container"></div>');
+  const $logo = $('<img src="src/imgs/felix-png.png" alt="FeliX Logo" class="title-container-logo" />');
+  const $title = $('<div class="title-container-text">FeliXSim</div>');
+  
+  $titleContainer.append($logo, $title);
+  
+  // Make the entire container clickable to refresh the page
+  $titleContainer.on("click", () => {
+    location.reload();
+  });
+  
+  $sect2.append($titleContainer);
 
   /*
    * Section 3
@@ -168,10 +181,22 @@ export function loadNavBar() {
     initGraphsUI(selectedCategory, selectedGraphCount.get());
   });
 
-  $sect3.append(
-    $('<label for="layout-select">Layout:&nbsp;</label>'),
-    $layoutSelect
-  );
+  // Layout selector with icon
+  const $layoutContainer = $('<div class="layout-selector-container"></div>');
+  const $layoutIcon = $('<span class="material-icons layout-icon">dashboard</span>');
+  $layoutContainer.append($layoutIcon, $layoutSelect);
+  
+  $sect3.append($layoutContainer);
+
+  // Reset graphs button - right after layout selector
+  const $resetGraphsBtn = $(`
+    <button title="Reset Graph View" class="reset-graph-btn">
+      <span class="material-icons">refresh</span>
+      <span class="material-icons">bar_chart</span>
+    </button>
+  `);
+  $resetGraphsBtn.on("click", () => resetGraphsView());
+  $sect3.append($resetGraphsBtn);
 
   const $documentationBtn = $("<button>Documentation</button>");
   $documentationBtn.on("click", () => {
@@ -199,6 +224,9 @@ export function loadNavBar() {
 
   // Final assembly
   $nav.append($sect1, $sect2, $sect3);
+  
+  // Apply initial filter based on default mode (single-scenario)
+  filterGraphCategoriesByMode(false);
 
 // Function to switch from single to multi-scenario mode
 function handleModeToggle(event, $labelEl) {
@@ -208,6 +236,12 @@ function handleModeToggle(event, $labelEl) {
   document.body.classList.toggle("multi-scenario", isOn);
 
   $labelEl.text(isOn ? "Multi-scenario mode" : "Single-scenario mode");
+
+  // Update the mode store
+  isMultiScenarioMode.set(isOn);
+  
+  // Update graph category buttons based on mode
+  filterGraphCategoriesByMode(isOn);
 
   // Refresh all sliders
   $(".slider").each(function () {
@@ -220,6 +254,95 @@ function handleModeToggle(event, $labelEl) {
       ]);
     }
   });
+}
+
+// Filter and show/hide graph category buttons based on mode
+function filterGraphCategoriesByMode(isMultiMode) {
+  const $buttons = $(".graph-category-selector-option");
+  const currentSelected = $buttons.filter(".selected").data("value");
+  let firstVisible = null;
+  let currentStillVisible = false;
+  
+  $buttons.each(function() {
+    const $btn = $(this);
+    const category = $btn.data("value");
+    
+    // Find a graph in this category to check its mainGraphs value
+    const graphInCategory = Array.from(coreConfig.graphs.values()).find(
+      (spec) => spec.graphCategory === category
+    );
+    
+    if (graphInCategory) {
+      const mainGraphs = (graphInCategory.mainGraphs || "").toLowerCase();
+      const modes = mainGraphs.split(";").map(m => m.trim());
+      const showInSingle = modes.includes("single") || mainGraphs === "";
+      const showInMulti = modes.includes("multi") || mainGraphs === "";
+      const showInBoth = mainGraphs === "" || mainGraphs.includes("single;multi") || mainGraphs.includes("multi;multi");
+      
+      const shouldShow = showInBoth || (isMultiMode ? showInMulti : showInSingle);
+      
+      if (shouldShow) {
+        $btn.show();
+        if (!firstVisible) firstVisible = category;
+        if (category === currentSelected) currentStillVisible = true;
+      } else {
+        $btn.hide();
+      }
+    }
+  });
+  
+  // If current selection is hidden, switch to first visible and reload graphs
+  if (!currentStillVisible && firstVisible) {
+    $buttons.removeClass("selected");
+    const $firstVisibleBtn = $(`.graph-category-selector-option[data-value='${firstVisible}']`);
+    $firstVisibleBtn.addClass("selected");
+    
+    // Reload graphs for the newly selected category
+    const layouts = categoryLayouts.get();
+    let graphCount;
+    if (layouts[firstVisible] !== undefined) {
+      graphCount = layouts[firstVisible];
+    } else {
+      // Get default from the first graph in this category
+      const graphInCategory = Array.from(coreConfig.graphs.values()).find(
+        (spec) => spec.graphCategory === firstVisible
+      );
+      graphCount = graphInCategory && graphInCategory.graphType ? parseInt(graphInCategory.graphType, 10) : 4;
+    }
+    selectedGraphCount.set(graphCount);
+    $("#layout-select").val(graphCount);
+    initGraphsUI(firstVisible, graphCount);
+  }
+}
+
+
+// Reset graphs view to defaults
+function resetGraphsView() {
+  // Get currently selected category
+  const $selectedCategory = $(".graph-category-selector-option.selected");
+  const currentCategoryName = $selectedCategory.data("value");
+  
+  if (currentCategoryName) {
+    // Get default graph count for the CURRENT category
+    const graphInCategory = Array.from(coreConfig.graphs.values()).find(
+      (spec) => spec.graphCategory === currentCategoryName
+    );
+    const defaultGraphCount = graphInCategory && graphInCategory.graphType 
+      ? parseInt(graphInCategory.graphType, 10) 
+      : 4;
+    
+    // Reset layout for this category
+    const layouts = categoryLayouts.get();
+    const { [currentCategoryName]: _, ...rest } = layouts; // Remove current category's saved layout
+    categoryLayouts.set(rest);
+    
+    // Reset to default layout
+    selectedGraphCount.set(defaultGraphCount);
+    $("#layout-select").val(defaultGraphCount);
+    
+    // Reload graphs for the SAME category
+    initGraphsUI(currentCategoryName, defaultGraphCount);
+  }
 }
 
 

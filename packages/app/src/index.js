@@ -79,10 +79,10 @@ async function initApp() {
 
   // Also, mark the default buttons as "selected"
   $(
-    `#input-category-selector-container .input-category-selector-option[data-value='${defaultInputCategory}']`
+    `#input-category-selector-option[data-value='${defaultInputCategory}']`
   ).addClass("selected");
   $(
-    `#graph-category-selector-container .graph-category-selector-option[data-value='${defaultGraphCategory}']`
+    `#graph-category-selector-option[data-value='${defaultGraphCategory}']`
   ).addClass("selected");
   $(
     "#scenario-selector-container .scenario-selector-option[data-value='Scenario 1']"

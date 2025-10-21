@@ -97,9 +97,22 @@ export function initScenarioSelectorUI() {
       selectedScenario === "Scenario 2"
     );
 
-    const selectedCategory = $(".input-category-selector-option.selected").data(
+    let selectedCategory = $(".input-category-selector-option.selected").data(
       "value"
     );
-    initInputsUI(selectedCategory);
+    
+    // Fallback if no category is selected
+    if (!selectedCategory) {
+      const $first = $(".input-category-selector-option").first();
+      if ($first.length) {
+        selectedCategory = $first.data("value");
+        $(".input-category-selector-option").removeClass("selected");
+        $first.addClass("selected");
+      }
+    }
+    
+    if (selectedCategory) {
+      initInputsUI(selectedCategory);
+    }
   }
 }
