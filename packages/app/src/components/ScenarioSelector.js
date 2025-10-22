@@ -12,7 +12,7 @@ export function initScenarioSelectorUI() {
 
   // Create the "+" button
   const $addBtn = $(`
-    <button id="add-scenario" class="add-scenario-btn">
+    <button id="add-scenario" class="add-scenario-btn" title="Additional Scenarios are in Construction">
       <span class="material-icons">add</span>
     </button>
   `);
@@ -29,8 +29,9 @@ export function initScenarioSelectorUI() {
     return isSingleScenarioMode;
   }
 
-  // 1) Inject the first scenario button on load
+  // 1) Inject both scenario buttons on load
   addScenarioButton(1);
+  addScenarioButton(2);
 
   // 2) "+" button handler
   $container.on("click", "#add-scenario", function () {

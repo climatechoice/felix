@@ -9,7 +9,7 @@ body {
   margin: 0;
   overflow: hidden;
   box-sizing: border-box;
-  background-color: #fff;
+  background: radial-gradient(ellipse at top, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%);
   font-family: "arial", sans-serif;
   font-optical-sizing: auto;
   font-weight: 400;
@@ -28,11 +28,12 @@ p {
   /* ensure it never flexes */
   flex: 0 0 40px;
   height: 40px;
-  background-color: #f5f5f5;
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 50%, #f0f0f0 100%);
   box-sizing: border-box;
   border-width: 0 0 1px 0;
   border-style: solid;
-  border-color: #c9c9c9;
+  border-color: #d0d0d0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* inner <nav> flex row */
@@ -78,11 +79,25 @@ p {
   padding: 0 8px;
 
   /* visuals */
-  background: none;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
+  border: 1px solid #d0d0d0;
   border-radius: 4px;
   font-size: 13px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+#nav-bar button:hover,
+#nav-bar select:hover {
+  background: #e8e8e8;
+  border-color: #a0a0a0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#nav-bar button:active {
+  background: #d8d8d8;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 /* Icon-only buttons (smaller width) */
@@ -218,9 +233,10 @@ p {
 
 /* Left Sidebar */
 #side-bar {
-  background-color: #f5f5f5;
+  background: linear-gradient(180deg, #2c2c2c 0%, #1a1a1a 50%, #000000 100%);
   box-sizing: border-box;
   overflow: hidden; /* hide any overflow when collapsed */
+  box-shadow: 1px 0 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Inputs: middle column */
@@ -228,14 +244,14 @@ p {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #ececec;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 30%, #f0f0f0 100%);
   overflow-y: auto;
   box-sizing: border-box;
   padding: 10px 10px 0px 10px;
   border-width: 0 1px 0 0;
   border-style: solid;
-  border-color: #c9c9c9;
-  /* box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); */
+  border-color: #d0d0d0;
+  box-shadow: 1px 0 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Graphs: right column */
@@ -243,7 +259,7 @@ p {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #fff;
+  background-color: #ffffff;
   overflow-y: auto;
   box-sizing: border-box;
   padding: 10px;
@@ -266,13 +282,13 @@ p {
 .input-category-selector-option {
   position: relative;
   background: none;
-  color: black;
+  color: #374151;
   margin: 5px 5px;
   border: none;
   font-size: 15px;
   cursor: pointer;
   font-weight: normal;
-  transition: transform 0.1s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
   display: inline-block;
 }
@@ -293,12 +309,13 @@ p {
   position: absolute;
   left: 0;
   bottom: 0;
-  height: 2px;
+  height: 3px;
   width: 100%;
-  background-color: black;
+  background: linear-gradient(90deg, #424242 0%, #212121 100%);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.1s ease;
+  transition: transform 0.2s ease;
+  border-radius: 2px;
 }
 
 /* Hover effect: animate underline */
@@ -306,9 +323,14 @@ p {
   transform: scaleX(1);
 }
 
+.input-category-selector-option:hover {
+  color: #212121;
+}
+
 /* Selected state: bold text and visible underline */
 .input-category-selector-option.selected {
   font-weight: bold;
+  color: #212121;
 }
 
 .input-category-selector-option.selected::after {
@@ -408,29 +430,31 @@ p {
 }
 
 .graph-category-selector-option {
-  background-color: #7d7d7d; /* Gray background for buttons */
-  color: white; /* White text color */
-  padding: 5px 10px; /* Add some padding for the buttons */
-  border: none; /* Remove default border */
-  border-radius: 5px; /* Rounded corners */
-  font-size: 16px; /* Text size */
-  cursor: pointer; /* Pointer cursor when hovered */
-  transition: background-color 0.1s ease, transform 0.1s ease; /* Smooth hover effect */
+  background: #8a8a8a;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
   margin-top: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .graph-category-selector-option:hover {
-  background-color: #27272a; /* Darker green on hover */
-  transform: scale(1.05); /* Slightly enlarge the button on hover */
+  background: #6a6a6a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 
 .graph-category-selector-option:active {
-  background-color: #18181b; /* Even darker green when clicked */
+  background: #4a4a4a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .graph-category-selector-option.selected {
-  background-color: #000; /* Change color when selected */
-  transform: scale(1.05); /* Slightly enlarge when selected */
+  background: #000000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
 }
 
 /*
@@ -752,9 +776,10 @@ p {
 .input-item {
   margin: 6px 0;
   padding: 6px;
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 50%, #f5f5f5 100%);
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* Hover effect for standalone inputs */
@@ -769,9 +794,10 @@ p {
 .input-segmented-item {
   margin: 6px 0;
   padding: 6px;
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 50%, #f5f5f5 100%);
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .segmented-buttons {
@@ -783,17 +809,26 @@ p {
 .segmented-button {
   flex: 1;
   padding: 0.4rem 0.8rem;
-  border: 1px solid #ccc;
-  background: #fafafa;
+  border: 1px solid #d0d0d0;
+  background: #f5f5f5;
   cursor: pointer;
   border-radius: 4px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.segmented-button:hover {
+  background: #e8e8e8;
+  border-color: #b0b0b0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Default active state (for single scenario mode and default values) */
 .segmented-button.active {
-  background: #000;
+  background: #000000;
   color: white;
-  border-color: #000;
+  border-color: #000000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 /* Multi-scenario mode styles */
@@ -864,19 +899,22 @@ p {
 .tooltip {
   visibility: hidden;
   position: fixed;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   color: white;
-  padding: 8px 12px 0px 12px;
+  padding: 8px 12px;
   border-radius: 4px;
   font-size: 12px;
   line-height: 1.4;
   z-index: 1001;
   pointer-events: none;
-  min-width: 200px;
+  min-width: 150px;
   max-width: 300px;
   text-align: center;
   white-space: normal;
   display: block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -100%);
+  margin-top: -8px;
 }
 
 .value-units-container {
@@ -1367,4 +1405,131 @@ p {
   font-size: 0.95rem;
   text-align: right; /* numeric inputs look better right-aligned */
   font-family: inherit;
+}
+
+/* Survey Popup Styles */
+.survey-popup {
+  max-width: 650px;
+  width: 90vw;
+}
+
+.survey-container {
+  padding: 20px;
+}
+
+.survey-container h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.survey-question {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.survey-question:last-of-type {
+  border-bottom: none;
+}
+
+.survey-question > label {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.survey-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 10px;
+}
+
+.survey-options label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.survey-options label:hover {
+  background-color: #f5f5f5;
+}
+
+.survey-options input[type="radio"],
+.survey-options input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.survey-question textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.survey-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.survey-submit-btn,
+.survey-cancel-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.survey-submit-btn {
+  background: #000;
+  color: white;
+}
+
+.survey-submit-btn:hover {
+  background: #333;
+}
+
+/* Second scenario button styling (when in multi-mode) */
+.survey-submit-btn[data-model="2"] {
+  background: #e66100; /* Orange for Scenario 2 */
+}
+
+.survey-submit-btn[data-model="2"]:hover {
+  background: #cc5500;
+}
+
+.survey-submit-btn[data-model="1"] {
+  background: #6a3d9a; /* Purple for Scenario 1 */
+}
+
+.survey-submit-btn[data-model="1"]:hover {
+  background: #552f7a;
+}
+
+.survey-cancel-btn {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.survey-cancel-btn:hover {
+  background: #d0d0d0;
 }

@@ -8,6 +8,7 @@ import { categoryLayouts } from "../stores/category-layout-store.js";
 import { isMultiScenarioMode } from "../stores/scenario-mode-store.js";
 import { initInputsUI } from "./InputsUI";
 import { initGraphsUI } from "./GraphsUI";
+import { showSurveyPopup } from "./SurveyPopup";
 
 // Inject a 50px-tall nav bar split into three equal sections
 export function loadNavBar() {
@@ -100,13 +101,27 @@ export function loadNavBar() {
     fileInput.onchange = (event) => {
       const file = event.target.files[0];
       if (file) {
-        processCSVFile(file);
+        // Check if in multi-scenario mode
+        if (isMultiScenarioMode.get()) {
+          showScenarioSelectionPopup(file);
+        } else {
+          processCSVFile(file, 1); // Single mode always loads to Model 1
+        }
       }
     };
 
     fileInput.click();
   });
   $sect1.append($importInputsBtn);
+
+  // Survey button - generates scenario from user choices
+  const $surveyBtn = $(`
+    <button title="Build Your First Scenario!">
+      <span class="material-icons">quiz</span>
+    </button>
+  `);
+  $surveyBtn.on("click", () => showSurveyPopup());
+  $sect1.append($surveyBtn);
 
   /*
    * Section 2 - Title
@@ -667,22 +682,24 @@ function getSpecByVarName(varName) {
 // ---------------- export ----------------
 
 function exportInputsToCSV() {
-  const modelInstances = [model.get(), modelB.get()];
+  // Export only the active model's inputs
+  const activeModelInstance = activeModel.get();
+  
+  if (!activeModelInstance) {
+    alert("No model loaded. Please refresh the page.");
+    return;
+  }
 
-  const rows = [["Model", "Input Id", "VarName", "Value"]];
+  const rows = [["VarName", "Value"]];
 
-  modelInstances.forEach((modelInstance, modelIndex) => {
-    if (!modelInstance) return;
-    coreConfig.inputs.forEach((spec) => {
-      const input = modelInstance.getInputForId(spec.id);
-      if (!input) return;
+  coreConfig.inputs.forEach((spec) => {
+    const input = activeModelInstance.getInputForId(spec.id);
+    if (!input) return;
 
-      const inputId = spec.id;
-      const varName = spec.varName; // use VarName
-      const value = input.get();
+    const varName = spec.varName;
+    const value = input.get();
 
-      rows.push([`Model ${modelIndex + 1}`, inputId, varName, value]);
-    });
+    rows.push([varName, value]);
   });
 
   const csvContent = rows.map((r) => r.map(csvEscape).join(",")).join("\n");
@@ -690,14 +707,112 @@ function exportInputsToCSV() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "input_values.csv";
+  a.download = "scenario_inputs.csv";
   a.click();
   URL.revokeObjectURL(url);
 }
 
 // ---------------- import ----------------
 
-function processCSVFile(file) {
+/**
+ * Shows a popup to select which scenario to import into (multi-scenario mode only)
+ */
+function showScenarioSelectionPopup(file) {
+  // Remove any existing popup
+  $(".popup-overlay, .popup").remove();
+
+  // Create the popup
+  const popup = $('<div class="popup popup-middle" style="max-width: 400px;">');
+  
+  const content = $('<div style="padding: 20px; text-align: center;">').html(`
+    <h2 style="margin-top: 0;">Import Scenario</h2>
+    <p style="color: #666; margin-bottom: 30px;">Which scenario would you like to import this file into?</p>
+    
+    <div style="display: flex; gap: 15px; justify-content: center;">
+      <button class="import-scenario-choice" data-model="1" style="
+        padding: 15px 30px;
+        background: #6a3d9a;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: background 0.2s;
+      ">
+        Scenario 1
+      </button>
+      <button class="import-scenario-choice" data-model="2" style="
+        padding: 15px 30px;
+        background: #e66100;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: background 0.2s;
+      ">
+        Scenario 2
+      </button>
+    </div>
+    
+    <button class="import-cancel-btn" style="
+      margin-top: 20px;
+      padding: 8px 20px;
+      background: #e0e0e0;
+      color: #333;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    ">Cancel</button>
+  `);
+
+  // Close button
+  const closeBtn = $(`
+    <button class="popup-close">
+      <span class="material-icons">close</span>
+    </button>
+  `);
+
+  // Create overlay
+  const overlay = $('<div class="popup-overlay">');
+  
+  const closePopup = () => {
+    popup.remove();
+    overlay.remove();
+  };
+
+  closeBtn.on("click", closePopup);
+  content.find('.import-cancel-btn').on('click', closePopup);
+  
+  // Handle scenario selection
+  content.find('.import-scenario-choice').on('click', function() {
+    const modelNumber = parseInt($(this).data('model'));
+    closePopup();
+    processCSVFile(file, modelNumber);
+  });
+
+  // Hover effects
+  content.find('.import-scenario-choice').on('mouseenter', function() {
+    const model = $(this).data('model');
+    $(this).css('background', model === 1 ? '#552f7a' : '#cc5500');
+  }).on('mouseleave', function() {
+    const model = $(this).data('model');
+    $(this).css('background', model === 1 ? '#6a3d9a' : '#e66100');
+  });
+
+  popup.append(closeBtn, content);
+  overlay.append(popup);
+  overlay.on("click", (e) => {
+    if (e.target === overlay[0]) closePopup();
+  });
+  
+  $("body").append(overlay);
+}
+
+function processCSVFile(file, modelNumber = 1) {
   const reader = new FileReader();
 
   reader.onload = (e) => {
@@ -705,6 +820,7 @@ function processCSVFile(file) {
     const rows = parseCSV(csvText);
     if (!rows.length) {
       console.error("CSV file appears to be empty.");
+      alert("Error: CSV file appears to be empty.");
       return;
     }
 
@@ -712,53 +828,64 @@ function processCSVFile(file) {
     if (rows[0] && rows[0][0]) rows[0][0] = rows[0][0].replace(/^\uFEFF/, "");
 
     const headers = rows[0].map((h) => (h || "").trim());
-    const modelIdx = headers.indexOf("Model");
+    console.log('CSV headers:', headers);
+    
     const varNameIdx = headers.indexOf("VarName");
     const valueIdx = headers.indexOf("Value");
 
-    if (modelIdx === -1 || varNameIdx === -1 || valueIdx === -1) {
-      console.error(
-        "CSV must contain 'Model', 'VarName', and 'Value' columns."
-      );
+    console.log('Column indices - VarName:', varNameIdx, 'Value:', valueIdx);
+
+    if (varNameIdx === -1 || valueIdx === -1) {
+      console.error("CSV must contain 'VarName' and 'Value' columns.");
+      alert("Error: CSV must contain 'VarName' and 'Value' columns.");
       return;
     }
 
-    const modelInstances = [model.get(), modelB.get()];
+    // Use the specified model number for import
+    const targetModelInstance = modelNumber === 2 ? modelB.get() : model.get();
+    const targetModelLabel = `Scenario ${modelNumber}`;
+    
+    console.log(`Loading CSV into ${targetModelLabel}`, targetModelInstance);
+    
+    if (!targetModelInstance) {
+      console.error(`${targetModelLabel} instance not available`);
+      alert(`Error: ${targetModelLabel} not loaded. Please refresh the page.`);
+      return;
+    }
+
     let applied = 0;
     let warnings = 0;
+
+    console.log(`Processing ${rows.length - 1} data rows...`);
 
     for (let r = 1; r < rows.length; r++) {
       const row = rows[r];
       if (!row || row.length === 0) continue;
 
-      const modelLabel = (row[modelIdx] ?? "").trim();
       const varName = (row[varNameIdx] ?? "").trim();
       const rawValue = (row[valueIdx] ?? "").trim();
-      if (!modelLabel || !varName) continue;
-
-      const mMatch = /(\d+)/.exec(modelLabel);
-      const mIndex = mMatch ? Number(mMatch[1]) - 1 : -1;
-      const modelInstance = modelInstances[mIndex];
-
-      if (!modelInstance) {
-        console.warn(`Unknown model label at row ${r + 1}: "${modelLabel}"`);
-        warnings++;
-        continue;
-      }
+      
+      console.log(`Row ${r}: VarName="${varName}", Value="${rawValue}"`);
+      
+      if (!varName) continue;
 
       const spec = getSpecByVarName(varName);
+      console.log(`  Spec found:`, spec ? `ID: ${spec.id}` : 'null');
+      
       if (!spec) {
         console.warn(
-          `Input not found for VarName "${varName}" in ${modelLabel}`
+          `Input not found for VarName "${varName}" at row ${r + 1}`
         );
         warnings++;
         continue;
       }
 
-      const input = modelInstance.getInputForId(spec.id);
+      const input = targetModelInstance.getInputForId(spec.id);
+      console.log(`  Input found:`, input ? 'yes' : 'no');
+      
       if (!input) {
         console.warn(
-          `Input id "${spec.id}" not present on ${modelLabel} for VarName "${varName}"`
+          `Input id "${spec.id}" not present on ${targetModelLabel} for VarName "${varName}"`
         );
         warnings++;
         continue;
@@ -766,11 +893,12 @@ function processCSVFile(file) {
 
       try {
         const coerced = coerceValueForSpec(rawValue, spec);
+        console.log(`  Setting value to:`, coerced);
         input.set(coerced);
         applied++;
       } catch (err) {
         console.error(
-          `Failed to set value for VarName "${varName}" in ${modelLabel}:`,
+          `Failed to set value for VarName "${varName}" in ${targetModelLabel}:`,
           err
         );
         warnings++;
@@ -783,7 +911,13 @@ function processCSVFile(file) {
     );
     initInputsUI(selectedCategory);
 
-    console.log(`Import finished. Applied: ${applied}. Warnings: ${warnings}.`);
+    console.log(`Import to ${targetModelLabel} finished. Applied: ${applied}. Warnings: ${warnings}.`);
+    
+    alert(
+      `Imported ${applied} value(s) into ${targetModelLabel}.${
+        warnings ? `\n${warnings} warning(s) - check console.` : ""
+      }`
+    );
   };
 
   reader.readAsText(file);
