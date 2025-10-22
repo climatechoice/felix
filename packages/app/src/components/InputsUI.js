@@ -903,12 +903,18 @@ function addTextboxItem(textboxInput, container = $("#inputs-content")) {
       }
       return;
     }
-    // Format the committed value to the desired decimal places
-    const formatted = typeof parsed === 'number' && Number.isFinite(parsed) ? parsed.toFixed(decimals) : parsed;
+    // Round to the desired decimal places to avoid floating-point precision issues
+    const rounded = typeof parsed === 'number' && Number.isFinite(parsed) 
+      ? Number(parsed.toFixed(decimals)) 
+      : parsed;
+    // Format the committed value for display
+    const formatted = typeof rounded === 'number' && Number.isFinite(rounded) 
+      ? rounded.toFixed(decimals) 
+      : rounded;
     $(this).val(formatted);
-    updateValueElement(parsed);
+    updateValueElement(rounded);
     const prevValue = textboxInput.get();
-    const newValue = parsed;
+    const newValue = rounded;
     const undoArr = [...undoStack.get()];
     undoArr.push({ id: spec.id, prevValue, newValue });
     undoStack.set(undoArr);
