@@ -522,6 +522,11 @@ function showChangedInputs() {
     const changedInputs = [];
 
     coreConfig.inputs.forEach((spec) => {
+      // Skip inputs with secondaryType 'hidden' from summary (external drivers)
+      if (spec.secondaryType === "hidden") {
+        return;
+      }
+      
       const input = modelInstance.getInputForId(spec.id);
       if (!input) return;
 

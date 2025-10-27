@@ -27,6 +27,7 @@ import { undoStack, redoStack } from "../stores/undo-redo-store.js";
  * Only activeModel is used.
  */
 import { activeModel } from "../stores/model-store.js";
+import { loadExternalDrivers } from "../utils/ExternalDriverLoader.js";
 
 // TODO: should i put these or not ?
 // resetActiveModelInputs,
@@ -375,7 +376,7 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
     );
     if (currentValue === targetValue) btn.addClass("active");
 
-    btn.on("click", () => {
+    btn.on("click", async () => {
       const prevValue = inputInstance.get();
       const newValue = targetValue;
       const undoArr = [...undoStack.get()];
@@ -385,6 +386,28 @@ function addSegmentedItem(inputInstance, container = $("#inputs-content")) {
       inputInstance.set(newValue);
       segmentsContainer.find(".segmented-button").removeClass("active");
       btn.addClass("active");
+
+      // Special handling for SSPs (ed8) - load external drivers
+      if (spec.id === "ed8") {
+        const scenarioName = str(labelKey); // "Optimistic", "Reference", or "Pessimistic"
+        console.log(`Loading external drivers for SSP scenario: ${scenarioName}`);
+        
+        try {
+          const result = await loadExternalDrivers(scenarioName, activeModel.get());
+          console.log(`SSP ${scenarioName}: ${result.applied} variables applied, ${result.warnings} not found in inputs.csv`);
+          
+          // Only show notification if some variables were actually applied
+          if (result.applied > 0) {
+            console.log(`Successfully applied ${result.applied} external driver variables`);
+          }
+          
+          if (result.warnings > 0) {
+            console.warn(`${result.warnings} variables from ${scenarioName}.csv were not found in the model inputs`);
+          }
+        } catch (error) {
+          console.error(`Failed to load SSP ${scenarioName}:`, error);
+        }
+      }
     });
 
     segmentsContainer.append(btn);
@@ -855,13 +878,13 @@ function addTextboxItem(textboxInput, container = $("#inputs-content")) {
 
   container.append(div);
 
-  // Initialize value (rounded to the computed decimals)
+  // Initialize value (formatted according to spec.format)
   const currentValue = textboxInput.get();
   const $inputElem = $(`#${inputElemId}`);
   if (currentValue !== null && currentValue !== undefined && String(currentValue) !== "") {
     const n = Number(currentValue);
     if (!Number.isNaN(n)) {
-      $inputElem.val(n.toFixed(decimals));
+      $inputElem.val(format(n, spec.format));
     } else {
       $inputElem.val(currentValue);
     }
@@ -896,7 +919,7 @@ function addTextboxItem(textboxInput, container = $("#inputs-content")) {
       const prev = textboxInput.get();
       if (prev !== null && prev !== undefined && String(prev) !== "") {
         const pn = Number(prev);
-        if (!Number.isNaN(pn)) $(this).val(pn.toFixed(decimals));
+        if (!Number.isNaN(pn)) $(this).val(format(pn, spec.format));
         else $(this).val(prev);
       } else {
         $(this).val("");
@@ -907,10 +930,8 @@ function addTextboxItem(textboxInput, container = $("#inputs-content")) {
     const rounded = typeof parsed === 'number' && Number.isFinite(parsed) 
       ? Number(parsed.toFixed(decimals)) 
       : parsed;
-    // Format the committed value for display
-    const formatted = typeof rounded === 'number' && Number.isFinite(rounded) 
-      ? rounded.toFixed(decimals) 
-      : rounded;
+    // Format the committed value for display using spec.format
+    const formatted = format(rounded, spec.format);
     $(this).val(formatted);
     updateValueElement(rounded);
     const prevValue = textboxInput.get();
@@ -1289,6 +1310,11 @@ export function initInputsUI(category) {
   // Group inputs by categoryId and input group
   const dynamicInputCategories = {};
   for (const inputSpec of coreConfig.inputs.values()) {
+    // Skip hidden inputs (external drivers controlled by SSP buttons)
+    if (inputSpec.viewId === "HIDDEN") {
+      continue;
+    }
+    
     const inputCategory = inputSpec.categoryId;
     const inputGroup = inputSpec.inputGroup;
     if (!inputCategory || !inputGroup) continue;

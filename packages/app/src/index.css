@@ -899,7 +899,7 @@ p {
 .tooltip {
   visibility: hidden;
   position: fixed;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 8px 12px;
   border-radius: 4px;
@@ -912,9 +912,7 @@ p {
   text-align: center;
   white-space: normal;
   display: block;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transform: translate(-50%, -100%);
-  margin-top: -8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .value-units-container {

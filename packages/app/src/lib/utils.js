@@ -112,13 +112,13 @@ export function positionTooltip(tooltip) {
   const tooltipWidth = tooltipElem.offsetWidth;
   const tooltipHeight = tooltipElem.offsetHeight;
 
-  // Default position: below the icon, centered
-  let top = iconRect.bottom + 5;
-  let left = iconRect.left + iconRect.width / 2 - tooltipWidth / 2;
+  // Position below the icon, aligned to the left
+  let top = iconRect.bottom + 8;
+  let left = iconRect.left;
 
-  // Adjust for right edge
+  // Adjust for right edge - if tooltip would go off screen, show on left instead
   if (left + tooltipWidth > window.innerWidth) {
-    left = window.innerWidth - tooltipWidth - 5;
+    left = iconRect.left - tooltipWidth - 8;
   }
 
   // Adjust for left edge
@@ -126,15 +126,21 @@ export function positionTooltip(tooltip) {
     left = 5;
   }
 
-  // Adjust for bottom edge
-  if (top + tooltipHeight > window.innerHeight) {
-    top = iconRect.top - tooltipHeight - 5;
+  // Adjust for top edge
+  if (top < 0) {
+    top = 5;
   }
 
-  // Apply corrected position
+  // Adjust for bottom edge
+  if (top + tooltipHeight > window.innerHeight) {
+    top = window.innerHeight - tooltipHeight - 5;
+  }
+
+  // Apply corrected position (remove any transform)
   tooltip.css({
     top: `${top}px`,
     left: `${left}px`,
+    transform: 'none'
   });
 }
 
