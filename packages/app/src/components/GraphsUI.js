@@ -254,6 +254,58 @@ function showGraph(graphSpec, outerContainer, category) {
 
   const titleContainer = $('<div class="title-container"></div>');
   titleContainer.append(selector);
+  
+  // Parse scenarioDisplay for linked graph feature: "linked;CategoryName;#color"
+  if (graphSpec.scenarioDisplay && graphSpec.scenarioDisplay.startsWith("linked;")) {
+    const parts = graphSpec.scenarioDisplay.split(";");
+    if (parts.length === 3) {
+      const [_, targetCategory, highlightColor] = parts;
+      
+      // Add aesthetic highlight styling - default state matches mouseleave
+      outerContainer.css({
+        "background-color": `${highlightColor}12`,
+        "border": `1px solid ${highlightColor}40`,
+        "border-radius": "6px",
+        "cursor": "pointer",
+        "padding": "2px",
+        "box-shadow": "none",
+        "transform": "scale(0.95)" // Reduce size to 95%
+      });
+      
+      // Add very subtle hover effect
+      outerContainer.on("mouseenter", function() {
+        $(this).css({
+          "background-color": `${highlightColor}8`,
+          "border": `1px solid ${highlightColor}80`,
+          "box-shadow": `0 1px 4px ${highlightColor}50`
+        });
+      });
+      
+      outerContainer.on("mouseleave", function() {
+        $(this).css({
+          "background-color": `${highlightColor}8`,
+          "border": `1px solid ${highlightColor}40`,
+          "box-shadow": "none"
+        });
+      });
+      
+      // Add click handler to navigate to the target category (page/tab)
+      outerContainer.on("click", function(e) {
+        // Don't trigger if clicking on the dropdown
+        if ($(e.target).closest(".graph-dropdown-container").length > 0) {
+          return;
+        }
+        
+        // Switch to the target category and reinitialize graphs
+        initGraphsUI(targetCategory);
+        
+        // Update the active category button to reflect the current page
+        $(".graph-category-selector-option").removeClass("selected");
+        $(`.graph-category-selector-option[data-value="${targetCategory}"]`).addClass("selected");
+      });
+    }
+  }
+  
   outerContainer.append(titleContainer);
 
   // Show the canvas/graph
