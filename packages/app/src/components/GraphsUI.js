@@ -347,30 +347,32 @@ function showGraph(graphSpec, outerContainer, category) {
   graphViews.set([...graphViews.get(), graphView]);
   // ...until here
 
-  // Show the legend items for the graph
+  // Show the legend items for the graph (except for radar charts which have custom labels)
   // Each canvas' parent container should have only the canvas as child.
   // https://github.com/chartjs/Chart.js/issues/5805
 
-  const legendContainer = $('<div class="graph-legend"></div>');
-  outerContainer.append(legendContainer);
-  for (const itemSpec of graphSpec.legendItems) {
-    const attrs = `class="graph-legend-item" style="background-color: ${itemSpec.color}"`;
-    const label = str(itemSpec.labelKey);
-    const itemElem = $(`<div ${attrs}>${label}</div>`);
-    legendContainer.append(itemElem);
-  }
-  // If "scenario display" is "combined",
-  // also get the second graphSpec's legends.
-  if (graphSpec.scenarioDisplay === "combined") {
-    // search and find the second graphSpec whose title is the same
-    const matchingSpec = findMatchingGraphSpec(graphSpec);
-
-    // now loop over this matchingSpec and get its graph legends
-    for (const itemSpec of matchingSpec.legendItems) {
+  if (graphSpec.kind !== 'radar') {
+    const legendContainer = $('<div class="graph-legend"></div>');
+    outerContainer.append(legendContainer);
+    for (const itemSpec of graphSpec.legendItems) {
       const attrs = `class="graph-legend-item" style="background-color: ${itemSpec.color}"`;
       const label = str(itemSpec.labelKey);
       const itemElem = $(`<div ${attrs}>${label}</div>`);
       legendContainer.append(itemElem);
+    }
+    // If "scenario display" is "combined",
+    // also get the second graphSpec's legends.
+    if (graphSpec.scenarioDisplay === "combined") {
+      // search and find the second graphSpec whose title is the same
+      const matchingSpec = findMatchingGraphSpec(graphSpec);
+
+      // now loop over this matchingSpec and get its graph legends
+      for (const itemSpec of matchingSpec.legendItems) {
+        const attrs = `class="graph-legend-item" style="background-color: ${itemSpec.color}"`;
+        const label = str(itemSpec.labelKey);
+        const itemElem = $(`<div ${attrs}>${label}</div>`);
+        legendContainer.append(itemElem);
+      }
     }
   }
 

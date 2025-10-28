@@ -15,6 +15,8 @@ import { config as coreConfig } from "@core";
 
 import enStrings from "@core-strings/en";
 
+import { createRadarChart, updateRadarChartJsData } from "./radar-chart";
+
 /**
  * Return the base (English) string for the given key.
  */
@@ -126,8 +128,16 @@ export class GraphView {
    */
   updateData(animated = true) {
     if (this.chart) {
-      // Update the chart data
-      updateLineChartJsData(this.viewModel, this.chart.data);
+      // Check if this is a radar chart
+      const isRadarChart = this.viewModel.spec.kind === "radar";
+      
+      if (isRadarChart) {
+        // Update radar chart data
+        updateRadarChartJsData(this.viewModel, this.chart.data);
+      } else {
+        // Update line chart data
+        updateLineChartJsData(this.viewModel, this.chart.data);
+      }
 
       // Refresh the chart view
       this.chart.update(animated ? undefined : { duration: 0 });
@@ -148,6 +158,13 @@ function createChart(
   viewModel: GraphViewModel,
   options: GraphViewOptions
 ): Chart {
+  // Check if this is a radar chart by looking at the spec kind
+  const isRadarChart = viewModel.spec.kind === "radar";
+  
+  if (isRadarChart) {
+    return createRadarChart(canvas, viewModel, options);
+  }
+  
   // Create the chart data and config depending on the given style
   /*
    * If viewModel.spec.scenarioDisplay === "combined", then
