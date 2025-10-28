@@ -266,7 +266,7 @@ function showGraph(graphSpec, outerContainer, category) {
         "background-color": `${highlightColor}12`,
         "border": `1px solid ${highlightColor}40`,
         "border-radius": "6px",
-        "cursor": "pointer",
+        "cursor": targetCategory.toLowerCase() === "empty" ? "default" : "pointer",
         "padding": "2px",
         "box-shadow": "none",
         "transform": "scale(0.95)" // Reduce size to 95%
@@ -290,19 +290,22 @@ function showGraph(graphSpec, outerContainer, category) {
       });
       
       // Add click handler to navigate to the target category (page/tab)
-      outerContainer.on("click", function(e) {
-        // Don't trigger if clicking on the dropdown
-        if ($(e.target).closest(".graph-dropdown-container").length > 0) {
-          return;
-        }
-        
-        // Switch to the target category and reinitialize graphs
-        initGraphsUI(targetCategory);
-        
-        // Update the active category button to reflect the current page
-        $(".graph-category-selector-option").removeClass("selected");
-        $(`.graph-category-selector-option[data-value="${targetCategory}"]`).addClass("selected");
-      });
+      // Skip navigation if targetCategory is "Empty"
+      if (targetCategory.toLowerCase() !== "empty") {
+        outerContainer.on("click", function(e) {
+          // Don't trigger if clicking on the dropdown
+          if ($(e.target).closest(".graph-dropdown-container").length > 0) {
+            return;
+          }
+          
+          // Switch to the target category and reinitialize graphs
+          initGraphsUI(targetCategory);
+          
+          // Update the active category button to reflect the current page
+          $(".graph-category-selector-option").removeClass("selected");
+          $(`.graph-category-selector-option[data-value="${targetCategory}"]`).addClass("selected");
+        });
+      }
     }
   }
   
