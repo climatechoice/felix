@@ -19,57 +19,16 @@ export function showSurveyPopup() {
   // Create the popup container
   const popup = $('<div class="popup popup-middle survey-popup">');
   
-  // Create survey buttons based on mode
-  const submitButtons = isMultiMode 
-    ? `
-      <button type="button" class="survey-submit-btn" data-model="1">Load to Scenario 1</button>
-      <button type="button" class="survey-submit-btn" data-model="2">Load to Scenario 2</button>
-    `
-    : `<button type="submit" class="survey-submit-btn">Generate & Load Scenario</button>`;
+  // Create survey content container
+  const surveyContent = $('<div class="survey-container">');
   
-  // Create survey content
-  const surveyContent = $('<div class="survey-container">').html(`
-    <h2>Build Your Own Scenario</h2>
-    <p style="color: #666; margin-bottom: 20px;">Translating behaviors into quantitative inputs can be challenging. Answer these questions about consumer preferences to help determine appropriate scenario parameters${isMultiMode ? ' and select which model to load it into' : ''}.</p>
-    
-    <form id="survey-form">
-      <div class="survey-question">
-        <label><strong>1. Diet Change</strong></label>
-        <div class="survey-options">
-          <label><input type="radio" name="diet" value="0" required> Reference</label>
-          <label><input type="radio" name="diet" value="1"> Healthy</label>
-          <label><input type="radio" name="diet" value="2"> Mediterranean</label>
-          <label><input type="radio" name="diet" value="3"> Flexitarian</label>
-        </div>
-      </div>
-
-      <div class="survey-question">
-        <label><strong>2. Food Loss and Waste</strong></label>
-        <div class="survey-options">
-          <label><input type="radio" name="waste" value="0" required> Reference</label>
-          <label><input type="radio" name="waste" value="25"> -25%</label>
-          <label><input type="radio" name="waste" value="50"> -50%</label>
-          <label><input type="radio" name="waste" value="75"> -75%</label>
-        </div>
-      </div>
-
-      <div class="survey-question">
-        <label><strong>3. Alternative Proteins</strong></label>
-        <div class="survey-options">
-          <label><input type="radio" name="altproteins" value="0" required> Reference</label>
-          <label><input type="radio" name="altproteins" value="33"> 10%</label>
-          <label><input type="radio" name="altproteins" value="66"> 20%</label>
-          <label><input type="radio" name="altproteins" value="100"> 30%</label>
-        </div>
-      </div>
-
-      <div class="survey-buttons">
-        <button type="button" class="survey-cancel-btn">Cancel</button>
-        ${submitButtons}
-      </div>
-    </form>
-  `);
-
+  // Store survey responses
+  const surveyResponses = {
+    diet: null,
+    waste: null,
+    altproteins: null
+  };
+  
   // Add close button
   const closeBtn = $(`
     <button class="popup-close">
@@ -86,94 +45,360 @@ export function showSurveyPopup() {
   };
 
   closeBtn.on("click", closePopup);
-  surveyContent.find('.survey-cancel-btn').on('click', closePopup);
 
-  // Function to handle scenario generation and loading
-  const handleScenarioLoad = (modelNumber) => {
-    const form = surveyContent.find('#survey-form')[0];
+  // Function to render a specific page
+  const renderPage = (pageType, category = null) => {
+    surveyContent.empty();
     
-    // Validate form
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-    
-    try {
-      // Collect survey responses
-      const formData = new FormData(form);
-      const responses = {
-        diet: parseInt(formData.get('diet')),
-        waste: parseInt(formData.get('waste')),
-        altproteins: parseInt(formData.get('altproteins'))
+    if (pageType === 'intro') {
+      // Check which categories are answered
+      const dietAnswered = surveyResponses.diet !== null;
+      const wasteAnswered = surveyResponses.waste !== null;
+      const altproteinsAnswered = surveyResponses.altproteins !== null;
+      const anyAnswered = dietAnswered || wasteAnswered || altproteinsAnswered;
+      
+      // Create submit buttons based on mode
+      const submitButtons = isMultiMode 
+        ? `
+          <button type="button" class="survey-submit-btn" data-model="1">Load to Scenario 1</button>
+          <button type="button" class="survey-submit-btn" data-model="2">Load to Scenario 2</button>
+        `
+        : `<button type="button" class="survey-submit-btn">Generate & Load Scenario</button>`;
+      
+      // Intro page
+      surveyContent.html(`
+        <h2>Build Your Own Scenario</h2>
+        <p style="color: #666; margin-bottom: 30px; line-height: 1.5;">
+          Experiencing difficulty understanding what all these numbers mean? Try out our survey questions which are more relatable to you as a consumer, and imagine the future if everyone adopts the same consumer behaviour as you.
+        </p>
+        
+        <div class="survey-category-buttons">
+          <button type="button" class="survey-category-btn ${dietAnswered ? 'answered' : ''}" data-category="diet">
+            <div class="survey-category-header">
+              <strong>Diet Change</strong>
+              ${dietAnswered ? '<span class="material-icons survey-check">check_circle</span>' : ''}
+            </div>
+            <span>Choose your dietary preferences</span>
+          </button>
+          <button type="button" class="survey-category-btn ${wasteAnswered ? 'answered' : ''}" data-category="waste">
+            <div class="survey-category-header">
+              <strong>Food Waste and Loss</strong>
+              ${wasteAnswered ? '<span class="material-icons survey-check">check_circle</span>' : ''}
+            </div>
+            <span>Set your waste reduction goals</span>
+          </button>
+          <button type="button" class="survey-category-btn ${altproteinsAnswered ? 'answered' : ''}" data-category="altproteins">
+            <div class="survey-category-header">
+              <strong>Alternative Proteins</strong>
+              ${altproteinsAnswered ? '<span class="material-icons survey-check">check_circle</span>' : ''}
+            </div>
+            <span>Select alternative protein adoption</span>
+          </button>
+        </div>
+        
+        <div class="survey-buttons" style="margin-top: 30px;">
+          <button type="button" class="survey-cancel-btn">Cancel</button>
+          ${anyAnswered ? submitButtons : ''}
+        </div>
+      `);
+      
+      surveyContent.find('.survey-cancel-btn').on('click', closePopup);
+      surveyContent.find('.survey-category-btn').on('click', function() {
+        const category = $(this).data('category');
+        renderPage('question', category);
+      });
+      
+      // Handle scenario load from intro page
+      const handleScenarioLoadFromIntro = (modelNumber) => {
+        try {
+          console.log('Survey responses:', surveyResponses);
+          
+          // Generate scenario based on responses (using defaults for unanswered)
+          const responses = {
+            diet: surveyResponses.diet !== null ? surveyResponses.diet : 0,
+            waste: surveyResponses.waste !== null ? surveyResponses.waste : 0,
+            altproteins: surveyResponses.altproteins !== null ? surveyResponses.altproteins : 0
+          };
+          
+          console.log('Calling generateScenarioFromSurvey...');
+          const scenarioData = generateScenarioFromSurvey(responses);
+          console.log('Generated scenario data:', scenarioData);
+          
+          if (!scenarioData || scenarioData.length === 0) {
+            alert('Error: No scenario data generated!');
+            return;
+          }
+          
+          const modelLabel = modelNumber === 2 ? 'Model 2' : 'Model 1';
+          
+          // Show loading message
+          surveyContent.html(`
+            <div style="text-align: center; padding: 40px;">
+              <h2>Generating Scenario...</h2>
+              <p style="color: #666;">Processing your preferences and loading the scenario.</p>
+              <p style="color: #999; font-size: 12px; margin-top: 20px;">Generated ${scenarioData.length} input changes for ${modelLabel}</p>
+            </div>
+          `);
+          
+          // Apply the scenario immediately
+          console.log(`Applying scenario to ${modelLabel}...`);
+          
+          const result = applyGeneratedScenario(scenarioData, modelNumber);
+          console.log('Apply result:', result);
+          
+          // Show success message
+          surveyContent.html(`
+            <div style="text-align: center; padding: 40px;">
+              <span class="material-icons" style="font-size: 48px; color: #4caf50;">check_circle</span>
+              <h2 style="margin-top: 10px;">Scenario Loaded!</h2>
+              <p style="color: #666; margin-top: 10px;">Your custom scenario has been applied to ${modelLabel}.</p>
+              <p style="color: #666; margin-top: 5px;">Check the inputs panel to see the changes.</p>
+            </div>
+          `);
+          
+          setTimeout(closePopup, 2000);
+          
+        } catch (error) {
+          console.error('Error in scenario load:', error);
+          alert('Error: ' + error.message);
+          surveyContent.html(`
+            <div style="text-align: center; padding: 40px;">
+              <span class="material-icons" style="font-size: 48px; color: #f44336;">error</span>
+              <h2 style="margin-top: 10px;">Error!</h2>
+              <p style="color: #666; margin-top: 10px;">${error.message}</p>
+            </div>
+          `);
+          setTimeout(closePopup, 3000);
+        }
       };
       
-      console.log('Survey responses:', responses);
+      // Handle single scenario mode
+      surveyContent.find('.survey-submit-btn:not([data-model])').on('click', () => {
+        handleScenarioLoadFromIntro(1);
+      });
       
-      // Generate scenario based on responses
-      console.log('Calling generateScenarioFromSurvey...');
-      const scenarioData = generateScenarioFromSurvey(responses);
-      console.log('Generated scenario data:', scenarioData);
+      // Handle multi scenario mode
+      surveyContent.find('.survey-submit-btn[data-model]').on('click', function() {
+        const modelNumber = parseInt($(this).data('model'));
+        handleScenarioLoadFromIntro(modelNumber);
+      });
       
-      if (!scenarioData || scenarioData.length === 0) {
-        alert('Error: No scenario data generated!');
-        return;
+    } else if (pageType === 'question') {
+      // Question page for specific category
+      let questionHTML = '';
+      let questionTitle = '';
+      let questionName = '';
+      
+      if (category === 'diet') {
+        questionTitle = 'Diet Change';
+        questionName = 'diet';
+        questionHTML = `
+          <div class="survey-question">
+            <label><strong>What dietary pattern would you prefer?</strong></label>
+            <div class="survey-options">
+              <label><input type="radio" name="diet" value="0" ${surveyResponses.diet === 0 ? 'checked' : ''}> Reference (Current diet)</label>
+              <label><input type="radio" name="diet" value="1" ${surveyResponses.diet === 1 ? 'checked' : ''}> Healthy</label>
+              <label><input type="radio" name="diet" value="2" ${surveyResponses.diet === 2 ? 'checked' : ''}> Mediterranean</label>
+              <label><input type="radio" name="diet" value="3" ${surveyResponses.diet === 3 ? 'checked' : ''}> Flexitarian</label>
+            </div>
+          </div>
+        `;
+      } else if (category === 'waste') {
+        questionTitle = 'Food Waste and Loss';
+        questionName = 'waste';
+        questionHTML = `
+          <div class="survey-question">
+            <label><strong>How much would you reduce food waste and loss?</strong></label>
+            <div class="survey-options">
+              <label><input type="radio" name="waste" value="0" ${surveyResponses.waste === 0 ? 'checked' : ''}> Reference (No reduction)</label>
+              <label><input type="radio" name="waste" value="25" ${surveyResponses.waste === 25 ? 'checked' : ''}> -25%</label>
+              <label><input type="radio" name="waste" value="50" ${surveyResponses.waste === 50 ? 'checked' : ''}> -50%</label>
+              <label><input type="radio" name="waste" value="75" ${surveyResponses.waste === 75 ? 'checked' : ''}> -75%</label>
+            </div>
+          </div>
+        `;
+      } else if (category === 'altproteins') {
+        questionTitle = 'Alternative Proteins';
+        questionName = 'altproteins';
+        questionHTML = `
+          <div class="survey-question">
+            <label><strong>What percentage of alternative proteins would you adopt?</strong></label>
+            <div class="survey-options">
+              <label><input type="radio" name="altproteins" value="0" ${surveyResponses.altproteins === 0 ? 'checked' : ''}> Reference (No alternative proteins)</label>
+              <label><input type="radio" name="altproteins" value="33" ${surveyResponses.altproteins === 33 ? 'checked' : ''}> 10%</label>
+              <label><input type="radio" name="altproteins" value="66" ${surveyResponses.altproteins === 66 ? 'checked' : ''}> 20%</label>
+              <label><input type="radio" name="altproteins" value="100" ${surveyResponses.altproteins === 100 ? 'checked' : ''}> 30%</label>
+            </div>
+          </div>
+        `;
       }
       
-      const modelLabel = modelNumber === 2 ? 'Model 2' : 'Model 1';
-      
-      // Show loading message
       surveyContent.html(`
-        <div style="text-align: center; padding: 40px;">
-          <h2>Generating Scenario...</h2>
-          <p style="color: #666;">Processing your preferences and loading the scenario.</p>
-          <p style="color: #999; font-size: 12px; margin-top: 20px;">Generated ${scenarioData.length} input changes for ${modelLabel}</p>
+        <h2>${questionTitle}</h2>
+        <p style="color: #666; margin-bottom: 20px;">Select your preference for this category.</p>
+        
+        <form id="survey-question-form">
+          ${questionHTML}
+          
+          <div class="survey-buttons">
+            <button type="button" class="survey-back-btn">← Back</button>
+            <button type="submit" class="survey-next-btn">Next →</button>
+          </div>
+        </form>
+      `);
+      
+      surveyContent.find('.survey-back-btn').on('click', () => renderPage('intro'));
+      
+      surveyContent.find('#survey-question-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Save the response
+        const selectedValue = parseInt($(`input[name="${questionName}"]:checked`).val());
+        if (isNaN(selectedValue)) {
+          alert('Please select an option');
+          return;
+        }
+        
+        surveyResponses[questionName] = selectedValue;
+        
+        // Return to intro page after answering
+        renderPage('intro');
+      });
+      
+    } else if (pageType === 'summary') {
+      // Summary page with submit options
+      const submitButtons = isMultiMode 
+        ? `
+          <button type="button" class="survey-submit-btn" data-model="1">Load to Scenario 1</button>
+          <button type="button" class="survey-submit-btn" data-model="2">Load to Scenario 2</button>
+        `
+        : `<button type="button" class="survey-submit-btn">Generate & Load Scenario</button>`;
+      
+      const dietLabels = ['Reference', 'Healthy', 'Mediterranean', 'Flexitarian'];
+      const wasteLabels = ['Reference', '-25%', '-50%', '-75%'];
+      const altproteinLabels = ['Reference', '10%', '20%', '30%'];
+      
+      const getDietLabel = (val) => {
+        if (val === 0) return dietLabels[0];
+        if (val === 1) return dietLabels[1];
+        if (val === 2) return dietLabels[2];
+        if (val === 3) return dietLabels[3];
+        return 'Unknown';
+      };
+      
+      const getWasteLabel = (val) => {
+        if (val === 0) return wasteLabels[0];
+        if (val === 25) return wasteLabels[1];
+        if (val === 50) return wasteLabels[2];
+        if (val === 75) return wasteLabels[3];
+        return 'Unknown';
+      };
+      
+      const getAltProteinLabel = (val) => {
+        if (val === 0) return altproteinLabels[0];
+        if (val === 33) return altproteinLabels[1];
+        if (val === 66) return altproteinLabels[2];
+        if (val === 100) return altproteinLabels[3];
+        return 'Unknown';
+      };
+      
+      surveyContent.html(`
+        <h2>Review Your Scenario</h2>
+        <p style="color: #666; margin-bottom: 20px;">Please review your selections${isMultiMode ? ' and choose which model to load the scenario into' : ''}.</p>
+        
+        <div class="survey-summary">
+          <div class="survey-summary-item">
+            <strong>Diet Change:</strong> ${getDietLabel(surveyResponses.diet)}
+          </div>
+          <div class="survey-summary-item">
+            <strong>Food Waste and Loss:</strong> ${getWasteLabel(surveyResponses.waste)}
+          </div>
+          <div class="survey-summary-item">
+            <strong>Alternative Proteins:</strong> ${getAltProteinLabel(surveyResponses.altproteins)}
+          </div>
+        </div>
+        
+        <div class="survey-buttons">
+          <button type="button" class="survey-back-btn">← Back</button>
+          ${submitButtons}
         </div>
       `);
       
-      // Apply the scenario immediately (no delay)
-      console.log(`Applying scenario to ${modelLabel}...`);
+      surveyContent.find('.survey-back-btn').on('click', () => renderPage('intro'));
       
-      const result = applyGeneratedScenario(scenarioData, modelNumber);
-      console.log('Apply result:', result);
+      // Handle scenario load
+      const handleScenarioLoad = (modelNumber) => {
+        try {
+          console.log('Survey responses:', surveyResponses);
+          
+          // Generate scenario based on responses
+          console.log('Calling generateScenarioFromSurvey...');
+          const scenarioData = generateScenarioFromSurvey(surveyResponses);
+          console.log('Generated scenario data:', scenarioData);
+          
+          if (!scenarioData || scenarioData.length === 0) {
+            alert('Error: No scenario data generated!');
+            return;
+          }
+          
+          const modelLabel = modelNumber === 2 ? 'Model 2' : 'Model 1';
+          
+          // Show loading message
+          surveyContent.html(`
+            <div style="text-align: center; padding: 40px;">
+              <h2>Generating Scenario...</h2>
+              <p style="color: #666;">Processing your preferences and loading the scenario.</p>
+              <p style="color: #999; font-size: 12px; margin-top: 20px;">Generated ${scenarioData.length} input changes for ${modelLabel}</p>
+            </div>
+          `);
+          
+          // Apply the scenario immediately
+          console.log(`Applying scenario to ${modelLabel}...`);
+          
+          const result = applyGeneratedScenario(scenarioData, modelNumber);
+          console.log('Apply result:', result);
+          
+          // Show success message
+          surveyContent.html(`
+            <div style="text-align: center; padding: 40px;">
+              <span class="material-icons" style="font-size: 48px; color: #4caf50;">check_circle</span>
+              <h2 style="margin-top: 10px;">Scenario Loaded!</h2>
+              <p style="color: #666; margin-top: 10px;">Your custom scenario has been applied to ${modelLabel}.</p>
+              <p style="color: #666; margin-top: 5px;">Check the inputs panel to see the changes.</p>
+            </div>
+          `);
+          
+          setTimeout(closePopup, 2000);
+          
+        } catch (error) {
+          console.error('Error in scenario load:', error);
+          alert('Error: ' + error.message);
+          surveyContent.html(`
+            <div style="text-align: center; padding: 40px;">
+              <span class="material-icons" style="font-size: 48px; color: #f44336;">error</span>
+              <h2 style="margin-top: 10px;">Error!</h2>
+              <p style="color: #666; margin-top: 10px;">${error.message}</p>
+            </div>
+          `);
+          setTimeout(closePopup, 3000);
+        }
+      };
       
-      // Show success message
-      surveyContent.html(`
-        <div style="text-align: center; padding: 40px;">
-          <span class="material-icons" style="font-size: 48px; color: #4caf50;">check_circle</span>
-          <h2 style="margin-top: 10px;">Scenario Loaded!</h2>
-          <p style="color: #666; margin-top: 10px;">Your custom scenario has been applied to ${modelLabel}.</p>
-          <p style="color: #666; margin-top: 5px;">Check the inputs panel to see the changes.</p>
-        </div>
-      `);
+      // Handle single scenario mode
+      surveyContent.find('.survey-submit-btn:not([data-model])').on('click', () => {
+        handleScenarioLoad(1);
+      });
       
-      setTimeout(closePopup, 2000);
-      
-    } catch (error) {
-      console.error('Error in scenario load:', error);
-      alert('Error: ' + error.message);
-      surveyContent.html(`
-        <div style="text-align: center; padding: 40px;">
-          <span class="material-icons" style="font-size: 48px; color: #f44336;">error</span>
-          <h2 style="margin-top: 10px;">Error!</h2>
-          <p style="color: #666; margin-top: 10px;">${error.message}</p>
-        </div>
-      `);
-      setTimeout(closePopup, 3000);
+      // Handle multi scenario mode
+      surveyContent.find('.survey-submit-btn[data-model]').on('click', function() {
+        const modelNumber = parseInt($(this).data('model'));
+        handleScenarioLoad(modelNumber);
+      });
     }
   };
-
-  // Handle form submission (single scenario mode)
-  surveyContent.find('#survey-form').on('submit', function(e) {
-    e.preventDefault();
-    handleScenarioLoad(1);
-  });
-
-  // Handle button clicks (multi scenario mode)
-  surveyContent.find('.survey-submit-btn[data-model]').on('click', function(e) {
-    e.preventDefault();
-    const modelNumber = parseInt($(this).data('model'));
-    handleScenarioLoad(modelNumber);
-  });
+  
+  // Start with intro page
+  renderPage('intro');
 
   popup.append(closeBtn, surveyContent);
 
