@@ -384,10 +384,10 @@ export function createRadarChart(
       legend: { display: false },
       layout: {
         padding: {
-          top: 30,
-          right: 30,
-          bottom: 30,
-          left: 30
+          top: 40,
+          right: 40,
+          bottom: 40,
+          left: 40
         }
       },
       scale: {
@@ -395,7 +395,7 @@ export function createRadarChart(
           beginAtZero: true,
           min: spec.yMin !== undefined ? spec.yMin : -100,
           max: spec.yMax !== undefined ? spec.yMax : 100,
-          stepSize: 50, // Show ticks at 100, 50, 0, -50, -100
+          stepSize: 25, // Show ticks at 100, 75, 50, 25, 0, -25, -50, -75, -100
           callback: (value) => {
             return Number(value).toFixed(0) + '%';
           },
@@ -409,7 +409,7 @@ export function createRadarChart(
         pointLabels: {
           fontFamily: options.fontFamily,
           fontStyle: options.fontStyle,
-          fontSize: 12,
+          fontSize: 1, // Minimal font size to reduce reserved space
           fontColor: 'transparent' // Hide default labels, we'll draw custom ones
         }
       },
@@ -496,19 +496,54 @@ export function createRadarChart(
         
         const chartLabels = chart.data.labels || [];
         
+        // Calculate scale factor based on canvas WIDTH
+        const canvasWidth = chart.width;
+        
+        // Scale font and dimensions based on canvas width
+        // Base size at 600px width, scale proportionally
+        const scaleFactor = Math.min(1, canvasWidth / 600);
+        const fontSize = Math.max(7, Math.round(13 * scaleFactor)); // Min 7px, max 13px
+        const padding = Math.max(3, Math.round(8 * scaleFactor));
+        // Very aggressive scaling for width - cube the scale factor
+        const widthScaleFactor = scaleFactor * scaleFactor * scaleFactor;
+        const maxWidth = Math.max(40, Math.round(120 * widthScaleFactor));
+        const lineHeight = Math.max(9, Math.round(16 * scaleFactor));
+        // Scale the label distance based on canvas size
+        const labelDistance = Math.max(15, Math.round(25 * scaleFactor));
+        
         chartLabels.forEach((label, i) => {
-          const distance = scale.drawingArea + 25;
+          const distance = scale.drawingArea + labelDistance;
           const point = scale.getPointPosition(i, distance);
           
-          // Simple single-line rendering - 13px to match legend font size
-          ctx.font = `bold 13px ${options.fontFamily || 'Arial'}`;
+          // Set font with responsive size
+          ctx.font = `bold ${fontSize}px ${options.fontFamily || 'Arial'}`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           
-          const padding = 8;
-          const textWidth = ctx.measureText(label).width;
-          const boxWidth = textWidth + padding * 2;
-          const boxHeight = 22;
+          // Split text into multiple lines if it exceeds maxWidth
+          const words = label.split(' ');
+          const lines: string[] = [];
+          let currentLine = '';
+          
+          for (const word of words) {
+            const testLine = currentLine ? `${currentLine} ${word}` : word;
+            const testWidth = ctx.measureText(testLine).width;
+            
+            if (testWidth > maxWidth && currentLine) {
+              lines.push(currentLine);
+              currentLine = word;
+            } else {
+              currentLine = testLine;
+            }
+          }
+          if (currentLine) {
+            lines.push(currentLine);
+          }
+          
+          // Calculate box dimensions based on lines
+          const boxHeight = lines.length * lineHeight + padding * 2;
+          const maxLineWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+          const boxWidth = maxLineWidth + padding * 2;
           
           // Draw colored box
           const x = point.x - boxWidth / 2;
@@ -517,9 +552,12 @@ export function createRadarChart(
           ctx.fillStyle = colors[i] || '#999';
           ctx.fillRect(x, y, boxWidth, boxHeight);
           
-          // Draw text
+          // Draw text lines
           ctx.fillStyle = '#fff';
-          ctx.fillText(label, point.x, point.y);
+          lines.forEach((line, lineIndex) => {
+            const lineY = point.y - (lines.length - 1) * lineHeight / 2 + lineIndex * lineHeight;
+            ctx.fillText(line, point.x, lineY);
+          });
         });
       }
     }]
