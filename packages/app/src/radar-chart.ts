@@ -14,6 +14,36 @@ function str(key) {
 }
 
 /**
+ * Get color for radar chart point based on value.
+ * Returns gradient: white at 0, green at positive extreme, red at negative extreme.
+ */
+function getPointColor(value: number, min: number = -100, max: number = 100): string {
+  // Normalize value to -1 to +1 range
+  const range = Math.max(Math.abs(min), Math.abs(max));
+  const normalized = Math.max(-1, Math.min(1, value / range));
+
+  const d = 220;
+
+  if (normalized >= 0) {
+    // Positive: interpolate from white to green
+    // White: rgb(d, d, d), Green: rgb(34, 197, 94)
+    const t = normalized; // 0 = white, 1 = green
+    const r = Math.round(d + (34 - d) * t);
+    const g = Math.round(d + (197 - d) * t);
+    const b = Math.round(d + (94 - d) * t);
+    return `rgb(${r}, ${g}, ${b})`;
+  } else {
+    // Negative: interpolate from white to red
+    // White: rgb(d, d, d), Red: rgb(239, 68, 68)
+    const t = -normalized; // 0 = white, 1 = red
+    const r = Math.round(d + (239 - d) * t);
+    const g = Math.round(d + (68 - d) * t);
+    const b = Math.round(d + (68 - d) * t);
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+}
+
+/**
  * Update radar chart data with latest values from the model.
  */
 export function updateRadarChartJsData(
@@ -24,17 +54,38 @@ export function updateRadarChartJsData(
   const targetYear = spec.xMax || 2050;
   
   // Determine if this is a combined scenario display
+  // In combined mode, chartData has 2 datasets but spec.datasets is just the variable list
   const isCombined = spec.scenarioDisplay === "combined";
-  const datasetsPerScenario = spec.datasets.length;
+  const varCount = spec.datasets.length;
   
-  const dataPointsS1: number[] = [];
-  const dataPointsS2: number[] = [];
+  // Read per-axis scale multipliers (same as in createRadarChart)
+  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  const specAny = spec as unknown as MaybeScaleCarrier;
   
-  // Update data for each dataset (each axis of the radar)
-  for (let i = 0; i < datasetsPerScenario; i++) {
-    const datasetSpec = spec.datasets[i];
+  const scaleMultipliers: number[] = [];
+  const rawScale = specAny?.subClassification ?? specAny?.modes ?? specAny?.graphType ?? undefined;
+  
+  if (typeof rawScale === 'string' && rawScale.includes(',')) {
+    // Parse comma-separated scale values
+    const parts = rawScale.split(',').map(s => s.trim());
+    for (const part of parts) {
+      const num = parseFloat(part);
+      scaleMultipliers.push(Number.isFinite(num) ? num : 1);
+    }
+  }
+  
+  // Get chart limits for clamping
+  const min = spec.yMin !== undefined ? spec.yMin : -100;
+  const max = spec.yMax !== undefined ? spec.yMax : 100;
+  
+  // Update data for each variable (each axis of the radar)
+  for (let varIndex = 0; varIndex < varCount; varIndex++) {
+    const datasetSpec = spec.datasets[varIndex];
     const varId = datasetSpec.varId;
     const referenceSource = datasetSpec.externalSourceName;
+    
+    // Get the scale multiplier for this axis (default to 1 if not specified)
+    const axisScale = scaleMultipliers[varIndex] ?? 1;
     
     // Get scenario data (undefined = current model output)
     let scenarioSeries = viewModel.getSeriesForVar(varId, undefined);
@@ -59,32 +110,56 @@ export function updateRadarChartJsData(
         const refS1Points = refSeries.points.slice(0, refMid);
         const refS2Points = refSeries.points.slice(refMid);
         
-        // Calculate % change for S1
-        const percentChangeS1 = calculatePercentChangeFromPoints(s1Points, refS1Points, targetYear);
-        dataPointsS1.push(percentChangeS1);
+        // Calculate % change for S1 and apply scale
+        const percentChangeS1 = calculatePercentChangeFromPoints(s1Points, refS1Points, targetYear) * axisScale;
         
-        // Calculate % change for S2
-        const percentChangeS2 = calculatePercentChangeFromPoints(s2Points, refS2Points, targetYear);
-        dataPointsS2.push(percentChangeS2);
+        // Calculate % change for S2 and apply scale
+        const percentChangeS2 = calculatePercentChangeFromPoints(s2Points, refS2Points, targetYear) * axisScale;
+        
+        // Update S1 dataset - store clamped value for display, actual for tooltip
+        if (chartData.datasets[0] && chartData.datasets[0].data) {
+          (chartData.datasets[0].data as number[])[varIndex] = Math.max(min, Math.min(max, percentChangeS1));
+          if (!(chartData.datasets[0] as any).actualValues) {
+            (chartData.datasets[0] as any).actualValues = [];
+          }
+          (chartData.datasets[0] as any).actualValues[varIndex] = percentChangeS1;
+        }
+        
+        // Update S2 dataset - store clamped value for display, actual for tooltip
+        if (chartData.datasets[1] && chartData.datasets[1].data) {
+          (chartData.datasets[1].data as number[])[varIndex] = Math.max(min, Math.min(max, percentChangeS2));
+          if (!(chartData.datasets[1] as any).actualValues) {
+            (chartData.datasets[1] as any).actualValues = [];
+          }
+          (chartData.datasets[1] as any).actualValues[varIndex] = percentChangeS2;
+        }
       } else {
-        // Single scenario mode
-        const percentChange = calculatePercentChange(scenarioSeries, refSeries, targetYear);
-        dataPointsS1.push(percentChange);
+        // Single scenario mode - apply scale
+        const percentChange = calculatePercentChange(scenarioSeries, refSeries, targetYear) * axisScale;
+        
+        // Update S1 dataset - store clamped value for display, actual for tooltip
+        if (chartData.datasets[0] && chartData.datasets[0].data) {
+          (chartData.datasets[0].data as number[])[varIndex] = Math.max(min, Math.min(max, percentChange));
+          if (!(chartData.datasets[0] as any).actualValues) {
+            (chartData.datasets[0] as any).actualValues = [];
+          }
+          (chartData.datasets[0] as any).actualValues[varIndex] = percentChange;
+        }
       }
-    } else {
-      dataPointsS1.push(0);
-      if (isCombined) dataPointsS2.push(0);
     }
   }
   
-  // Update the chart data
-  if (chartData.datasets && chartData.datasets.length > 0) {
-    chartData.datasets[0].data = dataPointsS1;
-    
-    // If combined, update the second dataset with S2 data
-    if (isCombined && chartData.datasets.length > 1) {
-      chartData.datasets[1].data = dataPointsS2;
-    }
+  // Update point colors based on the actual values (use gradient)
+  if (chartData.datasets[0] && chartData.datasets[0].data) {
+    const actualValues0 = (chartData.datasets[0] as any).actualValues || chartData.datasets[0].data;
+    chartData.datasets[0].pointBackgroundColor = (actualValues0 as number[]).map(value => getPointColor(value, min, max));
+    chartData.datasets[0].pointHoverBorderColor = (actualValues0 as number[]).map(value => getPointColor(value, min, max));
+  }
+  
+  if (isCombined && chartData.datasets[1] && chartData.datasets[1].data) {
+    const actualValues1 = (chartData.datasets[1] as any).actualValues || chartData.datasets[1].data;
+    chartData.datasets[1].pointBackgroundColor = (actualValues1 as number[]).map(value => getPointColor(value, min, max));
+    chartData.datasets[1].pointHoverBorderColor = (actualValues1 as number[]).map(value => getPointColor(value, min, max));
   }
 }
 
@@ -158,9 +233,28 @@ export function createRadarChart(
   const targetYear = spec.xMax || 2050;
   const isCombined = spec.scenarioDisplay === "combined";
   
-  console.log('Creating radar chart for spec:', spec.id, spec.titleKey);
-  console.log('Combined mode:', isCombined);
-  console.log('Target year for comparison:', targetYear);
+  // Read per-axis scale multipliers from subClassification field
+  // Format: comma-separated values, one per axis (e.g., "1,0.5,2,1,1.5,0.8")
+  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  const specAny = spec as unknown as MaybeScaleCarrier;
+  
+  const scaleMultipliers: number[] = [];
+  const rawScale = specAny?.subClassification ?? specAny?.modes ?? specAny?.graphType ?? undefined;
+  
+  if (typeof rawScale === 'string' && rawScale.includes(',')) {
+    // Parse comma-separated scale values
+    const parts = rawScale.split(',').map(s => s.trim());
+    for (const part of parts) {
+      const num = parseFloat(part);
+      scaleMultipliers.push(Number.isFinite(num) ? num : 1);
+    }
+  } else {
+    // Single value or no value - use 1 for all axes
+    const singleScale = typeof rawScale === 'number' ? rawScale : 
+                        (typeof rawScale === 'string' ? parseFloat(rawScale) : NaN);
+    const defaultScale = Number.isFinite(singleScale) ? singleScale : 1;
+    // Will fill with default scale as we process each dataset
+  }
   
   // Extract labels and data for each variable
   const labels: string[] = [];
@@ -174,9 +268,6 @@ export function createRadarChart(
     const varId = datasetSpec.varId;
     const referenceSource = datasetSpec.externalSourceName;
     
-    console.log(`Processing dataset ${i}:`, varId);
-    console.log('  Reference source:', referenceSource || 'auto-detect');
-    
     // Get scenario data
     let scenarioSeries = viewModel.getSeriesForVar(varId, undefined);
     if (!scenarioSeries) {
@@ -188,23 +279,36 @@ export function createRadarChart(
       ? viewModel.getSeriesForVar(varId, referenceSource)
       : findReferenceSeries(viewModel, varId);
     
-    console.log('  Scenario series:', scenarioSeries ? `${scenarioSeries.points.length} points` : 'NOT FOUND');
-    console.log('  Ref series:', refSeries ? `found` : 'NOT FOUND');
-    
     if (scenarioSeries && refSeries && scenarioSeries.points.length > 0) {
-      const percentChange = calculatePercentChange(scenarioSeries, refSeries, targetYear);
-      console.log('  Percent change:', percentChange);
-      
-      // Get the label
-      const label = extractLabel(viewModel, datasetSpec.labelKey, varId);
-      console.log('  Using label:', label);
-      
+      // Get the label from labelKey
+      const label = viewModel.getStringForKey(datasetSpec.labelKey) || datasetSpec.labelKey || varId;
       labels.push(label);
-      dataPointsS1.push(percentChange);
       
-      // For combined mode, S2 will have same data initially (will be updated in updateData)
+      // Get the scale multiplier for this axis (default to 1 if not specified)
+      const axisScale = scaleMultipliers[i] ?? 1;
+      
       if (isCombined) {
-        dataPointsS2.push(percentChange);
+        // In combined mode, split the series data for S1 and S2
+        const mid = Math.floor(scenarioSeries.points.length / 2);
+        const s1Points = scenarioSeries.points.slice(0, mid);
+        const s2Points = scenarioSeries.points.slice(mid);
+        
+        // Similarly for reference
+        const refMid = Math.floor(refSeries.points.length / 2);
+        const refS1Points = refSeries.points.slice(0, refMid);
+        const refS2Points = refSeries.points.slice(refMid);
+        
+        // Calculate % change for S1 and apply scale
+        const percentChangeS1 = calculatePercentChangeFromPoints(s1Points, refS1Points, targetYear) * axisScale;
+        dataPointsS1.push(percentChangeS1);
+        
+        // Calculate % change for S2 and apply scale
+        const percentChangeS2 = calculatePercentChangeFromPoints(s2Points, refS2Points, targetYear) * axisScale;
+        dataPointsS2.push(percentChangeS2);
+      } else {
+        // Single scenario mode - apply scale
+        const percentChange = calculatePercentChange(scenarioSeries, refSeries, targetYear) * axisScale;
+        dataPointsS1.push(percentChange);
       }
       
       // Use the color from plot color column
@@ -213,30 +317,36 @@ export function createRadarChart(
     }
   }
   
-  console.log('Final labels:', labels);
-  console.log('Final S1 data points:', dataPointsS1);
-  if (isCombined) console.log('Final S2 data points:', dataPointsS2);
-  
   // If no data was collected, add placeholder
   if (labels.length === 0) {
-    console.warn('No radar chart data collected');
     labels.push('No Data');
     dataPointsS1.push(0);
     if (isCombined) dataPointsS2.push(0);
     colors.push('#999');
   }
   
+  // Clamp values for visual display while preserving originals for tooltips
+  const min = spec.yMin !== undefined ? spec.yMin : -100;
+  const max = spec.yMax !== undefined ? spec.yMax : 100;
+  const clampedS1 = dataPointsS1.map(v => Math.max(min, Math.min(max, v)));
+  const clampedS2 = isCombined ? dataPointsS2.map(v => Math.max(min, Math.min(max, v))) : [];
+  
+  // Generate gradient point colors based on value magnitude (use original values)
+  const pointColorsS1 = dataPointsS1.map(value => getPointColor(value, min, max));
+  const pointColorsS2 = isCombined ? dataPointsS2.map(value => getPointColor(value, min, max)) : [];
+  
   // Build chart datasets
   const datasets: any[] = [{
-    label: isCombined ? 'Scenario 1' : `Year ${targetYear} (% Change vs Reference)`,
-    data: dataPointsS1,
-    backgroundColor: isCombined ? 'rgba(106, 61, 154, 0.3)' : 'rgba(128, 128, 128, 0.2)', // Purple for S1 in combined mode, grey otherwise
-    borderColor: isCombined ? 'rgb(106, 61, 154)' : 'rgb(128, 128, 128)', // Purple for S1 in combined mode, grey otherwise
+    label: isCombined ? 'S1' : `Year ${targetYear} (vs Ref)`,
+    data: clampedS1, // Use clamped values for display
+    actualValues: dataPointsS1, // Store actual values for tooltips
+    backgroundColor: isCombined ? 'rgba(106, 61, 154, 0.3)' : 'rgba(128, 128, 128, 0.2)',
+    borderColor: isCombined ? 'rgb(106, 61, 154)' : 'rgb(128, 128, 128)',
     borderWidth: 2,
-    pointBackgroundColor: colors,
+    pointBackgroundColor: pointColorsS1,
     pointBorderColor: '#fff',
     pointHoverBackgroundColor: '#fff',
-    pointHoverBorderColor: colors,
+    pointHoverBorderColor: pointColorsS1,
     pointRadius: 6,
     pointHoverRadius: 8
   }];
@@ -244,15 +354,16 @@ export function createRadarChart(
   // Add second dataset for combined mode
   if (isCombined) {
     datasets.push({
-      label: 'Scenario 2',
-      data: dataPointsS2,
-      backgroundColor: 'rgba(230, 97, 0, 0.3)', // Orange for S2
-      borderColor: 'rgb(230, 97, 0)', // Orange for S2
+      label: 'S2',
+      data: clampedS2, // Use clamped values for display
+      actualValues: dataPointsS2, // Store actual values for tooltips
+      backgroundColor: 'rgba(230, 97, 0, 0.3)',
+      borderColor: 'rgb(230, 97, 0)',
       borderWidth: 2,
-      pointBackgroundColor: colors,
+      pointBackgroundColor: pointColorsS2,
       pointBorderColor: '#fff',
       pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: colors,
+      pointHoverBorderColor: pointColorsS2,
       pointRadius: 6,
       pointHoverRadius: 8
     });
@@ -273,10 +384,10 @@ export function createRadarChart(
       legend: { display: false },
       layout: {
         padding: {
-          top: 20,
-          right: 20,
-          bottom: 20,
-          left: 20
+          top: 30,
+          right: 30,
+          bottom: 30,
+          left: 30
         }
       },
       scale: {
@@ -291,121 +402,130 @@ export function createRadarChart(
           fontFamily: options.fontFamily,
           fontStyle: options.fontStyle,
           fontColor: options.fontColor,
+          fontSize: 10, // Keep ticks small
           showLabelBackdrop: false, // Remove background from tick labels
           backdropPaddingY: 10 // Shift tick labels down
         },
         pointLabels: {
           fontFamily: options.fontFamily,
           fontStyle: options.fontStyle,
-          fontSize: 14,
-          fontColor: 'transparent' // Hide default labels since we'll draw custom ones
+          fontSize: 12,
+          fontColor: 'transparent' // Hide default labels, we'll draw custom ones
         }
       },
       tooltips: {
         enabled: true,
         callbacks: {
+          title: function (tooltipItems, data) {
+            // Show the axis label as the title
+            if (tooltipItems.length > 0) {
+              const index = tooltipItems[0].index;
+              return String(data.labels[index] || '');
+            }
+            return '';
+          },
           label: function (tooltipItem, data) {
-            const value = Number(tooltipItem.yLabel);
-            return `${value.toFixed(2)}%`;
+            // Show actual unclamped value from actualValues array
+            const dataset = data.datasets[tooltipItem.datasetIndex];
+            const actualValues = (dataset as any).actualValues;
+            const value = actualValues && actualValues[tooltipItem.index] !== undefined
+              ? actualValues[tooltipItem.index]
+              : Number(tooltipItem.yLabel);
+            
+            const datasetLabel = dataset.label || '';
+            const sign = value >= 0 ? '+' : '';
+            return `${datasetLabel}: ${sign}${value.toFixed(1)}%`;
+          },
+          labelColor: function (tooltipItem, chart) {
+            if (isCombined) {
+              // In combined mode:
+              // - Small square shows scenario color (purple for S1, orange for S2)
+              const datasetIndex = tooltipItem.datasetIndex;
+              const scenarioColor = datasetIndex === 0 ? 'rgb(106, 61, 154)' : 'rgb(230, 97, 0)'; // Purple for S1, Orange for S2
+              
+              return {
+                borderColor: scenarioColor,
+                backgroundColor: scenarioColor
+              };
+            }
+            // Single scenario mode - use default
+            return {
+              borderColor: 'rgb(128, 128, 128)',
+              backgroundColor: 'rgb(128, 128, 128)'
+            };
           }
         }
       }
     },
-    // Register inline plugin for custom label rendering
+    // Register inline plugins for custom rendering
     plugins: [{
+      // Plugin 1: Draw reference circle at 0%
+      beforeDatasetsDraw: (chart: any) => {
+        const ctx = chart.ctx;
+        const scale = chart.scale;
+        
+        if (!ctx || !scale) return;
+        
+        // Calculate the radius for 0% (middle of the scale)
+        const min = spec.yMin !== undefined ? spec.yMin : -100;
+        const max = spec.yMax !== undefined ? spec.yMax : 100;
+        const zeroPercent = 0;
+        
+        // Calculate distance from center for 0%
+        const range = max - min;
+        const normalizedValue = (zeroPercent - min) / range;
+        const distance = scale.drawingArea * normalizedValue;
+        
+        // Draw reference circle
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)'; // Black with 30% opacity
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]); // Dashed line
+        ctx.beginPath();
+        ctx.arc(scale.xCenter, scale.yCenter, distance, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }, {
+      // Plugin 2: Draw simple colored label boxes
       beforeDraw: (chart: any) => {
         const ctx = chart.ctx;
         const scale = chart.scale;
         
         if (!ctx || !scale) return;
         
-        labels.forEach((label, i) => {
-          // Position labels at the edge of the drawing area to maximize chart size
+        const chartLabels = chart.data.labels || [];
+        
+        chartLabels.forEach((label, i) => {
           const distance = scale.drawingArea + 25;
           const point = scale.getPointPosition(i, distance);
           
-          // Set font
+          // Simple single-line rendering - 13px to match legend font size
           ctx.font = `bold 13px ${options.fontFamily || 'Arial'}`;
-          
-          // Wrap text if it's too long (max 20 characters per line)
-          const maxCharsPerLine = 20;
-          const words = label.split(' ');
-          const lines: string[] = [];
-          let currentLine = '';
-          
-          words.forEach(word => {
-            const testLine = currentLine ? `${currentLine} ${word}` : word;
-            if (testLine.length > maxCharsPerLine && currentLine) {
-              lines.push(currentLine);
-              currentLine = word;
-            } else {
-              currentLine = testLine;
-            }
-          });
-          if (currentLine) {
-            lines.push(currentLine);
-          }
-          
-          // Calculate box dimensions based on multiline text
-          const lineHeight = 16;
-          let maxLineWidth = 0;
-          lines.forEach(line => {
-            const width = ctx.measureText(line).width;
-            if (width > maxLineWidth) maxLineWidth = width;
-          });
-          
-          const padding = 8;
-          const boxWidth = maxLineWidth + padding * 2;
-          const boxHeight = lines.length * lineHeight + padding * 2;
-          
-          // Draw colored background box with rounded corners
-          const x = point.x - boxWidth / 2;
-          const y = point.y - boxHeight / 2;
-          const radius = 1;
-          
-          ctx.globalAlpha = 1.0; // Ensure full opacity
-          ctx.fillStyle = colors[i] || '#999';
-          ctx.beginPath();
-          ctx.moveTo(x + radius, y);
-          ctx.lineTo(x + boxWidth - radius, y);
-          ctx.quadraticCurveTo(x + boxWidth, y, x + boxWidth, y + radius);
-          ctx.lineTo(x + boxWidth, y + boxHeight - radius);
-          ctx.quadraticCurveTo(x + boxWidth, y + boxHeight, x + boxWidth - radius, y + boxHeight);
-          ctx.lineTo(x + radius, y + boxHeight);
-          ctx.quadraticCurveTo(x, y + boxHeight, x, y + boxHeight - radius);
-          ctx.lineTo(x, y + radius);
-          ctx.quadraticCurveTo(x, y, x + radius, y);
-          ctx.closePath();
-          ctx.fill();
-          
-          // Draw white text on colored background (multiline)
-          ctx.fillStyle = '#fff';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           
-          // Draw each line
-          const startY = point.y - ((lines.length - 1) * lineHeight) / 2;
-          lines.forEach((line, lineIndex) => {
-            ctx.fillText(line, point.x, startY + lineIndex * lineHeight);
-          });
+          const padding = 8;
+          const textWidth = ctx.measureText(label).width;
+          const boxWidth = textWidth + padding * 2;
+          const boxHeight = 22;
+          
+          // Draw colored box
+          const x = point.x - boxWidth / 2;
+          const y = point.y - boxHeight / 2;
+          
+          ctx.fillStyle = colors[i] || '#999';
+          ctx.fillRect(x, y, boxWidth, boxHeight);
+          
+          // Draw text
+          ctx.fillStyle = '#fff';
+          ctx.fillText(label, point.x, point.y);
         });
       }
     }]
   };
   
-  return new Chart(canvas, chartConfig);
-}
-
-/**
- * Extract a human-readable label from the labelKey.
- * The labelKey should be the actual text from the CSV.
- */
-function extractLabel(viewModel: GraphViewModel, labelKey: string | undefined, fallback: string): string {
-  if (!labelKey) {
-    return fallback;
-  }
+  const chart = new Chart(canvas, chartConfig);
   
-  // Get the actual string value from the key
-  const label = viewModel.getStringForKey(labelKey);
-  return label || labelKey;
+  return chart;
 }
