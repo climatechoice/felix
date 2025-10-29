@@ -60,14 +60,14 @@ export function loadNavBar() {
   $redoBtn.on("click", () => redoInputChange());
   $sect1.append($redoBtn);
 
-  // Reset all scenarios button
-  const $resetAllBtn = $(`
-    <button title="Reset All">
+  // Reset current scenario button
+  const $resetBtn = $(`
+    <button title="Reset Current Scenario">
       <span class="material-icons">refresh</span>
     </button>
   `);
-  $resetAllBtn.on("click", () => resetAllModelsInputs());
-  $sect1.append($resetAllBtn);
+  $resetBtn.on("click", () => resetActiveModelInputs());
+  $sect1.append($resetBtn);
 
   // Show input changes summary button
   const $showChangedInputsBtn = $(`
@@ -479,6 +479,36 @@ function refreshInputsUI() {
 }
 
 // Function to reset all inputs for BOTH models
+// Function to reset all inputs of the active model
+function resetActiveModelInputs() {
+  coreConfig.inputs.forEach((spec) => {
+    const input = activeModel.get().getInputForId(spec.id);
+    if (input) {
+      input.reset();
+    }
+  });
+  
+  // Refresh the inputs UI to show the default values
+  let selectedCategory = $(".input-category-selector-option.selected").data(
+    "value"
+  );
+  if (!selectedCategory) {
+    const $first = $(
+      "#input-category-selector-container .input-category-selector-option"
+    ).first();
+    if ($first && $first.length) {
+      selectedCategory = $first.data("value");
+      $(".input-category-selector-option").removeClass("selected");
+      $first.addClass("selected");
+    } else {
+      selectedCategory = Array.from(coreConfig.inputs.values())[0]
+        ? Array.from(coreConfig.inputs.values())[0].categoryId
+        : "Diet Change";
+    }
+  }
+  initInputsUI(selectedCategory);
+}
+
 function resetAllModelsInputs() {
   // Reset both models
   [model.get(), modelB.get()].forEach((modelInstance) => {
