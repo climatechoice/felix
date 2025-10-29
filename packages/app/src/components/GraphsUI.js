@@ -1,7 +1,7 @@
 import $ from "jquery";
 import { config as coreConfig } from "@core";
 import { str, format, createInfoIcon } from "../lib/utils.js";
-import { GraphView } from "../graph-view";
+import { GraphView } from "./graphs/graph-view";
 import { selectedGraphCount, layoutConfig } from "../stores/layout-store.js";
 import { model, modelB } from "../stores/model-store.js";
 import { graphViews } from "../stores/graphs-store.js";
