@@ -14,7 +14,9 @@ import {
   resolveLocalImages,
   createPopupBox,
   createInfoIcon,
+  createGraphPreviewButton,
 } from "../../lib/utils.js";
+import { config as coreConfig } from "@core";
 
 import { addedSliderIds } from "../../stores/inputs-store.js";
 import { undoStack, redoStack } from "../../stores/undo-redo-store.js";
@@ -86,6 +88,27 @@ export function addSliderItem(sliderInput, container = $("#inputs-content")) {
       extensiveInfoIcon,
     ].filter((el) => el !== null)
   );
+
+  // Append graph preview button if a graph exists with the same id as this input
+  // (We use the input's id as the link, per user's request.)
+  try {
+    const graphSpec = coreConfig.graphs.get(spec.id);
+    if (graphSpec) {
+      const previewBtn = createGraphPreviewButton(spec.id);
+      if (previewBtn) {
+        // if an extensive info/book icon exists, insert preview before it
+        if (typeof extensiveInfoIcon !== 'undefined' && extensiveInfoIcon && extensiveInfoIcon.before) {
+          extensiveInfoIcon.before(previewBtn);
+        } else if (infoIcon && infoIcon.after) {
+          infoIcon.after(previewBtn);
+        } else {
+          sliderTitleAndInfoContainer.append(previewBtn);
+        }
+      }
+    }
+  } catch (e) {
+    // ignore if coreConfig isn't available in this context
+  }
 
   // Value + Units container. This should be in the far right.
   const valueUnitsContainer = $('<div class="value-units-container"/>').append(

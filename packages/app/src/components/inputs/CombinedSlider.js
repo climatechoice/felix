@@ -9,7 +9,9 @@ import {
   str,
   format,
   createInfoIcon,
+  createGraphPreviewButton,
 } from "../../lib/utils.js";
+import { config as coreConfig } from "@core";
 import { addedSliderIds } from "../../stores/inputs-store.js";
 import { undoStack, redoStack } from "../../stores/undo-redo-store.js";
 import { activeModel } from "../../stores/model-store.js";
@@ -85,6 +87,14 @@ export function addCombinedSlider(groupInputs, container) {
 
   // Add info icon to the title container
   titleRow.find(".slider-title-and-info-container").append(infoIcon);
+  // Append preview button if a graph exists for the combined slider title
+  try {
+    const graphSpec = coreConfig.graphs.get(startSpec.id) || coreConfig.graphs.get(endSpec.id);
+    if (graphSpec) {
+      const previewBtn = createGraphPreviewButton(graphSpec.id || startSpec.id);
+      if (previewBtn) titleRow.find(".slider-title-and-info-container").append(previewBtn);
+    }
+  } catch (e) {}
 
   const descRow = $(
     `<div class="input-desc">${description ? str(description) : ""}</div>`

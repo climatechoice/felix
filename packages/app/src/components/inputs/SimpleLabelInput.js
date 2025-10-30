@@ -5,7 +5,8 @@
  */
 
 import $ from "jquery";
-import { str, createInfoIcon } from "../../lib/utils.js";
+import { str, createInfoIcon, createGraphPreviewButton } from "../../lib/utils.js";
+import { config as coreConfig } from "@core";
 import { addedSliderIds } from "../../stores/inputs-store.js";
 
 /**
@@ -44,6 +45,24 @@ export function addSimpleLabelItem(sliderInput, container = $("#inputs-content")
       infoIcon,
     ].filter((el) => el !== null)
   );
+
+  // Append graph preview button if a graph exists with the same id as this input
+  // (We use the input's id as the link, per user's request.)
+  try {
+    const graphSpec = coreConfig.graphs.get(spec.id);
+    if (graphSpec) {
+      const previewBtn = createGraphPreviewButton(spec.id);
+      if (previewBtn) {
+        if (infoIcon && infoIcon.after) {
+          infoIcon.after(previewBtn);
+        } else {
+          sliderTitleAndInfoContainer.append(previewBtn);
+        }
+      }
+    }
+  } catch (e) {
+    // ignore if coreConfig isn't available in this context
+  }
 
   // No slider row - just title
   const titleRow = $(`<div class="input-title-row"/>`).append(

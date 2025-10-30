@@ -12,6 +12,7 @@ import {
   createPopupBox,
   createInfoIcon,
 } from "../../lib/utils.js";
+import { createGraphPreviewButton } from "../../lib/utils.js";
 import { addedSliderIds } from "../../stores/inputs-store.js";
 import { undoStack, redoStack } from "../../stores/undo-redo-store.js";
 import { activeModel } from "../../stores/model-store.js";
@@ -86,6 +87,22 @@ export function addSegmentedItem(inputInstance, container = $("#inputs-content")
       extensiveInfoIcon,
     ].filter((el) => el) // drop the icon if null
   );
+  // Append graph preview button if available (insert before book icon when present)
+  try {
+    const graphSpec = coreConfig.graphs.get(spec.id);
+    if (graphSpec) {
+      const previewBtn = createGraphPreviewButton(spec.id);
+      if (previewBtn) {
+        if (extensiveInfoIcon && extensiveInfoIcon.before) {
+          extensiveInfoIcon.before(previewBtn);
+        } else if (infoIcon && infoIcon.after) {
+          infoIcon.after(previewBtn);
+        } else {
+          titleAndIcon.append(previewBtn);
+        }
+      }
+    }
+  } catch (e) {}
   const titleRow = $('<div class="input-title-row"/>').append(titleAndIcon);
   wrapper.append(titleRow);
 

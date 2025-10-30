@@ -38,7 +38,7 @@ u_dc_4,slider,,Uncertainties,Uncertainties,dc,,dropdown assumptions,⚠️ Perce
 u_dc_5,slider,,Uncertainties,Uncertainties,dc,,dropdown assumptions,👥 Social Norms,,,Subjective norm aggregated multiplier,0,,If sustainable eating is widely accepted among your peers you are also more likely to adopt such diets. <br><br> **Social Norms** refer to the influence of societal and peer expectations on an individual's diet choices.,,Primary,Sliders,0,200,100,25,%,.0f,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 u_flw,slider,,Uncertainties,Uncertainties,Food Waste & Losses,,dropdown main label,Recovery of Food Loss and Waste,contact_support,,Fake Value 2,0,What actually happens to the food recovered?,,,Primary,Sliders,0,2,0,1,-,.0f,,,,,,,,,,,,,,
-u_flw_1,slider,,Uncertainties,Uncertainties,Food Waste & Losses,,dropdown assumptions,Waste at Consumer Level,,,Recovered Loss Destination Variation,0,Reduce Demand > Consumption,?????,,Primary,Sliders,0,100,0,10,%,.0f,,,,,,,,,,,,,,
+u_flw_1,slider,,Uncertainties,Uncertainties,Food Waste & Losses,,dropdown assumptions,Waste at Consumer Level,,,Recovered Loss Destination Variation,0,Reduce Demand > Consumption,,,Primary,Sliders,0,100,0,10,%,.0f,,,,,,,,,,,,,,
 u_flw_2,slider,,Uncertainties,Uncertainties,Food Waste & Losses,,dropdown assumptions,Loss at Supply Chain Level,,,Fake Value 18,0,Recovered Waste Destination Variation,,,Primary,Sliders,0,100,0,10,%,.0f,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 u_ap,slider,,Uncertainties,Uncertainties,AP Tech,,dropdown main label,Technologies of Alternative Protein,contact_support,,Fake Value 6,0,What product should we replace animal proteins with?,,,Primary,Sliders,2000,2100,2050,10,-,.0f,,,,,,,,,,,,,,

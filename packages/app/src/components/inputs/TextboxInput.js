@@ -5,7 +5,8 @@
  */
 
 import $ from "jquery";
-import { str, format, createInfoIcon } from "../../lib/utils.js";
+import { str, format, createInfoIcon, createGraphPreviewButton } from "../../lib/utils.js";
+import { config as coreConfig } from "@core";
 import { addedSliderIds } from "../../stores/inputs-store.js";
 import { undoStack, redoStack } from "../../stores/undo-redo-store.js";
 import { updateUndoRedoButtons } from "../navigation/UndoRedo.js";
@@ -43,6 +44,22 @@ export function addTextboxItem(textboxInput, container = $("#inputs-content")) {
     $(`<div class="input-title">${str(spec.labelKey)}</div>`),
     infoIcon,
   ].filter((el) => el !== null));
+  // Append preview button if a matching graph exists (place before extensive/book icon if present)
+  try {
+    const graphSpec = coreConfig.graphs.get(spec.id);
+    if (graphSpec) {
+      const previewBtn = createGraphPreviewButton(spec.id);
+      if (previewBtn) {
+        if (typeof extensiveInfoIcon !== 'undefined' && extensiveInfoIcon && extensiveInfoIcon.before) {
+          extensiveInfoIcon.before(previewBtn);
+        } else if (infoIcon && infoIcon.after) {
+          infoIcon.after(previewBtn);
+        } else {
+          sliderTitleAndInfoContainer.append(previewBtn);
+        }
+      }
+    }
+  } catch (e) {}
 
   // For textbox we don't want to repeat the numeric value on the right (the
   // value is already shown in the textbox). Only show units on the right.

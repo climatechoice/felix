@@ -655,6 +655,66 @@ p {
   color: #fff;
 }
 
+/* Graph preview button (small icon next to inputs) */
+.graph-preview-btn {
+  display: inline-flex; /* match container inline-flex children */
+  margin-left: 0; /* rely on container gap for spacing */
+  vertical-align: middle;
+  align-items: center;
+}
+.graph-preview-btn .graph-preview-icon,
+.graph-preview-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-flex; /* center the glyph */
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box; /* include border/padding in size */
+  font-size: 14px;
+  cursor: pointer;
+  vertical-align: middle;
+  border-radius: 4px;
+  padding: 1px;
+  color: #4b5563;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: transparent;
+}
+
+.graph-preview-icon:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+/* Preview pane */
+#graph-preview-pane {
+  background: #fff;
+  color: #111;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  /* stronger shadow to make the pane appear clearly floating */
+  box-shadow: 0 16px 48px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  display: block;
+}
+#graph-preview-pane[aria-hidden="true"] { display:none; }
+#graph-preview-pane .preview-header {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border-bottom:1px solid #eee;
+}
+#graph-preview-pane .preview-header .preview-title { flex:1; font-weight:600; font-size:13px; }
+#graph-preview-pane .preview-header .preview-close { background:transparent; border:none; font-size:18px; cursor:pointer; }
+#graph-preview-pane .preview-body { padding:8px; height:240px; box-sizing:border-box; }
+#graph-preview-pane .preview-body { padding:8px; height:300px; box-sizing:border-box; display:flex; flex-direction:column; }
+#graph-preview-pane .preview-canvas { flex: 1 1 auto; min-height: 180px; }
+#graph-preview-pane canvas { width:100%; height:100%; display:block; }
+#graph-preview-pane .preview-empty { color:#666; padding:16px; text-align:center; }
+
+/* Legend in preview pane */
+#graph-preview-pane .graph-legend { margin-top:8px; max-height:80px; overflow:auto; display:flex; flex-wrap:wrap; gap:4px; }
+#graph-preview-pane .graph-legend-item { padding: 4px 8px; margin: 2px; color: #fff; font-size: 12px; }
+
 /* Custom Graph selector (dropdown) */
 
 .custom-graph-selector {
@@ -1183,15 +1243,25 @@ p {
 }
 
 .book-popup-icon {
+  /* Match visual style of the preview icon for consistency */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 14px;
   height: 14px;
   font-size: 14px;
   line-height: 14px;
   cursor: pointer;
   vertical-align: middle;
-  border: 1px solid black;
   border-radius: 4px;
   padding: 1px;
+  color: #4b5563;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: transparent;
+}
+
+.book-popup-icon:hover {
+  background: rgba(0,0,0,0.04);
 }
 
 /* Styles for Tables inside popups */

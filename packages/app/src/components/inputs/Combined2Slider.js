@@ -6,7 +6,8 @@
 
 import $ from "jquery";
 import Slider from "bootstrap-slider";
-import { str, createInfoIcon } from "../../lib/utils.js";
+import { str, createInfoIcon, createGraphPreviewButton } from "../../lib/utils.js";
+import { config as coreConfig } from "@core";
 import { addedSliderIds } from "../../stores/inputs-store.js";
 import { undoStack, redoStack } from "../../stores/undo-redo-store.js";
 import { activeModel } from "../../stores/model-store.js";
@@ -68,6 +69,16 @@ export function addCombined2Slider(groupInputs, container = $("#inputs-content")
 
   // Add info icon to title container
   titleRow.find(".slider-title-and-info-container").append(infoIcon);
+
+  // Append preview button if a matching graph exists for the group
+  try {
+    // Prefer a graph that matches the first input id or the group name
+    const graphSpec = coreConfig.graphs.get(groupInputs[0].id) || coreConfig.graphs.get(title);
+    if (graphSpec) {
+      const previewBtn = createGraphPreviewButton(graphSpec.id || groupInputs[0].id);
+      if (previewBtn) titleRow.find(".slider-title-and-info-container").append(previewBtn);
+    }
+  } catch (e) {}
 
   // Create the single range slider with inline labels
   const sliderId = `combined2-${groupInputs[0].id}`;

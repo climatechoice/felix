@@ -8,6 +8,7 @@ import {
   str,
   createInfoIcon,
 } from "../../lib/utils.js";
+import { createGraphPreviewButton } from "../../lib/utils.js";
 import { config as coreConfig } from "@core";
 import { undoStack, redoStack } from "../../stores/undo-redo-store.js";
 import { updateUndoRedoButtons } from "../navigation/UndoRedo.js";
@@ -84,6 +85,18 @@ export function addSwitchItem(switchInput) {
       onSlidersContainer
     ),
   ]);
+
+  // Attempt to append graph preview button near the info icon
+  try {
+    const graphSpec = coreConfig.graphs.get(spec.id);
+    if (graphSpec) {
+      const previewBtn = createGraphPreviewButton(spec.id);
+      if (previewBtn) {
+        // place after the infoIcon inside the buttonContainer
+        infoIcon && infoIcon.after ? infoIcon.after(previewBtn) : buttonContainer.append(previewBtn);
+      }
+    }
+  } catch (e) {}
 
   $("#inputs-content").append(div);
 

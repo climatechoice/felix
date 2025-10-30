@@ -12,6 +12,7 @@ import {
   resolveLocalImages,
   createPopupBox,
   createInfoIcon,
+  createGraphPreviewButton,
 } from "../../lib/utils.js";
 import { addedSliderIds } from "../../stores/inputs-store.js";
 import { undoStack, redoStack } from "../../stores/undo-redo-store.js";
@@ -87,6 +88,24 @@ export function addDropdownListItem(inputInstance, container = $("#inputs-conten
       extensiveInfoIcon,
     ].filter((el) => el) // drop the icon if null
   );
+  // Append graph preview button if a graph exists with the same id as this input
+  try {
+    const graphSpec = coreConfig.graphs.get(spec.id);
+    if (graphSpec) {
+      const previewBtn = createGraphPreviewButton(spec.id);
+      if (previewBtn) {
+        if (extensiveInfoIcon && extensiveInfoIcon.before) {
+          extensiveInfoIcon.before(previewBtn);
+        } else if (infoIcon && infoIcon.after) {
+          infoIcon.after(previewBtn);
+        } else {
+          titleAndIcon.append(previewBtn);
+        }
+      }
+    }
+  } catch (e) {
+    // ignore if coreConfig isn't available
+  }
   const titleRow = $('<div class="input-title-row"/>').append(titleAndIcon);
   wrapper.append(titleRow);
 
