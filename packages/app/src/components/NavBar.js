@@ -1,6 +1,6 @@
 import $ from "jquery";
 import { config as coreConfig } from "@core";
-import { str, createPopupBox } from "../lib/utils.js";
+import { str } from "../lib/utils.js";
 import { selectedGraphCount, layoutConfig } from "../stores/layout-store";
 import { model, modelB, activeModel } from "../stores/model-store";
 import { categoryLayouts } from "../stores/category-layout-store.js";
@@ -134,9 +134,19 @@ export function loadNavBar() {
    */
   const $sect3 = $('<div class="nav-section third"></div>');
 
-  // Layout selector (based on layoutConfig)
+  // Reset graphs button - FIRST
+  const $resetGraphsBtn = $(`
+    <button title="Reset Graph View" class="reset-graph-btn">
+      <span class="material-icons">refresh</span>
+      <span class="material-icons">bar_chart</span>
+    </button>
+  `);
+  $resetGraphsBtn.on("click", () => resetGraphsView());
+  $sect3.append($resetGraphsBtn);
+
+  // Layout selector (based on layoutConfig) - SECOND
   const $layoutSelect = $(`
-  <select id="layout-select" aria-label="Number of graphs to display">
+  <select id="layout-select" aria-label="Graph Layout">
     ${Object.keys(layoutConfig)
       .map(
         (n) => `<option value="${n}" ${
@@ -186,34 +196,83 @@ export function loadNavBar() {
   // Layout selector with icon
   const $layoutContainer = $('<div class="layout-selector-container"></div>');
   const $layoutIcon = $('<span class="material-icons layout-icon">dashboard</span>');
-  $layoutContainer.append($layoutIcon, $layoutSelect);
-  
+  const $layoutTooltip = $('<div class="layout-tooltip">Graph Layout</div>');
+  $layoutContainer.append($layoutIcon, $layoutSelect, $layoutTooltip);
   $sect3.append($layoutContainer);
 
-  // Reset graphs button - right after layout selector
-  const $resetGraphsBtn = $(`
-    <button title="Reset Graph View" class="reset-graph-btn">
-      <span class="material-icons">refresh</span>
-      <span class="material-icons">bar_chart</span>
+  // No custom tooltip logic: rely on native title attribute
+
+  // Bulls-eye button - placeholder for future feature (BEFORE calendar)
+  const $bullseyeBtn = $(`
+    <button title="Target Feature (Coming Soon)">
+      <span class="material-icons">adjust</span>
     </button>
   `);
-  $resetGraphsBtn.on("click", () => resetGraphsView());
-  $sect3.append($resetGraphsBtn);
+  $bullseyeBtn.on("click", () => {
+    // Placeholder for future feature
+    console.log("Bulls-eye feature - to be implemented");
+  });
+  $sect3.append($bullseyeBtn);
 
-  const $documentationBtn = $("<button>Documentation</button>");
+  // Year selector for present-day reference line - AFTER bulls-eye
+  const $yearSelectorContainer = $('<div class="year-selector-container" title="Reference Year"></div>');
+  const $yearIcon = $('<span class="material-icons year-icon">event</span>');
+  const $yearInput = $(`
+    <input 
+      type="number" 
+      id="present-year-input" 
+      min="1950" 
+      max="2100" 
+      value="2025" 
+      title="Reference Year"
+    />
+  `);
+  
+  $yearInput.on("change", function() {
+    const year = parseInt($(this).val(), 10);
+    if (year >= 1950 && year <= 2100) {
+      // Update the reference line year in graph-view
+      window.presentDayYear = year;
+      // Refresh all graphs to show new reference line
+      const selectedGraphCategory = $(".graph-category-selector-option.selected").data("value");
+      if (selectedGraphCategory) {
+        initGraphsUI(selectedGraphCategory, selectedGraphCount.get());
+      }
+    } else {
+      // Reset to 2025 if invalid
+      $(this).val(2025);
+      window.presentDayYear = 2025;
+    }
+  });
+  
+  $yearSelectorContainer.append($yearIcon, $yearInput);
+  $sect3.append($yearSelectorContainer);
+
+  // Documentation button with icon
+  const $documentationBtn = $(`
+    <button title="Documentation">
+      <span class="material-icons">menu_book</span>
+    </button>
+  `);
   $documentationBtn.on("click", () => {
     window.open("https://iiasa.github.io/felix_docs/", "_blank");
   });
   $sect3.append($documentationBtn);
 
-  const $bugBtn = $("<button>Submit a Bug</button>");
+  // Bug report button with icon
+  const $bugBtn = $(`
+    <button title="Submit A Bug">
+      <span class="material-icons">bug_report</span>
+    </button>
+  `);
   $bugBtn.on("click", () => {
     window.open("https://github.com/climatechoice/felix/issues", "_blank");
   });
   $sect3.append($bugBtn);
 
+  // Fullscreen button
   const $fsBtn = $(`
-    <button>
+    <button title="Toggle Fullscreen">
       <span class="material-icons">fullscreen</span>
     </button>
   `);
@@ -226,10 +285,8 @@ export function loadNavBar() {
 
   // Final assembly
   $nav.append($sect1, $sect2, $sect3);
-  
   // Apply initial filter based on default mode (single-scenario)
   filterGraphCategoriesByMode(false);
-  
   // Initialize button states
   updateUndoRedoButtons();
 }

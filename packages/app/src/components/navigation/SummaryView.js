@@ -48,8 +48,8 @@ export function showChangedInputs() {
  */
 function formatInputChange(spec, defaultValue, currentValue) {
   const label = `**${str(spec.labelKey)}**`;
-  // If input slider is a segmented button, show the labels, not the numeric values
-  if (spec.isSegmented === "yes" && Array.isArray(spec.rangeLabelKeys)) {
+  // If input is a segmented button or dropdown list, show the labels, not the numeric values
+  if ((spec.isSegmented === "button" || spec.isSegmented === "list") && Array.isArray(spec.rangeLabelKeys)) {
     const segmentValues = buildSegmentValues(spec);
     const valueToLabel = segmentValues.reduce((acc, val, idx) => {
       acc[val] = str(spec.rangeLabelKeys[idx]);

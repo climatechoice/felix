@@ -75,7 +75,7 @@ export function resolveLocalImages(mdContent) {
  * Function for the creation of Info Icon
  */
 
-export function createInfoIcon(hoverText) {
+export function createInfoIcon(hoverText, opts = {}) {
   if (!hoverText) return null;
 
   const infoIconContainer = $('<div class="info-icon-container">');
@@ -83,18 +83,90 @@ export function createInfoIcon(hoverText) {
 
   // Parse Markdown to HTML
   const parsedHTML = marked.parse(hoverText);
-  const tooltip = $(`<div class="tooltip">${parsedHTML}</div>`);
+
+  // If opts.graph is true, use .graph-tooltip, else .tooltip
+  const isGraph = opts.graph === true;
+  const tooltip = $(`<div class="${isGraph ? 'graph-tooltip' : 'tooltip'}">${parsedHTML}</div>`);
 
   infoIconContainer.append(icon, tooltip);
 
-  icon.on("mouseenter", function () {
-    positionTooltip(tooltip);
-    tooltip.css("visibility", "visible");
-  });
+  if (isGraph) {
+    let tooltipAppendedTo = null;
+    icon.on("mouseenter", function () {
+      // Determine the boundary container to keep the tooltip inside the graph layout
+      const mainGraphContainer = icon.closest('#graphs-container, .all-graphs-container, .graphs-root, .main-graphs');
+      const containerRect = mainGraphContainer.length
+        ? mainGraphContainer[0].getBoundingClientRect()
+        : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
 
-  icon.on("mouseleave", function () {
-    tooltip.css("visibility", "hidden");
-  });
+      // Append tooltip to body to avoid clipping by overflow:hidden ancestors
+      if (!tooltip.parent().is(document.body)) {
+        tooltip.appendTo(document.body);
+        tooltipAppendedTo = document.body;
+      }
+
+      // Compute positions in viewport coordinates and clamp to containerRect
+      const iconRect = icon[0].getBoundingClientRect();
+      const tooltipElem = tooltip[0];
+      const tooltipWidth = tooltipElem.offsetWidth;
+      const tooltipHeight = tooltipElem.offsetHeight;
+
+      // Default: centered under the icon
+      let left = iconRect.left + iconRect.width / 2 - tooltipWidth / 2;
+      let top = iconRect.bottom + 8;
+
+      // Clamp horizontal position to the main graph container (viewport coords)
+      const minLeft = containerRect.left + 8;
+      const maxLeft = containerRect.right - tooltipWidth - 8;
+      if (left < minLeft) left = minLeft;
+      if (left > maxLeft) left = maxLeft;
+
+      // If tooltip would overflow bottom of container, try showing above icon
+      if (top + tooltipHeight > containerRect.bottom - 8) {
+        const altTop = iconRect.top - tooltipHeight - 8;
+        if (altTop >= containerRect.top + 8) {
+          top = altTop;
+        } else {
+          // clamp to bottom of container
+          top = Math.max(containerRect.bottom - tooltipHeight - 8, containerRect.top + 8);
+        }
+      }
+
+      // Ensure tooltip stays within viewport as well
+      if (left < 8) left = 8;
+      if (left + tooltipWidth > window.innerWidth - 8) left = window.innerWidth - tooltipWidth - 8;
+      if (top < 8) top = 8;
+      if (top + tooltipHeight > window.innerHeight - 8) top = window.innerHeight - tooltipHeight - 8;
+
+      tooltip.removeClass('tooltip').addClass('graph-tooltip');
+      tooltip.css({
+        position: 'fixed',
+        left: `${left}px`,
+        top: `${top}px`,
+        transform: 'none',
+        visibility: 'visible',
+        zIndex: 10001
+      });
+    });
+
+    icon.on("mouseleave", function () {
+      tooltip.css("visibility", "hidden");
+      // Move tooltip back under the icon container to keep DOM tidy
+      if (tooltipAppendedTo && tooltipAppendedTo === document.body) {
+        infoIconContainer.append(tooltip);
+        tooltipAppendedTo = null;
+      }
+    });
+  } else {
+    // InputUI: fixed window-based
+    icon.on("mouseenter", function () {
+      positionTooltip(tooltip);
+      tooltip.css("visibility", "visible");
+    });
+    icon.on("mouseleave", function () {
+      tooltip.css("visibility", "hidden");
+    });
+  }
 
   return infoIconContainer;
 }
@@ -104,6 +176,7 @@ export function createInfoIcon(hoverText) {
  */
 
 export function positionTooltip(tooltip) {
+  // Only for inputUI: fixed window-based tooltips
   const icon = tooltip.siblings(".info-icon");
   const iconRect = icon[0].getBoundingClientRect();
   const tooltipElem = tooltip[0];
@@ -112,31 +185,27 @@ export function positionTooltip(tooltip) {
   const tooltipWidth = tooltipElem.offsetWidth;
   const tooltipHeight = tooltipElem.offsetHeight;
 
-  // Position below the icon, aligned to the left
+  // Position below the icon, shifted right (20px right of icon center)
   let top = iconRect.bottom + 8;
-  let left = iconRect.left;
+  let left = iconRect.left + iconRect.width / 2 - tooltipWidth / 2 + 20;
 
-  // Adjust for right edge - if tooltip would go off screen, show on left instead
+  // Adjust for right edge
   if (left + tooltipWidth > window.innerWidth) {
-    left = iconRect.left - tooltipWidth - 8;
+    left = window.innerWidth - tooltipWidth - 8;
   }
-
   // Adjust for left edge
   if (left < 0) {
-    left = 5;
+    left = 8;
   }
-
-  // Adjust for top edge
-  if (top < 0) {
-    top = 5;
-  }
-
   // Adjust for bottom edge
   if (top + tooltipHeight > window.innerHeight) {
-    top = window.innerHeight - tooltipHeight - 5;
+    top = iconRect.top - tooltipHeight - 8;
+  }
+  // Adjust for top edge
+  if (top < 0) {
+    top = 8;
   }
 
-  // Apply corrected position (remove any transform)
   tooltip.css({
     top: `${top}px`,
     left: `${left}px`,

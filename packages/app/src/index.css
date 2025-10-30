@@ -107,6 +107,11 @@ p {
   width: 32px;
 }
 
+/* Consistent icon sizing in nav-bar buttons */
+#nav-bar button .material-icons {
+  font-size: 20px;
+}
+
 /* Reset graph button with side-by-side icons */
 .reset-graph-btn {
   display: flex !important;
@@ -123,6 +128,7 @@ p {
 }
 
 /* Layout selector container - groups icon and dropdown */
+
 .layout-selector-container {
   display: flex;
   align-items: center;
@@ -131,6 +137,37 @@ p {
   border-radius: 4px;
   background: none;
   overflow: hidden;
+  position: relative;
+}
+
+.layout-tooltip {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  margin-top: 6px;
+  background: rgba(30, 30, 30, 0.97);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  max-width: 220px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.layout-selector-container.show-tooltip .layout-tooltip {
+  display: block;
+}
+
+/* Prevent tooltip from overflowing nav bar */
+#nav-bar {
+  position: relative;
+  overflow: visible;
 }
 
 .layout-selector-container:hover {
@@ -163,6 +200,64 @@ p {
 
 .layout-selector-container #layout-select:hover {
   background-color: transparent;
+}
+
+/* Year selector container - matches layout selector */
+.year-selector-container {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  background: none;
+  overflow: hidden;
+}
+
+.year-selector-container:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Year icon inside the container */
+.year-selector-container .year-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Year input - remove its own border, integrate with container */
+.year-selector-container #present-year-input {
+  height: 24px;
+  min-height: 24px;
+  border: none;
+  border-radius: 0;
+  padding: 0 2px;
+  background: transparent;
+  cursor: text;
+  width: 42px;
+  font-size: 13px;
+  font-family: inherit;
+  text-align: center;
+}
+
+.year-selector-container #present-year-input:hover {
+  background-color: transparent;
+}
+
+.year-selector-container #present-year-input:focus {
+  outline: none;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Hide spinners but keep functionality */
+.year-selector-container #present-year-input::-webkit-inner-spin-button,
+.year-selector-container #present-year-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 #nav-bar button:hover,
@@ -492,39 +587,47 @@ p {
 #graphs-container.graphs-16 .graph-container {
   width: 15vw;
   height: 16vh;
+  overflow: visible;
 }
 
 #graphs-container.graphs-9 .graph-container {
   width: 21vw;
   height: 21vh;
+  overflow: visible;
 }
 
 #graphs-container.graphs-6 .graph-container {
   width: 21vw;
   height: 32vh;
+  overflow: visible;
 }
 
 #graphs-container.graphs-4 .graph-container {
   width: 31vw;
   height: 32vh;
+  overflow: visible;
 }
 
 #graphs-container.graphs-2 .graph-container {
   width: 31vw;
   height: 64vh;
   margin-top: 20px; /* to better align these two graphs */
+  overflow: visible;
 }
 
 #graphs-container.graphs-1 .graph-container {
   width: 62vw;
   height: 64vh;
   margin-top: 40px; /* to better align this single graph */
+  overflow: visible;
 }
 
 /* Contains the .title-container, the graph-container, and the .graph-legend */
 .outer-graph-container {
   display: flex;
   flex-direction: column;
+  padding: 2px;
+  transform: scale(0.95);
 }
 
 /* Center-align title container and its content */
@@ -951,23 +1054,45 @@ p {
   cursor: help;
 }
 
-.tooltip {
+
+/* Info icon container for inputUI (fixed window-based tooltip) */
+.info-icon-container {
+  display: inline-block;
+  position: relative;
+}
+
+/* Unified tooltip box style for both input and graph tooltips */
+.tooltip, .graph-tooltip {
   visibility: hidden;
-  position: fixed;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.88);
   color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  line-height: 1.4;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
   z-index: 1001;
   pointer-events: none;
-  min-width: 150px;
-  max-width: 300px;
-  text-align: center;
+  min-width: 180px;
+  max-width: 320px;
+  text-align: left;
   white-space: normal;
   display: block;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  word-break: break-word;
+}
+
+/* InputUI tooltip: fixed, window-based, right-aligned */
+.tooltip {
+  position: fixed;
+  text-align: left;
+}
+
+/* GraphUI tooltip: absolutely positioned, container-bound, left-aligned */
+.graph-tooltip {
+  position: absolute;
+  margin-top: 8px;
+  text-align: left;
+  transform: none;
 }
 
 .value-units-container {

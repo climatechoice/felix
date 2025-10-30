@@ -167,7 +167,7 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
       const title = $(
         `<span class="option-title">${str(spec.titleKey)}</span>`
       );
-      const infoIcon = createInfoIcon(str(spec.descriptionKey));
+  const infoIcon = createInfoIcon(str(spec.descriptionKey), { graph: true });
       option.append(title, infoIcon);
       dropdownMenu.append(option);
 
@@ -177,7 +177,7 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
           '<span class="material-icons expand-icon">expand_more</span>'
         );
         const selectedTitle = title.clone();
-        const selectedInfoIcon = createInfoIcon(str(spec.descriptionKey));
+  const selectedInfoIcon = createInfoIcon(str(spec.descriptionKey), { graph: true });
         selectedOption.append($expandIcon, selectedTitle, selectedInfoIcon);
       }
     });
@@ -197,7 +197,7 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
     const newTitle = $(
       `<span class="option-title">${str(graphSpec.titleKey)}</span>`
     );
-    const newInfoIcon = createInfoIcon(str(graphSpec.descriptionKey));
+  const newInfoIcon = createInfoIcon(str(graphSpec.descriptionKey), { graph: true });
     selectedOption.empty().append($expandIcon, newTitle, newInfoIcon);
     dropdownMenu.hide();
 
@@ -275,6 +275,11 @@ function showGraph(graphSpec, outerContainer, category) {
     const parts = graphSpec.scenarioDisplay.split(";");
     if (parts.length === 3) {
       const [_, targetCategory, highlightColor] = parts;
+      
+      // Add tooltip for clickable linked graphs
+      if (targetCategory.toLowerCase() !== "empty") {
+        outerContainer.attr("title", `Click to view ${targetCategory} inputs`);
+      }
       
       // Add aesthetic highlight styling - default state matches mouseleave
       outerContainer.css({

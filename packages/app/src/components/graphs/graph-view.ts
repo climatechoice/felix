@@ -325,7 +325,7 @@ function lineChartJsConfig(
             type: "line",
             mode: "vertical",
             scaleID: "x-axis-0",
-            value: 2020,
+            value: (window as any).presentDayYear || 2025,
             borderColor: "#666",
             borderWidth: 1,
             borderDash: [5, 5],
