@@ -7,6 +7,7 @@ import { activeModel } from "../stores/model-store.js";
 import { addSliderItem } from "./inputs/SliderInput.js";
 import { addSwitchItem, setRenderInputGroup } from "./inputs/SwitchInput.js";
 import { addSegmentedItem } from "./inputs/SegmentedButton.js";
+import { addDropdownListItem } from "./inputs/DropdownList.js";
 import { addCombinedSlider } from "./inputs/CombinedSlider.js";
 import { addCombined2Slider } from "./inputs/Combined2Slider.js";
 import { addSimpleLabelItem } from "./inputs/SimpleLabelInput.js";
@@ -17,6 +18,7 @@ initDropdownGroup({
   addSliderItem,
   addSwitchItem,
   addSegmentedItem,
+  addDropdownListItem,
   addSimpleLabelItem,
   addTextboxItem,
   addCombinedSlider,
@@ -35,25 +37,29 @@ $("#input-category-selector-container").on(
   }
 );
 
-function renderStandaloneInput(inputSpec, container = $("#inputs-content")) {
+function renderStandaloneInput(inputSpec) {
+  if (inputSpec.viewId === "HIDDEN") {
+    return; // Skip hidden inputs
+  }
   const input = activeModel.get().getInputForId(inputSpec.id);
-
-  if (input.kind === "slider") {
-    if (inputSpec.isSegmented === "yes") {
-      addSegmentedItem(input, container);
-    } else {
-      if (inputSpec.secondaryType && inputSpec.secondaryType.includes("textbox")) {
-        addTextboxItem(input, container);
-      } else {
-        addSliderItem(input, container);
-      }
-    }
-  } else if (input.kind === "switch") {
-    addSwitchItem(input);
-  } else if (input.kind === "textbox") {
-    addTextboxItem(input, container);
-  } else {
-    console.warn("This input kind is not supported.");
+  const itemType = inputSpec.itemType;
+  
+  // Check for segmented buttons/lists first (can have itemType="SLIDER" but isSegmented="button" or "list")
+  if (inputSpec.isSegmented === "button") {
+    addSegmentedItem(input, $("#inputs-content"));
+  } else if (inputSpec.isSegmented === "list") {
+    addDropdownListItem(input, $("#inputs-content"));
+  } else if (itemType === "SLIDER") {
+    addSliderItem(input, $("#inputs-content"));
+  } else if (itemType === "SWITCH") {
+    addSwitchItem(input, $("#inputs-content"));
+  } else if (itemType === "SIMPLE_LABEL") {
+    addSimpleLabelItem(input, $("#inputs-content"));
+  } else if (itemType === "TEXTBOX") {
+    addTextboxItem(input, $("#inputs-content"));
+  } else if (itemType === "SEGMENTED_BUTTON") {
+    // Fallback for itemType=SEGMENTED_BUTTON (though typically handled above via isSegmented)
+    addSegmentedItem(input, $("#inputs-content"));
   }
 }
 

@@ -12,6 +12,7 @@ import { activeModel } from "../../stores/model-store.js";
 let addSliderItem;
 let addSwitchItem;
 let addSegmentedItem;
+let addDropdownListItem;
 let addSimpleLabelItem;
 let addTextboxItem;
 let addCombinedSlider;
@@ -24,6 +25,7 @@ export function initDropdownGroup(renderFunctions) {
   addSliderItem = renderFunctions.addSliderItem;
   addSwitchItem = renderFunctions.addSwitchItem;
   addSegmentedItem = renderFunctions.addSegmentedItem;
+  addDropdownListItem = renderFunctions.addDropdownListItem;
   addSimpleLabelItem = renderFunctions.addSimpleLabelItem;
   addTextboxItem = renderFunctions.addTextboxItem;
   addCombinedSlider = renderFunctions.addCombinedSlider;
@@ -73,7 +75,43 @@ export function createDropdownGroup(
   dropdownContainer.append(dropdownHeader, dropdownContent);
 
   // Render main input based on type
-  if (mainInputSpec.isSegmented !== "yes") {
+  if (mainInputSpec.isSegmented === "button") {
+    // Segmented button
+    const segmentedDiv = addSegmentedItem(mainInputInstance, dropdownHeader);
+    if (!segmentedDiv) {
+      console.error("segmentedDiv not created for:", mainInputSpec.id);
+    } else {
+      // Bind click handler: open on 'Custom', close on other segments
+      segmentedDiv.find('.segmented-button').on('click', function (e) {
+        e.stopPropagation();
+        const isCustom = $(this).text().trim().toLowerCase() === 'custom';
+        if (isCustom) {
+          // Open this dropdown (if not already open)
+          if (!dropdownContent.is(':visible')) {
+            dropdownContent.slideDown(200);
+            dropdownContainer.find('.expand-button .material-icons').text('expand_less');
+          }
+        } else {
+          // Close if open and clicking non-Custom segment
+          if (dropdownContent.is(':visible')) {
+            dropdownContent.slideUp(150);
+            dropdownContainer.find('.expand-button .material-icons').text('expand_more');
+          }
+        }
+      });
+      // Disable arrow toggle for segmented mains
+      allowArrowToggle = false;
+    }
+  } else if (mainInputSpec.isSegmented === "list") {
+    // Dropdown list
+    const dropdownListDiv = addDropdownListItem(mainInputInstance, dropdownHeader);
+    if (dropdownListDiv) {
+      dropdownListDiv.find(".input-title-row").prepend(expandButton);
+    } else {
+      console.error("Dropdown list not created for:", mainInputSpec.id);
+    }
+  } else {
+    // Not a segmented input
     if (mainInputSpec.secondaryType === "dropdown main") {
       // Normal slider
       const sliderDiv = addSliderItem(mainInputInstance, dropdownHeader);
@@ -108,41 +146,16 @@ export function createDropdownGroup(
     } else {
       console.warn("This secondary type is not yet supported:", mainInputSpec.secondaryType);
     }
-  } else {
-    // Segmented button
-    const segmentedDiv = addSegmentedItem(mainInputInstance, dropdownHeader);
-    if (!segmentedDiv) {
-      console.error("segmentedDiv not created for:", mainInputSpec.id);
-    } else {
-      // Bind click handler: open on 'Custom', close on other segments
-      segmentedDiv.find('.segmented-button').on('click', function (e) {
-        e.stopPropagation();
-        const isCustom = $(this).text().trim().toLowerCase() === 'custom';
-        if (isCustom) {
-          // Open this dropdown (if not already open)
-          if (!dropdownContent.is(':visible')) {
-            dropdownContent.slideDown(200);
-            dropdownContainer.find('.expand-button .material-icons').text('expand_less');
-          }
-        } else {
-          // Close if open and clicking non-Custom segment
-          if (dropdownContent.is(':visible')) {
-            dropdownContent.slideUp(150);
-            dropdownContainer.find('.expand-button .material-icons').text('expand_more');
-          }
-        }
-      });
-      // Disable arrow toggle for segmented mains
-      allowArrowToggle = false;
-    }
   }
 
   // Add assumption inputs
   assumptionInputs.forEach((inputSpec) => {
     const input = activeModel.get().getInputForId(inputSpec.id);
     if (input.kind === "slider") {
-      if (inputSpec.isSegmented === "yes") {
+      if (inputSpec.isSegmented === "button") {
         addSegmentedItem(input, dropdownContent);
+      } else if (inputSpec.isSegmented === "list") {
+        addDropdownListItem(input, dropdownContent);
       } else {
         // Check if textbox type
         if (inputSpec.secondaryType && inputSpec.secondaryType.includes("textbox")) {

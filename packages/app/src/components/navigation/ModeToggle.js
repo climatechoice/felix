@@ -9,6 +9,8 @@ import { isMultiScenarioMode } from "../../stores/scenario-mode-store.js";
 import { categoryLayouts } from "../../stores/category-layout-store.js";
 import { selectedGraphCount } from "../../stores/layout-store.js";
 import { initGraphsUI } from "../GraphsUI.js";
+import { initInputsUI } from "../InputsUI.js";
+import { captureScenarioState } from "../../stores/scenario-state-sync-store.js";
 
 /**
  * Handle toggle between single and multi-scenario modes
@@ -26,6 +28,16 @@ export function handleModeToggle(event, $labelEl) {
   
   // Update graph category buttons based on mode
   filterGraphCategoriesByMode(isOn);
+  
+  // When entering multi-scenario mode, re-render inputs to ensure proper connection to activeModel
+  if (isOn) {
+    const currentInputCategory = $(".input-category-selector-option.selected").data("value");
+    if (currentInputCategory) {
+      initInputsUI(currentInputCategory);
+      // Capture initial state for Scenario 1 after re-render
+      requestAnimationFrame(() => captureScenarioState(1));
+    }
+  }
 
   // Refresh all sliders to update highlights
   $(".slider").each(function () {
@@ -53,9 +65,9 @@ export function filterGraphCategoriesByMode(isMultiMode) {
     const $btn = $(this);
     const category = $btn.data("value");
     
-    // Find a graph in this category to check its mainGraphs value
+    // Find a graph in this category to check its mainGraphs value (exclude HIDDEN graphs)
     const graphInCategory = Array.from(coreConfig.graphs.values()).find(
-      (spec) => spec.graphCategory === category
+      (spec) => spec.graphCategory === category && spec.maingraph !== "HIDDEN"
     );
     
     if (graphInCategory) {
@@ -89,9 +101,9 @@ export function filterGraphCategoriesByMode(isMultiMode) {
     if (layouts[firstVisible] !== undefined) {
       graphCount = layouts[firstVisible];
     } else {
-      // Get default from the first graph in this category
+      // Get default from the first graph in this category (exclude HIDDEN graphs)
       const graphInCategory = Array.from(coreConfig.graphs.values()).find(
-        (spec) => spec.graphCategory === firstVisible
+        (spec) => spec.graphCategory === firstVisible && spec.maingraph !== "HIDDEN"
       );
       graphCount = graphInCategory && graphInCategory.graphType ? parseInt(graphInCategory.graphType, 10) : 4;
     }

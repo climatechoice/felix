@@ -38,8 +38,11 @@ async function initApp() {
 
   // Generate GRAPH category selector buttons
   const graphCategoryContainer = $("#graph-category-selector-container");
-  const graphCategories = new Set( // Get unique categories
-    Array.from(coreConfig.graphs.values()).map((spec) => spec.graphCategory)
+  // Get unique categories, excluding HIDDEN graphs
+  const graphCategories = new Set(
+    Array.from(coreConfig.graphs.values())
+      .filter((spec) => spec.maingraph !== "HIDDEN")
+      .map((spec) => spec.graphCategory)
   );
 
   graphCategories.forEach((graphCategory) => {
@@ -79,10 +82,10 @@ async function initApp() {
 
   // Also, mark the default buttons as "selected"
   $(
-    `#input-category-selector-option[data-value='${defaultInputCategory}']`
+    `.input-category-selector-option[data-value='${defaultInputCategory}']`
   ).addClass("selected");
   $(
-    `#graph-category-selector-option[data-value='${defaultGraphCategory}']`
+    `.graph-category-selector-option[data-value='${defaultGraphCategory}']`
   ).addClass("selected");
   $(
     "#scenario-selector-container .scenario-selector-option[data-value='Scenario 1']"
@@ -102,6 +105,50 @@ async function initApp() {
   modelB.get().onOutputsChanged = () => {
     graphViews.get().forEach((graphView) => graphView.updateData());
   };
+  
+  // Set up state sync listeners for multi-scenario mode
+  setupStateSyncListeners();
+}
+
+/**
+ * Set up event listeners to track UI state changes for each scenario
+ */
+function setupStateSyncListeners() {
+  const { captureScenarioState } = require("./stores/scenario-state-sync-store");
+  
+  // Helper to get current scenario number
+  const getCurrentScenario = () => {
+    return document.body.classList.contains("scenario-2") ? 2 : 1;
+  };
+  
+  // Capture state when scrolling in inputs or graphs panels (throttled)
+  let scrollTimeout;
+  $("#inputs-container, #graphs-container").on("scroll", function() {
+    if (!document.body.classList.contains("multi-scenario")) return;
+    
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      captureScenarioState(getCurrentScenario());
+    }, 100); // Throttle to every 100ms
+  });
+  
+  // Capture state when clicking category selectors
+  $(".input-category-selector-option, .graph-category-selector-option").on("click", function() {
+    if (!document.body.classList.contains("multi-scenario")) return;
+    
+    setTimeout(() => {
+      captureScenarioState(getCurrentScenario());
+    }, 50);
+  });
+  
+  // Capture state when clicking dropdown expand/collapse buttons
+  $(document).on("click", ".expand-button, .dropdown-header", function() {
+    if (!document.body.classList.contains("multi-scenario")) return;
+    
+    setTimeout(() => {
+      captureScenarioState(getCurrentScenario());
+    }, 300); // Wait for animation to complete
+  });
 }
 
 // Initialize the app when this script is loaded

@@ -1,3 +1,16 @@
+/**
+ * GraphsUI.js
+ * Manages graph rendering, selection, and layout
+ * 
+ * HIDDEN GRAPHS FEATURE:
+ * Graphs can be completely hidden from the UI by setting the "maingraph" column 
+ * to "HIDDEN" in graphs.csv. Hidden graphs will:
+ * - Not appear in graph category buttons
+ * - Not appear in graph selector dropdowns
+ * - Not be included in the default graph list for any category
+ * - Not count toward category visibility checks
+ */
+
 import $ from "jquery";
 import { config as coreConfig } from "@core";
 import { str, format, createInfoIcon } from "../lib/utils.js";
@@ -53,8 +66,9 @@ $("#graph-category-selector-container").on(
  */
 export function getDefaultGraphCountForCategory(category) {
   // Find any graph in this category and get its graphType (repurposed for default count)
+  // Exclude HIDDEN graphs
   const graphInCategory = Array.from(coreConfig.graphs.values()).find(
-    (spec) => spec.graphCategory === category
+    (spec) => spec.graphCategory === category && spec.maingraph !== "HIDDEN"
   );
   
   if (graphInCategory && graphInCategory.graphType) {
@@ -119,6 +133,7 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
   const seenTitles = new Set();
   const graphs = Array.from(coreConfig.graphs.values()).filter((spec) => {
     if (spec.graphCategory !== category) return false;
+    if (spec.maingraph === "HIDDEN") return false; // Hide graphs with maingraph = "HIDDEN"
     const title = str(spec.titleKey);
     if (seenTitles.has(title)) return false;
     seenTitles.add(title);
@@ -298,12 +313,9 @@ function showGraph(graphSpec, outerContainer, category) {
             return;
           }
           
-          // Switch to the target category and reinitialize graphs
-          initGraphsUI(targetCategory);
-          
-          // Update the active category button to reflect the current page
-          $(".graph-category-selector-option").removeClass("selected");
-          $(`.graph-category-selector-option[data-value="${targetCategory}"]`).addClass("selected");
+          // Simply trigger a click on the target category button
+          // This reuses all the existing category selection logic
+          $(`.graph-category-selector-option[data-value="${targetCategory}"]`).click();
         });
       }
     }
@@ -413,8 +425,10 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
 
   // Dynamically build graph categories based on coreConfig.graphs
   // ! Build a flat list of the first N graph IDs in this category
+  // ! Exclude graphs with maingraph = "HIDDEN"
   const dynamicGraphCategories = {};
   for (const spec of coreConfig.graphs.values()) {
+    if (spec.maingraph === "HIDDEN") continue; // Skip hidden graphs
     const cat = spec.graphCategory;
     (dynamicGraphCategories[cat] ||= []).push(spec.id);
   }

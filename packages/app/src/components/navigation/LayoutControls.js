@@ -54,9 +54,9 @@ export function resetGraphsView() {
   const currentCategoryName = $selectedCategory.data("value");
   
   if (currentCategoryName) {
-    // Get default graph count for the CURRENT category
+    // Get default graph count for the CURRENT category (exclude HIDDEN graphs)
     const graphInCategory = Array.from(coreConfig.graphs.values()).find(
-      (spec) => spec.graphCategory === currentCategoryName
+      (spec) => spec.graphCategory === currentCategoryName && spec.maingraph !== "HIDDEN"
     );
     const defaultGraphCount = graphInCategory && graphInCategory.graphType 
       ? parseInt(graphInCategory.graphType, 10) 

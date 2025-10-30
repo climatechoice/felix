@@ -1,6 +1,7 @@
 import $ from "jquery";
 import { model, modelB, activeModel } from "../stores/model-store";
 import { initInputsUI } from "./InputsUI";
+import { captureScenarioState, restoreScenarioState } from "../stores/scenario-state-sync-store";
 
 /*
  * SIDE BAR
@@ -85,35 +86,43 @@ export function initScenarioSelectorUI() {
 
   // your existing scenario-change logic
   function updateScenario(selectedScenario) {
-    console.log("Selected scenario:", selectedScenario);
-    // The logic to handle the change in scenario
-    activeModel.set(
-      selectedScenario === "Scenario 2" ? modelB.get() : model.get()
-    );
-
-    // Green highlight for Scenario 1,
-    // Red highlight for Scenario 2
-    document.body.classList.toggle(
-      "scenario-2",
-      selectedScenario === "Scenario 2"
-    );
-
-    let selectedCategory = $(".input-category-selector-option.selected").data(
-      "value"
-    );
+    const targetScenario = selectedScenario === "Scenario 2" ? 2 : 1;
+    const previousScenario = selectedScenario === "Scenario 2" ? 1 : 2;
     
-    // Fallback if no category is selected
-    if (!selectedCategory) {
-      const $first = $(".input-category-selector-option").first();
-      if ($first.length) {
-        selectedCategory = $first.data("value");
-        $(".input-category-selector-option").removeClass("selected");
-        $first.addClass("selected");
-      }
+    // Capture current scenario state before switching (in multi-scenario mode)
+    if (document.body.classList.contains("multi-scenario")) {
+      captureScenarioState(previousScenario);
     }
     
-    if (selectedCategory) {
-      initInputsUI(selectedCategory);
+    // The logic to handle the change in scenario
+    // IMPORTANT: Set activeModel FIRST before any UI updates
+    activeModel.set(selectedScenario === "Scenario 2" ? modelB.get() : model.get());
+
+    // Green highlight for Scenario 1, Red highlight for Scenario 2
+    document.body.classList.toggle("scenario-2", selectedScenario === "Scenario 2");
+
+    // In multi-scenario mode, restore the target scenario's state
+    if (document.body.classList.contains("multi-scenario")) {
+      setTimeout(() => restoreScenarioState(targetScenario), 50);
+    } else {
+      // In single-scenario mode, use the fallback behavior
+      let selectedCategory = $(".input-category-selector-option.selected").data(
+        "value"
+      );
+      
+      // Fallback if no category is selected
+      if (!selectedCategory) {
+        const $first = $(".input-category-selector-option").first();
+        if ($first.length) {
+          selectedCategory = $first.data("value");
+          $(".input-category-selector-option").removeClass("selected");
+          $first.addClass("selected");
+        }
+      }
+      
+      if (selectedCategory) {
+        initInputsUI(selectedCategory);
+      }
     }
   }
 }
