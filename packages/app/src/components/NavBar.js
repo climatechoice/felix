@@ -14,6 +14,7 @@ import { showChangedInputs } from "./navigation/SummaryView.js";
 import { exportInputsToCSV, handleImportClick } from "./navigation/ImportExport.js";
 import { handleModeToggle, filterGraphCategoriesByMode } from "./navigation/ModeToggle.js";
 import { handleLayoutChange, resetGraphsView } from "./navigation/LayoutControls.js";
+import felixLogo from "../imgs/felix-png.png";
 
 // Inject a 50px-tall nav bar split into three equal sections
 export function loadNavBar() {
@@ -117,7 +118,7 @@ export function loadNavBar() {
   
   // Logo and title container
   const $titleContainer = $('<div class="title-container"></div>');
-  const $logo = $('<img src="src/imgs/felix-png.png" alt="FeliX Logo" class="title-container-logo" />');
+  const $logo = $(`<img src="${felixLogo}" alt="FeliX Logo" class="title-container-logo" />`);
   const $title = $('<div class="title-container-text">FeliXSim</div>');
   
   $titleContainer.append($logo, $title);

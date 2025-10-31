@@ -756,6 +756,23 @@ p {
   opacity: 1;
 }
 
+/* Prevent horizontal scrolling inside dropdowns by forcing wrapping
+   and hiding any accidental overflow on the x-axis. Also ensure the
+   menu doesn't exceed its container width. */
+.dropdown-menu {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
+  white-space: normal;
+}
+
+.dropdown-option,
+.dropdown-menu .option-title {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 .dropdown-option {
   padding: 8px;
   display: flex;
@@ -1263,6 +1280,22 @@ p {
 .book-popup-icon:hover {
   background: rgba(0,0,0,0.04);
 }
+
+/* Small badge used to indicate Work-in-Progress features */
+.wip-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffd166 0%, #ffb703 100%);
+  color: #222;
+  font-weight: 600;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.wip-badge[title] { cursor: help; }
 
 /* Styles for Tables inside popups */
 .popup table {
