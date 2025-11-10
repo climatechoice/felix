@@ -15,6 +15,9 @@ import { exportInputsToCSV, handleImportClick } from "./navigation/ImportExport.
 import { handleModeToggle, filterGraphCategoriesByMode } from "./navigation/ModeToggle.js";
 import { handleLayoutChange, resetGraphsView } from "./navigation/LayoutControls.js";
 import felixLogo from "../imgs/felix-png.png";
+import { loadTargets, updateAllGraphTargets } from "../lib/utils.js";
+import { targetsVisible } from "../stores/targets-store.js";
+import { graphViews } from "../stores/graphs-store.js";
 
 // Inject a 50px-tall nav bar split into three equal sections
 export function loadNavBar() {
@@ -203,15 +206,29 @@ export function loadNavBar() {
 
   // No custom tooltip logic: rely on native title attribute
 
-  // Bulls-eye button - placeholder for future feature (BEFORE calendar)
+  // Bulls-eye button - toggle target points on graphs
   const $bullseyeBtn = $(`
-    <button title="Target Feature (Coming Soon)">
+    <button title="Toggle Target Points" class="targets-toggle-btn">
       <span class="material-icons">adjust</span>
     </button>
   `);
-  $bullseyeBtn.on("click", () => {
-    // Placeholder for future feature
-    console.log("Bulls-eye feature - to be implemented");
+  $bullseyeBtn.on("click", async () => {
+    // Load targets on first click
+    await loadTargets();
+    
+    // Toggle the targets visibility
+    const isVisible = targetsVisible.get();
+    targetsVisible.set(!isVisible);
+    
+    // Update button state
+    if (!isVisible) {
+      $bullseyeBtn.addClass('active');
+    } else {
+      $bullseyeBtn.removeClass('active');
+    }
+    
+    // Update all active graph views to show/hide targets
+    updateAllGraphTargets(graphViews.get());
   });
   $sect3.append($bullseyeBtn);
 

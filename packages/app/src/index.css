@@ -100,6 +100,22 @@ p {
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
+/* Negative (dark) style for targets toggle button */
+#nav-bar button.targets-toggle-btn.active {
+  background: #222;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  border: 1px solid #444;
+}
+
+#nav-bar button.targets-toggle-btn.active:hover {
+  background: #111;
+}
+
+#nav-bar button.targets-toggle-btn.active .material-icons {
+  color: #fff;
+}
+
 /* Icon-only buttons (smaller width) */
 #nav-bar button:has(.material-icons):not(:has(span:not(.material-icons))) {
   padding: 0 4px;

@@ -19,6 +19,96 @@ export const imageModules = import.meta.glob("../markdowns/diagrams/*", {
   import: "default",
 });
 
+// Targets data - loaded from CSV
+let targetsData = null;
+
+/**
+ * Load and parse targets.csv file
+ */
+export async function loadTargets() {
+  if (targetsData !== null) {
+    return targetsData;
+  }
+
+  try {
+    const response = await fetch('/targets.csv');
+    const csvText = await response.text();
+    
+    // Parse CSV with proper handling of quoted fields
+    const lines = csvText.trim().split('\n');
+    
+    // Function to parse a CSV line with quoted fields
+    const parseCsvLine = (line) => {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    };
+    
+    targetsData = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCsvLine(lines[i]);
+      if (values.length >= 6) {
+        const targetYear = values[5]?.trim();
+        targetsData.push({
+          targetId: values[0]?.trim(),
+          graphId: values[1]?.trim(),
+          variable: values[2]?.trim(),
+          targetValue: parseFloat(values[3]?.trim()),
+          unit: values[4]?.trim(),
+          targetYear: (targetYear === '' || targetYear === '�' || targetYear === '?' || isNaN(parseInt(targetYear))) ? null : parseInt(targetYear),
+          description: values[6]?.trim() || '',
+          citation: values[7]?.trim() || ''
+        });
+      }
+    }
+    
+    console.log('Loaded targets:', targetsData);
+    return targetsData;
+  } catch (error) {
+    console.error('Failed to load targets:', error);
+    targetsData = [];
+    return targetsData;
+  }
+}
+
+/**
+ * Get targets for a specific graph ID
+ */
+export function getTargetsForGraph(graphId) {
+  if (!targetsData || targetsData.length === 0) {
+    return [];
+  }
+  return targetsData.filter(t => t.graphId === graphId);
+}
+
+/**
+ * Update target annotations on all active graphs
+ */
+export function updateAllGraphTargets(graphViewsArray) {
+  if (graphViewsArray && graphViewsArray.length > 0) {
+    graphViewsArray.forEach(graphView => {
+      if (graphView && typeof graphView.updateTargetAnnotations === 'function') {
+        graphView.updateTargetAnnotations();
+      }
+    });
+  }
+}
+
 /*
  * Here, we tell marked to use KaTeX in order to
  * render latex equations in markdown files correctly.

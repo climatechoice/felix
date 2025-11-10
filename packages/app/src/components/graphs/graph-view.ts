@@ -16,6 +16,8 @@ import { config as coreConfig } from "@core";
 import enStrings from "@core-strings/en";
 
 import { createRadarChart, updateRadarChartJsData } from "./radar-chart";
+import { getTargetsForGraph } from "../../lib/utils";
+import { targetsVisible } from "../../stores/targets-store";
 
 /**
  * Return the base (English) string for the given key.
@@ -111,6 +113,7 @@ Chart.pluginService.register(annotationPlugin);
 
 export class GraphView {
   private chart: Chart;
+  private targetTooltip: HTMLDivElement | null = null;
 
   constructor(
     readonly canvas: HTMLCanvasElement,
@@ -118,6 +121,93 @@ export class GraphView {
     options: GraphViewOptions
   ) {
     this.chart = createChart(canvas, viewModel, options);
+    this.setupTargetTooltip();
+  }
+
+  /**
+   * Setup custom tooltip handling for target dots
+   */
+  private setupTargetTooltip() {
+    this.canvas.addEventListener('mousemove', (event) => {
+      if (!this.chart || !this.chart.data) return;
+      
+      const elements = this.chart.getElementsAtEvent(event);
+      
+      // Check if hovering over a target point
+      let targetElement = null;
+      let targetData = null;
+      
+      for (const element of elements) {
+        const dataset = this.chart.data.datasets[(element as any)._datasetIndex];
+        if (dataset && (dataset as any).label === '__targets__') {
+          targetElement = element;
+          targetData = (dataset.data[(element as any)._index] as any);
+          break;
+        }
+      }
+      
+      if (targetElement && targetData) {
+        // Show custom tooltip
+        this.showTargetTooltip(event, targetData);
+      } else {
+        // Hide tooltip
+        this.hideTargetTooltip();
+      }
+    });
+    
+    this.canvas.addEventListener('mouseleave', () => {
+      this.hideTargetTooltip();
+    });
+  }
+
+  /**
+   * Show custom tooltip for target dot
+   */
+  private showTargetTooltip(event: MouseEvent, targetData: any) {
+    if (!this.targetTooltip) {
+      this.targetTooltip = document.createElement('div');
+      this.targetTooltip.className = 'graph-tooltip';
+      this.targetTooltip.style.position = 'fixed';
+      this.targetTooltip.style.zIndex = '10001';
+      this.targetTooltip.style.pointerEvents = 'none';
+      document.body.appendChild(this.targetTooltip);
+    }
+    
+    // Extract target info from the stored data
+    const lines = targetData.targetInfo.split('\n');
+    const firstLine = lines[0]; // "Target: X unit (year)"
+    const description = lines.slice(1).join('<br>');
+    
+    // Update content with custom header format
+    this.targetTooltip.innerHTML = `<b>${firstLine}</b>${description ? '<br>' + description : ''}`;
+    
+    // Position tooltip
+    const rect = this.canvas.getBoundingClientRect();
+    let left = event.clientX + 15;
+    let top = event.clientY + 15;
+    
+    // Ensure tooltip stays in viewport
+    this.targetTooltip.style.visibility = 'visible';
+    const tooltipRect = this.targetTooltip.getBoundingClientRect();
+    
+    if (left + tooltipRect.width > window.innerWidth - 10) {
+      left = event.clientX - tooltipRect.width - 15;
+    }
+    if (top + tooltipRect.height > window.innerHeight - 10) {
+      top = event.clientY - tooltipRect.height - 15;
+    }
+    
+    this.targetTooltip.style.left = `${left}px`;
+    this.targetTooltip.style.top = `${top}px`;
+  }
+
+  /**
+   * Hide custom tooltip
+   */
+  private hideTargetTooltip() {
+    if (this.targetTooltip) {
+      this.targetTooltip.style.visibility = 'hidden';
+    }
   }
 
   /**
@@ -135,8 +225,25 @@ export class GraphView {
         // Update radar chart data
         updateRadarChartJsData(this.viewModel, this.chart.data);
       } else {
+        // Save and remove target dataset before updating
+        const targetDataset = this.chart.data.datasets.find(
+          (ds: any) => ds.label === '__targets__'
+        );
+        
+        if (targetDataset) {
+          // Remove it temporarily
+          this.chart.data.datasets = this.chart.data.datasets.filter(
+            (ds: any) => ds.label !== '__targets__'
+          );
+        }
+        
         // Update line chart data
         updateLineChartJsData(this.viewModel, this.chart.data);
+        
+        // Restore target dataset if it existed (don't recreate it)
+        if (targetDataset) {
+          this.chart.data.datasets.push(targetDataset);
+        }
       }
 
       // Refresh the chart view
@@ -145,9 +252,71 @@ export class GraphView {
   }
 
   /**
+   * Update target annotations on the chart.
+   */
+  updateTargetAnnotations() {
+    if (!this.chart || !this.chart.data) {
+      return;
+    }
+    
+    const spec = this.viewModel.spec;
+    
+    // Remove any existing target dataset
+    this.chart.data.datasets = this.chart.data.datasets.filter(
+      (ds: any) => ds.label !== '__targets__'
+    );
+    
+    // Add target dataset if visible
+    if (targetsVisible.get()) {
+      const targets = getTargetsForGraph(spec.id);
+      console.log(`Updating targets for graph ${spec.id}:`, targets);
+      
+      const validTargets = targets.filter(
+        target => target.targetYear !== null && !isNaN(target.targetValue)
+      );
+      
+      if (validTargets.length > 0) {
+        // Create scatter dataset for targets
+        const targetData = validTargets.map(target => ({
+          x: target.targetYear,
+          y: target.targetValue,
+          targetInfo: `Target: ${target.targetValue}${target.unit ? ' ' + target.unit : ''} (${target.targetYear})\n${target.description ? target.description.substring(0, 150) + '...' : ''}`
+        }));
+        
+        this.chart.data.datasets.push({
+          label: '__targets__',
+          type: 'scatter',
+          data: targetData,
+          pointRadius: 3,
+          pointHoverRadius: 4,
+          pointBackgroundColor: '#FF4444',
+          pointBorderColor: '#CC0000',
+          pointBorderWidth: 1,
+          pointHoverBackgroundColor: '#FF6B6B',
+          pointHoverBorderColor: '#AA0000',
+          pointHoverBorderWidth: 1,
+          showLine: false,
+          fill: false,
+          // Custom tooltip label
+          tooltipLabel: validTargets
+        } as any);
+      }
+    }
+    
+    console.log(`Chart now has ${this.chart.data.datasets.length} datasets`);
+    this.chart.update();
+  }
+
+  /**
    * Destroy the chart and any associated resources.
    */
   destroy() {
+    // Clean up custom tooltip
+    if (this.targetTooltip) {
+      this.targetTooltip.remove();
+      this.targetTooltip = null;
+    }
+    
     this.chart?.destroy();
     this.chart = undefined;
   }
@@ -340,10 +509,18 @@ function lineChartJsConfig(
         // Show numbers when hovering over the graph, and 
         // make sure they're fixed to two decimal places.
         enabled: true,
+        filter: function(tooltipItem, data) {
+          // Hide default tooltip for target dots
+          const dataset = data.datasets[tooltipItem.datasetIndex];
+          if (dataset.label === '__targets__') {
+            return false;
+          }
+          return true;
+        },
         callbacks: {
           label: function (tooltipItem, data) {
             const dataset = data.datasets[tooltipItem.datasetIndex];
-            const value = Number(tooltipItem.yLabel); // Ensure it's a number
+            const value = Number(tooltipItem.yLabel);
             const label = dataset.label || '';
             return `${label}: ${value.toFixed(2)}`;
           },

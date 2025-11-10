@@ -19,6 +19,7 @@ import { selectedGraphCount, layoutConfig } from "../stores/layout-store.js";
 import { model, modelB } from "../stores/model-store.js";
 import { graphViews } from "../stores/graphs-store.js";
 import { categoryLayouts } from "../stores/category-layout-store.js";
+import { targetsVisible } from "../stores/targets-store.js";
 
 // jquery Click event for Selecting Graph Category (Food, Climate, LandUse, Fertilizer)
 $("#graph-category-selector-container").on(
@@ -276,11 +277,6 @@ function showGraph(graphSpec, outerContainer, category) {
     if (parts.length === 3) {
       const [_, targetCategory, highlightColor] = parts;
       
-      // Add tooltip for clickable linked graphs
-      if (targetCategory.toLowerCase() !== "empty") {
-        outerContainer.attr("title", `Click to view ${targetCategory} inputs`);
-      }
-      
       // Add aesthetic highlight styling - default state matches mouseleave
       outerContainer.css({
         "background-color": `${highlightColor}12`,
@@ -362,6 +358,13 @@ function showGraph(graphSpec, outerContainer, category) {
 
   outerContainer.data("graphView", graphView);
   graphViews.set([...graphViews.get(), graphView]);
+  
+  // Update target annotations if targets are currently visible
+  if (targetsVisible.get()) {
+    setTimeout(() => {
+      graphView.updateTargetAnnotations();
+    }, 100);
+  }
   // ...until here
 
   // Show the legend items for the graph (except for radar charts which have custom labels)
