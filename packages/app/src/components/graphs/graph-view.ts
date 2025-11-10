@@ -16,6 +16,7 @@ import { config as coreConfig } from "@core";
 import enStrings from "@core-strings/en";
 
 import { createRadarChart, updateRadarChartJsData } from "./radar-chart";
+import { createPDFChart, updatePDFChartJsData } from "./pdf-chart";
 import { getTargetsForGraph } from "../../lib/utils";
 import { targetsVisible } from "../../stores/targets-store";
 
@@ -218,12 +219,16 @@ export class GraphView {
    */
   updateData(animated = true) {
     if (this.chart) {
-      // Check if this is a radar chart
+      // Check chart type
       const isRadarChart = this.viewModel.spec.kind === "radar";
+      const isPDFChart = this.viewModel.spec.kind?.startsWith("line-pdf");
       
       if (isRadarChart) {
         // Update radar chart data
         updateRadarChartJsData(this.viewModel, this.chart.data);
+      } else if (isPDFChart) {
+        // PDF charts don't need data updates
+        updatePDFChartJsData(this.viewModel, this.chart.data);
       } else {
         // Save and remove target dataset before updating
         const targetDataset = this.chart.data.datasets.find(
@@ -327,11 +332,16 @@ function createChart(
   viewModel: GraphViewModel,
   options: GraphViewOptions
 ): Chart {
-  // Check if this is a radar chart by looking at the spec kind
+  // Check chart type by looking at the spec kind
   const isRadarChart = viewModel.spec.kind === "radar";
+  const isPDFChart = viewModel.spec.kind?.startsWith("line-pdf");
   
   if (isRadarChart) {
     return createRadarChart(canvas, viewModel, options);
+  }
+  
+  if (isPDFChart) {
+    return createPDFChart(canvas, viewModel, options);
   }
   
   // Create the chart data and config depending on the given style
