@@ -77,6 +77,30 @@ export function createPDFChart(
   const xMin = spec.xMin || 0;
   const xMax = spec.xMax || 100;
   
+  // Get y-axis range from CSV config
+  const yMin = spec.yMin;
+  const yMax = spec.yMax;
+  
+  // Get scale multiplier from subClassification field
+  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  const specAny = spec as unknown as MaybeScaleCarrier;
+  
+  function coerceToNumber(value: unknown): number | undefined {
+    if (value == null) return undefined;
+    if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+    if (typeof value === "string") {
+      const match = value.match(/(-?\d+(?:\.\d+)?(?:e[+-]?\d+)?)/i);
+      if (match) {
+        const n = Number(match[1]);
+        if (Number.isFinite(n)) return n;
+      }
+    }
+    return undefined;
+  }
+  
+  const rawScale = specAny?.modes ?? specAny?.subClassification ?? specAny?.graphType ?? undefined;
+  const scaleMultiplier = coerceToNumber(rawScale) ?? 1;
+  
   // Extract parameters from model at specified year
   let mu = 1, alphaLn = 1, sigmaLn = 0.5, threshold = null;
   
@@ -104,10 +128,11 @@ export function createPDFChart(
     if (point) threshold = (point as any).y;
   }
   
-  console.log(`PDF Chart: year=${config.year}, range=[${xMin}, ${xMax}], Mu=${mu}, Alpha_ln=${alphaLn}, Sigma_ln=${sigmaLn}, threshold=${threshold}`);
+  console.log(`PDF Chart: year=${config.year}, range=[${xMin}, ${xMax}], Mu=${mu}, Alpha_ln=${alphaLn}, Sigma_ln=${sigmaLn}, threshold=${threshold}, scale=${scaleMultiplier}`);
   
-  // Generate curve
-  const curveData = generateLogNormalCurve(mu, alphaLn, sigmaLn, xMin, xMax);
+  // Generate curve and apply scaling
+  const rawCurveData = generateLogNormalCurve(mu, alphaLn, sigmaLn, xMin, xMax);
+  const curveData = rawCurveData.map(p => ({ x: p.x, y: p.y * scaleMultiplier }));
   
   const chartData: ChartData = {
     datasets: [
@@ -116,8 +141,8 @@ export function createPDFChart(
         data: curveData,
         type: 'line',
         fill: true,
-        backgroundColor: 'rgba(74, 158, 255, 0.2)',
-        borderColor: 'rgba(74, 158, 255, 1)',
+        backgroundColor: 'rgba(128, 128, 128, 0.2)',
+        borderColor: 'rgba(0, 0, 0, 1)',
         borderWidth: 2,
         pointRadius: 0,
         pointHoverRadius: 0,
@@ -171,7 +196,9 @@ export function createPDFChart(
         }],
         yAxes: [{
           ticks: {
-            beginAtZero: true,
+            beginAtZero: yMin === undefined,
+            min: yMin,
+            max: yMax,
             fontFamily: options.fontFamily,
             fontStyle: options.fontStyle,
             fontColor: options.fontColor
@@ -228,6 +255,26 @@ export function updatePDFChartJsData(
   const xMin = spec.xMin || 0;
   const xMax = spec.xMax || 100;
   
+  // Get scale multiplier from subClassification field
+  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  const specAny = spec as unknown as MaybeScaleCarrier;
+  
+  function coerceToNumber(value: unknown): number | undefined {
+    if (value == null) return undefined;
+    if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+    if (typeof value === "string") {
+      const match = value.match(/(-?\d+(?:\.\d+)?(?:e[+-]?\d+)?)/i);
+      if (match) {
+        const n = Number(match[1]);
+        if (Number.isFinite(n)) return n;
+      }
+    }
+    return undefined;
+  }
+  
+  const rawScale = specAny?.modes ?? specAny?.subClassification ?? specAny?.graphType ?? undefined;
+  const scaleMultiplier = coerceToNumber(rawScale) ?? 1;
+  
   // Extract parameters
   let mu = 1, alphaLn = 1, sigmaLn = 0.5, threshold = null;
   
@@ -255,10 +302,11 @@ export function updatePDFChartJsData(
     if (point) threshold = (point as any).y;
   }
   
-  console.log(`Updating PDF Chart: Mu=${mu}, Alpha_ln=${alphaLn}, Sigma_ln=${sigmaLn}, threshold=${threshold}`);
+  console.log(`Updating PDF Chart: Mu=${mu}, Alpha_ln=${alphaLn}, Sigma_ln=${sigmaLn}, threshold=${threshold}, scale=${scaleMultiplier}`);
   
-  // Regenerate curve
-  const curveData = generateLogNormalCurve(mu, alphaLn, sigmaLn, xMin, xMax);
+  // Regenerate curve and apply scaling
+  const rawCurveData = generateLogNormalCurve(mu, alphaLn, sigmaLn, xMin, xMax);
+  const curveData = rawCurveData.map(p => ({ x: p.x, y: p.y * scaleMultiplier }));
   
   // Update the distribution dataset
   if (chartData.datasets && chartData.datasets.length > 0) {
