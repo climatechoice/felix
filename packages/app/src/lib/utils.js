@@ -72,7 +72,8 @@ export async function loadTargets() {
           unit: values[4]?.trim(),
           targetYear: (targetYear === '' || targetYear === '�' || targetYear === '?' || isNaN(parseInt(targetYear))) ? null : parseInt(targetYear),
           description: values[6]?.trim() || '',
-          citation: values[7]?.trim() || ''
+          citation: values[7]?.trim() || '',
+          direction: values[8]?.trim() || '>'
         });
       }
     }

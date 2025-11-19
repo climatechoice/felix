@@ -129,6 +129,10 @@ export class GraphView {
    * Setup custom tooltip handling for target dots
    */
   private setupTargetTooltip() {
+    const hideTooltip = () => {
+      this.hideTargetTooltip();
+    };
+    
     this.canvas.addEventListener('mousemove', (event) => {
       if (!this.chart || !this.chart.data) return;
       
@@ -156,9 +160,14 @@ export class GraphView {
       }
     });
     
-    this.canvas.addEventListener('mouseleave', () => {
-      this.hideTargetTooltip();
-    });
+    // Hide tooltip when mouse leaves canvas
+    this.canvas.addEventListener('mouseleave', hideTooltip);
+    
+    // Hide tooltip when clicking anywhere
+    document.addEventListener('click', hideTooltip);
+    
+    // Hide tooltip when scrolling
+    window.addEventListener('scroll', hideTooltip, true);
   }
 
   /**
@@ -171,6 +180,9 @@ export class GraphView {
       this.targetTooltip.style.position = 'fixed';
       this.targetTooltip.style.zIndex = '10001';
       this.targetTooltip.style.pointerEvents = 'none';
+      this.targetTooltip.style.maxWidth = '280px';
+      this.targetTooltip.style.whiteSpace = 'normal';
+      this.targetTooltip.style.wordWrap = 'break-word';
       document.body.appendChild(this.targetTooltip);
     }
     
@@ -179,7 +191,7 @@ export class GraphView {
     const firstLine = lines[0]; // "Target: X unit (year)"
     const description = lines.slice(1).join('<br>');
     
-    // Update content with custom header format
+    // Update content with custom header format (no truncation)
     this.targetTooltip.innerHTML = `<b>${firstLine}</b>${description ? '<br>' + description : ''}`;
     
     // Position tooltip
@@ -230,24 +242,24 @@ export class GraphView {
         // PDF charts don't need data updates
         updatePDFChartJsData(this.viewModel, this.chart.data);
       } else {
-        // Save and remove target dataset before updating
-        const targetDataset = this.chart.data.datasets.find(
-          (ds: any) => ds.label === '__targets__'
+        // Save and remove target datasets before updating
+        const targetDatasets = this.chart.data.datasets.filter(
+          (ds: any) => ds.label === '__targets__' || ds.label === '__target_zone__'
         );
         
-        if (targetDataset) {
-          // Remove it temporarily
+        if (targetDatasets.length > 0) {
+          // Remove them temporarily
           this.chart.data.datasets = this.chart.data.datasets.filter(
-            (ds: any) => ds.label !== '__targets__'
+            (ds: any) => ds.label !== '__targets__' && ds.label !== '__target_zone__'
           );
         }
         
         // Update line chart data
         updateLineChartJsData(this.viewModel, this.chart.data);
         
-        // Restore target dataset if it existed (don't recreate it)
-        if (targetDataset) {
-          this.chart.data.datasets.push(targetDataset);
+        // Restore target datasets if they existed (don't recreate them)
+        if (targetDatasets.length > 0) {
+          this.chart.data.datasets.push(...targetDatasets);
         }
       }
 
@@ -266,9 +278,9 @@ export class GraphView {
     
     const spec = this.viewModel.spec;
     
-    // Remove any existing target dataset
+    // Remove any existing target datasets
     this.chart.data.datasets = this.chart.data.datasets.filter(
-      (ds: any) => ds.label !== '__targets__'
+      (ds: any) => ds.label !== '__targets__' && ds.label !== '__target_zone__'
     );
     
     // Add target dataset if visible
@@ -281,11 +293,57 @@ export class GraphView {
       );
       
       if (validTargets.length > 0) {
-        // Create scatter dataset for targets
+        // For each target, create a shaded "safe zone" area
+        // The safe zone extends from the target year to the end of the chart
+        // and from the target value to the top/bottom of the chart
+        
+        const chartXMax = spec.xMax || 2100;
+        const chartYMax = spec.yMax || this.chart.scales['y-axis-0']?.max || 100;
+        const chartYMin = spec.yMin || this.chart.scales['y-axis-0']?.min || 0;
+        
+        validTargets.forEach((target, index) => {
+          // Create a filled area dataset for the safe zone
+          // Use direction field: '>' means safe zone above, '<' means safe zone below
+          const direction = (target as any).direction || '>';
+          const zoneData = direction === '>' 
+            ? [
+                { x: target.targetYear, y: target.targetValue },
+                { x: chartXMax, y: target.targetValue },
+                { x: chartXMax, y: chartYMax },
+                { x: target.targetYear, y: chartYMax }
+              ]
+            : [
+                { x: target.targetYear, y: target.targetValue },
+                { x: chartXMax, y: target.targetValue },
+                { x: chartXMax, y: chartYMin },
+                { x: target.targetYear, y: chartYMin }
+              ];
+          
+          this.chart.data.datasets.push({
+            label: '__target_zone__',
+            type: 'line',
+            data: zoneData,
+            fill: true,
+            backgroundColor: 'rgba(144, 238, 144, 0.15)', // Light green with low opacity
+            borderColor: 'rgba(76, 175, 80, 0.5)',
+            borderWidth: 1,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            showLine: true,
+            lineTension: 0,
+            pointHitRadius: 0,
+            hoverBackgroundColor: 'rgba(0, 0, 0, 0)',
+            hoverBorderColor: 'rgba(0, 0, 0, 0)',
+            hoverBorderWidth: 0
+          } as any);
+        });
+        
+        // Also add target point markers for clarity
         const targetData = validTargets.map(target => ({
           x: target.targetYear,
           y: target.targetValue,
-          targetInfo: `Target: ${target.targetValue}${target.unit ? ' ' + target.unit : ''} (${target.targetYear})\n${target.description ? target.description.substring(0, 150) + '...' : ''}`
+          targetInfo: `🎯 Target: ${target.targetValue}${target.unit ? ' ' + target.unit : ''} (${target.targetYear})\n${target.description || ''}`
         }));
         
         this.chart.data.datasets.push({
