@@ -14,6 +14,7 @@ import { initGraphsUI, getDefaultGraphCountForCategory } from "./components/Grap
 import { loadNavBar } from "./components/NavBar";
 import { loadFloatingLogos } from "./components/FloatingLogos";
 import { initScenarioSelectorUI } from "./components/ScenarioSelector";
+import { decodeURLToInputs, syncInputsToURL } from "./utils/url-state";
 
 /**
  * Initialize the web app. This will load the wasm model asynchronously,
@@ -77,6 +78,14 @@ async function initApp() {
   initScenarioSelectorUI(); // this is the side-bar on the left
   initGraphsUI(defaultGraphCategory, defaultGraphCount); // use category-specific default
   initInputsUI(defaultInputCategory);
+
+  // Load input state from URL if present
+  const appliedFromURL = decodeURLToInputs();
+  if (appliedFromURL > 0) {
+    console.log(`Loaded ${appliedFromURL} inputs from URL`);
+    // Refresh UI to reflect loaded values
+    initInputsUI(defaultInputCategory);
+  }
 
   // initOverlay();
 

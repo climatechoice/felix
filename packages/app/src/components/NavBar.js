@@ -14,6 +14,7 @@ import { showChangedInputs } from "./navigation/SummaryView.js";
 import { exportInputsToCSV, handleImportClick } from "./navigation/ImportExport.js";
 import { handleModeToggle, filterGraphCategoriesByMode } from "./navigation/ModeToggle.js";
 import { handleLayoutChange, resetGraphsView } from "./navigation/LayoutControls.js";
+import { copyShareableURLToClipboard } from "../utils/url-state.js";
 import felixLogo from "../imgs/felix-png.png";
 import { loadTargets, updateAllGraphTargets } from "../lib/utils.js";
 import { targetsVisible } from "../stores/targets-store.js";
@@ -114,6 +115,30 @@ export function loadNavBar() {
   $surveyBtn.on("click", () => showSurveyPopup());
   $sect1.append($surveyBtn);
 
+  // Share URL button - copy shareable URL to clipboard
+  const $shareBtn = $(`
+    <button title="Share Configuration URL">
+      <span class="material-icons">share</span>
+    </button>
+  `);
+  $shareBtn.on("click", async () => {
+    const success = await copyShareableURLToClipboard();
+    if (success) {
+      // Show brief success feedback
+      const originalTitle = $shareBtn.attr('title');
+      $shareBtn.attr('title', 'Copied to clipboard!');
+      $shareBtn.find('.material-icons').text('check');
+      
+      setTimeout(() => {
+        $shareBtn.attr('title', originalTitle);
+        $shareBtn.find('.material-icons').text('share');
+      }, 2000);
+    } else {
+      alert('Failed to copy URL. Please copy manually from the address bar.');
+    }
+  });
+  $sect1.append($shareBtn);
+
   /*
    * Section 2 - Title
    */
@@ -126,9 +151,9 @@ export function loadNavBar() {
   
   $titleContainer.append($logo, $title);
   
-  // Make the entire container clickable to refresh the page
+  // Make the entire container clickable to go to default page (without URL parameters)
   $titleContainer.on("click", () => {
-    location.reload();
+    window.location.href = window.location.pathname;
   });
   
   $sect2.append($titleContainer);
