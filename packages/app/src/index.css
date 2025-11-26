@@ -289,6 +289,22 @@ p {
   height: 26px; /* total height = 26px */
   /* margin-left: 8px; */
 }
+
+/* Mode label styling */
+.mode-label {
+  display: inline-block;
+  text-align: center;
+  line-height: 1.2;
+  font-size: 12px;
+}
+
+/* Nav divider */
+.nav-divider {
+  color: #d0d0d0;
+  font-size: 16px;
+  line-height: 26px;
+}
+
 .toggle-switch input {
   opacity: 0;
   width: 0;

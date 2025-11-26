@@ -21,7 +21,7 @@ export function handleModeToggle(event, $labelEl) {
   $("#inputs-graphs-section").toggleClass("expanded", isOn);
   document.body.classList.toggle("multi-scenario", isOn);
 
-  $labelEl.text(isOn ? "Multi-scenario mode" : "Single-scenario mode");
+  $labelEl.html(isOn ? "<i>Multi</i><br>Scenario" : "<i>Single</i><br>Scenario");
 
   // Update the mode store
   isMultiScenarioMode.set(isOn);

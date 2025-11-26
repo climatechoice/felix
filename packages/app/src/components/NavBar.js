@@ -41,7 +41,7 @@ export function loadNavBar() {
   </label>
 `);
   // Mode text
-  const $modeLabel = $('<span class="mode-label">Single-scenario mode</span>');
+  const $modeLabel = $('<span class="mode-label"><i>Single</i><br>Scenario</span>');
 
   // Attach event listener
   $toggleSwitch
@@ -51,6 +51,9 @@ export function loadNavBar() {
   // Append to section
   $sect1.append($toggleSwitch, $modeLabel);
 
+  // Divider
+  const $divider = $('<span class="nav-divider">|</span>');
+  $sect1.append($divider);
 
   // Undo button
   const $undoBtn = $(`
