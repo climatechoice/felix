@@ -387,6 +387,7 @@ p {
   flex-direction: column;
   height: 100%;
   background-color: #ffffff;
+  overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
   padding: 10px;
@@ -402,7 +403,7 @@ p {
   flex-wrap: wrap;
   justify-content: center; /* Center the options horizontally */
   justify-content: space-evenly;
-  /* margin-top: 10px; Space above the selector */
+  padding: 8px 0;
   margin-bottom: 10px;
 }
 
@@ -553,7 +554,7 @@ p {
   justify-content: center; /* Center the options horizontally */
   justify-content: space-evenly;
   flex-wrap: wrap;
-  /* margin-top: 5px; Space above the selector */
+  padding: 8px 0;
 }
 
 .graph-category-selector-option {
@@ -1672,6 +1673,24 @@ p {
 
 .logo-container .sde-link:hover {
   color: #000;
+}
+
+.logo-container .cc-license-link {
+  margin-left: 4px;
+  padding-left: 8px;
+  border-left: 1px solid #ccc;
+  display: inline-flex;
+  align-items: center;
+}
+
+.logo-container .cc-license-link img {
+  opacity: 0.65;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.logo-container .cc-license-link:hover img {
+  opacity: 0.9;
+  transform: scale(1.1);
 }
 
 .input-icon {

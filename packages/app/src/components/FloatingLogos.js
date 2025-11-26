@@ -34,9 +34,17 @@ export function loadFloatingLogos() {
     '<a href="https://github.com/climateinteractive/SDEverywhere" target="_blank" rel="noopener noreferrer" class="sde-link">Powered by SDEverywhere</a>'
   );
 
+  const $ccLicenseLink = $(
+    '<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer" class="cc-license-link"></a>'
+  );
+  const $ccLicenseImg = $(
+    '<img src="https://licensebuttons.net/l/by-nc-nd/4.0/80x15.png" alt="CC BY-NC-ND 4.0" style="height: 15px;">'
+  );
+  $ccLicenseLink.append($ccLicenseImg);
+
   $logo1Link.append($logo1Img);
   $logo2Link.append($logo2Img);
   $logo3Link.append($logo3Img);
-  $logoContainer.append($logo1Link, $logo2Link, $logo3Link, $sdeLink);
+  $logoContainer.append($logo1Link, $logo2Link, $logo3Link, $sdeLink, $ccLicenseLink);
   $("body").append($logoContainer);
 }
