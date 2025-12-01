@@ -15,6 +15,7 @@ import { loadNavBar } from "./components/NavBar";
 import { loadFloatingLogos } from "./components/FloatingLogos";
 import { initScenarioSelectorUI } from "./components/ScenarioSelector";
 import { decodeURLToInputs, syncInputsToURL } from "./utils/url-state";
+import { captureScenarioState } from "./stores/scenario-state-sync-store";
 
 /**
  * Initialize the web app. This will load the wasm model asynchronously,
@@ -123,7 +124,6 @@ async function initApp() {
  * Set up event listeners to track UI state changes for each scenario
  */
 function setupStateSyncListeners() {
-  const { captureScenarioState } = require("./stores/scenario-state-sync-store");
   
   // Helper to get current scenario number
   const getCurrentScenario = () => {

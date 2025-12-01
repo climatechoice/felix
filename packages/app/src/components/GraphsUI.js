@@ -263,6 +263,9 @@ function showGraph(graphSpec, outerContainer, category) {
   const selector = createGraphSelector(category, graphSpec.id, (newGraphId) => {
     const newGraphSpec = coreConfig.graphs.get(newGraphId);
     if (newGraphSpec) {
+      // Clear the current graph and remove all styles and event handlers
+      outerContainer.off(); // Remove all event handlers
+      outerContainer.attr("style", ""); // Remove all inline styles
       outerContainer.empty(); // Clear the current graph
       showGraph(newGraphSpec, outerContainer, category); // Render the new graph
     }
@@ -291,7 +294,7 @@ function showGraph(graphSpec, outerContainer, category) {
       // Add very subtle hover effect
       outerContainer.on("mouseenter", function() {
         $(this).css({
-          "background-color": `${highlightColor}8`,
+          "background-color": `${highlightColor}18`,
           "border": `1px solid ${highlightColor}80`,
           "box-shadow": `0 1px 4px ${highlightColor}50`
         });
@@ -299,7 +302,7 @@ function showGraph(graphSpec, outerContainer, category) {
       
       outerContainer.on("mouseleave", function() {
         $(this).css({
-          "background-color": `${highlightColor}8`,
+          "background-color": `${highlightColor}12`,
           "border": `1px solid ${highlightColor}40`,
           "box-shadow": "none"
         });
@@ -419,7 +422,12 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
   // First, clear previous graphs,
   // then remove any old graphs-N class from #graphs-container
   // and then add e.g. "graphs-1" or "graphs-4"
-  const graphsContainer = $("#graphs-container")
+  const graphsContainer = $("#graphs-container");
+  
+  // Remove all event handlers from graph containers before clearing
+  graphsContainer.find(".outer-graph-container").off();
+  
+  graphsContainer
     .empty()
     .removeClass((_, cls) => (cls.match(/graphs-\d+/g) || []).join(" "))
     .addClass(`graphs-${amountOfGraphs}`);
@@ -457,6 +465,15 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
   graphIds.forEach((id, index) => {
     const spec = coreConfig.graphs.get(id);
     const outer = $(`<div class="outer-graph-container"></div>`);
+    
+    // Explicitly clear any potential inherited styles
+    outer.css({
+      "background-color": "",
+      "border": "",
+      "border-radius": "",
+      "box-shadow": "",
+      "cursor": ""
+    });
 
     const rowIndex = Math.floor(index / cols);
     rowDivs[rowIndex].append(outer);
