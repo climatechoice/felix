@@ -79,3 +79,8 @@ Tertiary education enrollment Variation[female],0.498989
 Tertiary education enrollment Variation[male],0.690155
 Undiscovered Coal Resources Variation,675000
 Vegetarian Diet Composition Switch,1
+N2O Agriculture Abatement Maximum Fraction,0.6
+CH4 Agriculture Abatement Maximum Fraction,0.6
+N2O IW Abatement Maximum Fraction,0.97
+CH4 Waste Abatement Maximum Fraction,0.8
+CH4 Energy Abatement Maximum Fraction,0.8
