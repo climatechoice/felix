@@ -82,41 +82,71 @@ export function loadNavBar() {
   $resetBtn.on("click", () => resetActiveModelInputs());
   $sect1.append($resetBtn);
 
-  // Show input changes summary button
-  const $showChangedInputsBtn = $(`
-    <button title="Summary">
-      <span class="material-icons">summarize</span>
-    </button>
-  `);
-  $showChangedInputsBtn.on("click", () => showChangedInputs());
-  $sect1.append($showChangedInputsBtn);
-
-  // Export inputs to CSV file button
+  // Export inputs to clipboard button
   const $exportInputsBtn = $(`
-    <button title="Export Scenario">
-      <span class="material-icons">download</span>
+    <button title="Copy Scenario">
+      <span class="material-icons" style="font-size: 18px;">file_copy</span>
     </button>
   `);
   $exportInputsBtn.on("click", () => exportInputsToCSV());
   $sect1.append($exportInputsBtn);
 
-  // Import inputs from CSV file button
+  // Import inputs from clipboard button
   const $importInputsBtn = $(`
-    <button title="Import Scenario">
-      <span class="material-icons">upload</span>
+    <button title="Paste Scenario" class="paste-btn-single">
+      <span class="material-icons">assignment</span>
     </button>
   `);
   $importInputsBtn.on("click", () => handleImportClick());
   $sect1.append($importInputsBtn);
 
-  // Survey button - generates scenario from user choices
-  const $surveyBtn = $(`
-    <button title="Build Your First Scenario!">
-      <span class="material-icons">quiz</span>
+  // Import to Scenario 1 button (multi-mode only)
+  const $importScenario1Btn = $(`
+    <button title="Paste to Scenario 1" class="paste-btn-multi paste-scenario-1" style="display: none; position: relative;">
+      <span class="material-icons">assignment</span>
+      <span class="scenario-badge" style="position: absolute; bottom: 2px; right: 2px; background: #6a3d9a; color: white; font-size: 10px; font-weight: bold; padding: 1px 3px; border-radius: 2px; line-height: 1;">1</span>
     </button>
   `);
-  $surveyBtn.on("click", () => showSurveyPopup());
-  $sect1.append($surveyBtn);
+  $importScenario1Btn.on("click", async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (!clipboardText || clipboardText.trim() === '') {
+        alert("Clipboard is empty.");
+        return;
+      }
+      // Directly import into scenario 1
+      const { processImportText } = await import("./navigation/ImportExport.js");
+      processImportText(clipboardText, 1);
+    } catch (error) {
+      console.error('Failed to read from clipboard:', error);
+      alert("Failed to read from clipboard. Please check browser permissions.");
+    }
+  });
+  $sect1.append($importScenario1Btn);
+
+  // Import to Scenario 2 button (multi-mode only)
+  const $importScenario2Btn = $(`
+    <button title="Paste to Scenario 2" class="paste-btn-multi paste-scenario-2" style="display: none; position: relative;">
+      <span class="material-icons">assignment</span>
+      <span class="scenario-badge" style="position: absolute; bottom: 2px; right: 2px; background: #e66100; color: white; font-size: 10px; font-weight: bold; padding: 1px 3px; border-radius: 2px; line-height: 1;">2</span>
+    </button>
+  `);
+  $importScenario2Btn.on("click", async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (!clipboardText || clipboardText.trim() === '') {
+        alert("Clipboard is empty.");
+        return;
+      }
+      // Directly import into scenario 2
+      const { processImportText } = await import("./navigation/ImportExport.js");
+      processImportText(clipboardText, 2);
+    } catch (error) {
+      console.error('Failed to read from clipboard:', error);
+      alert("Failed to read from clipboard. Please check browser permissions.");
+    }
+  });
+  $sect1.append($importScenario2Btn);
 
   // Share URL button - copy shareable URL to clipboard
   const $shareBtn = $(`
@@ -141,6 +171,24 @@ export function loadNavBar() {
     }
   });
   $sect1.append($shareBtn);
+
+  // Show input changes summary button
+  const $showChangedInputsBtn = $(`
+    <button title="Summary">
+      <span class="material-icons">ballot</span>
+    </button>
+  `);
+  $showChangedInputsBtn.on("click", () => showChangedInputs());
+  $sect1.append($showChangedInputsBtn);
+
+  // Survey button - generates scenario from user choices
+  const $surveyBtn = $(`
+    <button title="Build Your First Scenario!">
+      <span class="material-icons">lightbulb</span>
+    </button>
+  `);
+  $surveyBtn.on("click", () => showSurveyPopup());
+  $sect1.append($surveyBtn);
 
   /*
    * Section 2 - Title

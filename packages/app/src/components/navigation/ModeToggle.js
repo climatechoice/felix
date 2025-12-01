@@ -26,6 +26,17 @@ export function handleModeToggle(event, $labelEl) {
   // Update the mode store
   isMultiScenarioMode.set(isOn);
   
+  // Toggle paste button visibility based on mode
+  if (isOn) {
+    // Multi-scenario mode: hide single paste button, show scenario-specific paste buttons
+    $(".paste-btn-single").hide();
+    $(".paste-btn-multi").show();
+  } else {
+    // Single-scenario mode: show single paste button, hide scenario-specific paste buttons
+    $(".paste-btn-single").show();
+    $(".paste-btn-multi").hide();
+  }
+  
   // Update graph category buttons based on mode
   filterGraphCategoriesByMode(isOn);
   

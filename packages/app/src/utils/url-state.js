@@ -23,6 +23,11 @@ export function encodeInputsToURL() {
 
   // Iterate through all inputs
   coreConfig.inputs.forEach((spec) => {
+    // Skip hidden external driver variables (controlled by SSP scenarios)
+    if (spec.secondaryType === "hidden") {
+      return;
+    }
+    
     const input = modelInstance.getInputForId(spec.id);
     if (!input) return;
     
