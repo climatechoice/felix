@@ -31,7 +31,8 @@ export async function loadTargets() {
   }
 
   try {
-    const response = await fetch('/targets.csv');
+    // Use relative path that works both in dev and production
+    const response = await fetch('targets.csv');
     const csvText = await response.text();
     
     // Parse CSV with proper handling of quoted fields
