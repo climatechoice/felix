@@ -30,6 +30,7 @@ $("#input-category-selector-container").on(
   ".input-category-selector-option",
   function () {
     if ($(this).hasClass("selected")) return;
+    
     $(".input-category-selector-option").removeClass("selected");
     $(this).addClass("selected");
     const selectedCategory = $(this).data("value");

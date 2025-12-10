@@ -216,9 +216,18 @@ export function processImportText(text, modelNumber = 1) {
     return;
   }
 
+  // FIRST: Reset all inputs to defaults for a clean slate
+  coreConfig.inputs.forEach((spec) => {
+    const input = targetModelInstance.getInputForId(spec.id);
+    if (input) {
+      input.reset();
+    }
+  });
+
   let applied = 0;
   let warnings = 0;
 
+  // THEN: Apply the imported values
   params.forEach((value, inputId) => {
     const spec = coreConfig.inputs.get(inputId);
     
