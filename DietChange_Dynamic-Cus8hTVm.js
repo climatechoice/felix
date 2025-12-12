@@ -15,13 +15,17 @@ Eker et al. (2019) adopt two main feedback mechanisms in the diet change module,
 **Willingness to change**, draws on the **Protection Motivation Theory** ([Boer & Seydel, 1996](https://psycnet.apa.org/record/1996-97268-004)), where behavior is determined by two types of appraisal: threat appraisal, the individual's evaluation of the severity of a threat, and coping appraisal, the perceived ability and willingness to manage the threat. In this context, the threat appraisal of climate change risk forms a negative feedback loop, where the diet shift to vegetarianism leads to lower emissions, fewer climate events and a lower threat.\r
 \r
 ### Scenario Inputs\r
+The model incorporates several scenario inputs that represent the key factors influencing the feedbacks described above. The default value for each input is 100%, representing the reference effect, while the 0–200% range allows for weakening or strengthening the influence of each factor.\r
 \r
-The model incorporates several key scenario inputs that represent the key factors influencing the feedbacks as explained above:\r
+- **Self efficacy**: individuals’ confidence in their ability to adopt a more sustainable diet. In FeliXSim, the self efficacy lever affects both behavioural intention (to change) and actual behaviour.\r
 \r
-- **Self-efficacy**: individuals' confidence in their ability to adopt a more sustainable diet\r
-- **Response efficacy**: belief that dietary change will lead to meaningful environmental or health benefits\r
-- **Perceived risks**: awareness of the consequences of consumption on health and climate\r
-- **Social norms**: the influence of the dietary behaviors of others within a social group\r
+- **Response efficacy**: belief that dietary change will lead to meaningful environmental or health benefits. In FeliXSim, the response efficacy lever influences behaviour only, not the intention to change.\r
+\r
+- **Perceived risks**: awareness of the consequences of consumption for the climate. \r
+In FeliXSim, the perceived risks lever affects how responsive people are to extreme climate events, which in turn influences their intentions to change.\r
+\r
+- **Social norms**: the influence of others’ dietary behaviours within a social group.\r
+In FeliXSim, the social norm lever represents responsiveness to social pressure or normative expectations, which affects the intention to change diets.\r
 \r
 Each of these input factors differ across population groups based on characteristics such as gender, education level, and age. This variation reflects how different segments of the population perceive their capability, expected benefits, risks, and social influences, which collectively shape patterns of dietary change.\r
 \r
