@@ -335,7 +335,8 @@ export class GraphView {
             pointHitRadius: 0,
             hoverBackgroundColor: 'rgba(0, 0, 0, 0)',
             hoverBorderColor: 'rgba(0, 0, 0, 0)',
-            hoverBorderWidth: 0
+            hoverBorderWidth: 0,
+            order: -1  // Draw on top of other datasets
           } as any);
         });
         
@@ -360,6 +361,7 @@ export class GraphView {
           pointHoverBorderWidth: 1,
           showLine: false,
           fill: false,
+          order: -2,  // Draw on top, above even the target zone
           // Custom tooltip label
           tooltipLabel: validTargets
         } as any);

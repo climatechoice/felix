@@ -156,7 +156,7 @@ export async function loadMarkdownByName(name) {
 export function resolveLocalImages(mdContent) {
   // Replace src="diagrams/..." with resolved Vite asset paths
   return mdContent.replace(/src="diagrams\/([^"]+)"/g, (match, filename) => {
-    const relativePath = `./markdowns/diagrams/${filename}`;
+    const relativePath = `../markdowns/diagrams/${filename}`;
     const imageUrl = imageModules[relativePath];
     if (!imageUrl) {
       console.warn(`Image "${filename}" not found in diagrams folder.`);

@@ -459,7 +459,7 @@ export function createRadarChart(
     },
     // Register inline plugins for custom rendering
     plugins: [{
-      // Plugin 1: Draw reference circle at 0%
+      // Plugin 1: Draw reference polygon at 0%
       beforeDatasetsDraw: (chart: any) => {
         const ctx = chart.ctx;
         const scale = chart.scale;
@@ -476,13 +476,26 @@ export function createRadarChart(
         const normalizedValue = (zeroPercent - min) / range;
         const distance = scale.drawingArea * normalizedValue;
         
-        // Draw reference circle
+        // Draw reference polygon following the radar axes
+        const numPoints = labels.length;
         ctx.save();
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)'; // Black with 30% opacity
+        ctx.fillStyle = 'rgba(156, 163, 175, 0.15)'; // Light gray fill
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]); // Dashed line
         ctx.beginPath();
-        ctx.arc(scale.xCenter, scale.yCenter, distance, 0, 2 * Math.PI);
+        
+        // Draw polygon connecting points at 0% on each axis
+        for (let i = 0; i < numPoints; i++) {
+          const point = scale.getPointPosition(i, distance);
+          if (i === 0) {
+            ctx.moveTo(point.x, point.y);
+          } else {
+            ctx.lineTo(point.x, point.y);
+          }
+        }
+        ctx.closePath();
+        ctx.fill();
         ctx.stroke();
         ctx.restore();
       }
