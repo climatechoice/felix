@@ -8,6 +8,7 @@ import { config as coreConfig, createModel } from "@core";
 import { model, modelB, activeModel } from "./stores/model-store";
 import { graphViews } from "./stores/graphs-store";
 import { selectedGraphCount } from "./stores/layout-store";
+import { showMainApp } from "./stores/app-state-store";
 // Component imports
 import { initInputsUI } from "./components/InputsUI";
 import { initGraphsUI, getDefaultGraphCountForCategory } from "./components/GraphsUI";
@@ -16,12 +17,39 @@ import { loadFloatingLogos } from "./components/FloatingLogos";
 import { initScenarioSelectorUI } from "./components/ScenarioSelector";
 import { decodeURLToInputs, syncInputsToURL } from "./utils/url-state";
 import { captureScenarioState } from "./stores/scenario-state-sync-store";
+import { createWelcomeScreen } from "./components/WelcomeScreen";
+import { loadTargets } from "./lib/utils";
 
 /**
  * Initialize the web app. This will load the wasm model asynchronously,
  * and upon completion will initialize the user interface.
  */
 async function initApp() {
+  // Check if we should show welcome screen
+  let isShowingMainApp = false;
+  showMainApp.subscribe(value => {
+    isShowingMainApp = value;
+  });
+
+  if (!isShowingMainApp) {
+    // Show welcome screen
+    const $welcomeScreen = createWelcomeScreen();
+    $("body").append($welcomeScreen);
+    
+    // Wait for user to enter main app
+    await new Promise(resolve => {
+      const unsubscribe = showMainApp.subscribe(value => {
+        if (value) {
+          unsubscribe();
+          resolve();
+        }
+      });
+    });
+  }
+
+  // Load targets early, before initializing UI
+  await loadTargets();
+
   try {
     // 1) Load both models
     const mA = await createModel();

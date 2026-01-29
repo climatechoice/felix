@@ -515,6 +515,18 @@ function lineChartJsConfig(
    * "chartjs-plugin-annotation.d.ts" with this new option
    */
 
+  // Use custom year ranges from settings only if the spec has default fallback values (1900-2100)
+  // This means graphs with explicit CSV values (like 1950-2100) keep their defined ranges,
+  // but graphs without defined ranges use the custom defaults
+  const hasCustomMinYear = (window as any).defaultMinYear !== undefined;
+  const hasCustomMaxYear = (window as any).defaultMaxYear !== undefined;
+  
+  const isDefaultMinYear = spec.xMin === undefined || spec.xMin === 1900;
+  const isDefaultMaxYear = spec.xMax === undefined || spec.xMax === 2100;
+  
+  const xMin = (isDefaultMinYear && hasCustomMinYear) ? (window as any).defaultMinYear : (spec.xMin || 2000);
+  const xMax = (isDefaultMaxYear && hasCustomMaxYear) ? (window as any).defaultMaxYear : (spec.xMax || 2050);
+
   const chartConfig: ChartConfiguration = {
     type: "line",
     data,
@@ -534,8 +546,8 @@ function lineChartJsConfig(
             ticks: {
               maxTicksLimit: 6,
               maxRotation: 0,
-              min: spec.xMin,
-              max: spec.xMax,
+              min: xMin,
+              max: xMax,
             },
           },
         ],

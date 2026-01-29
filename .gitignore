@@ -3,6 +3,7 @@ node_modules
 sde-prep
 _DOCUMENTATION
 _MODELDEVELOPMENT
+testing/Trash
 *.vdf
 *.vdfx
 *.3vmfx

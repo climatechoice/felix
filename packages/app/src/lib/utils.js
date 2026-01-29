@@ -32,7 +32,7 @@ export async function loadTargets() {
 
   try {
     // Use relative path that works both in dev and production
-    const response = await fetch('targets.csv');
+    const response = await fetch('/targets.csv');
     const csvText = await response.text();
     
     // Parse CSV with proper handling of quoted fields
@@ -79,7 +79,6 @@ export async function loadTargets() {
       }
     }
     
-    console.log('Loaded targets:', targetsData);
     return targetsData;
   } catch (error) {
     console.error('Failed to load targets:', error);

@@ -88,6 +88,11 @@ p {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
+/* Exclude dropdown buttons from nav-bar button styling */
+.year-dropdown-footer button {
+  all: unset;
+}
+
 #nav-bar button:hover,
 #nav-bar select:hover {
   background: #e8e8e8;
@@ -1958,4 +1963,480 @@ p {
   display: inline-block;
   width: 200px;
   color: #333;
+}
+
+/* ===== Year Range Dropdown Styles ===== */
+.year-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.year-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  min-width: 200px;
+  padding: 4px 0;
+}
+
+.year-dropdown-menu.show {
+  display: block;
+}
+
+.year-dropdown-header {
+  padding: 4px 10px;
+  font-weight: normal;
+  font-size: 12px;
+  color: #000;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  margin-bottom: 2px;
+}
+
+.year-dropdown-item {
+  padding: 3px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.year-dropdown-item label {
+  font-size: 11px;
+  font-weight: normal;
+  color: #000;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.year-dropdown-item input[type="number"] {
+  width: 70px;
+  height: 20px;
+  padding: 2px 4px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0px;
+  font-size: 11px;
+  font-weight: normal;
+  text-align: center;
+  color: #000;
+}
+
+.year-dropdown-item input[type="number"]:focus {
+  outline: none;
+  border-color: #000;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.year-dropdown-footer {
+  display: flex;
+  gap: 4px;
+  padding: 4px 10px 2px;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  margin-top: 2px;
+}
+
+.year-dropdown-footer button {
+  all: unset;
+  box-sizing: border-box;
+  flex: 1;
+  height: 22px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: normal;
+  border-radius: 0px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.year-dropdown-footer .year-dropdown-reset {
+  background: #e8e8e8;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #000;
+}
+
+.year-dropdown-footer .year-dropdown-reset:hover {
+  background: #d0d0d0;
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+.year-dropdown-footer .year-dropdown-apply {
+  background: #e8e8e8;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #000;
+}
+
+.year-dropdown-footer .year-dropdown-apply:hover {
+  background: #d0d0d0;
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   Year Range Modal Styles
+   ======================================== */
+
+.year-range-modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+}
+
+.year-range-modal-content {
+  position: relative;
+  background-color: #ffffff;
+  margin: 10% auto;
+  width: 90%;
+  max-width: 550px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.year-range-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.year-range-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.year-range-modal-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  line-height: 1;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+  border-radius: 4px;
+}
+
+.year-range-modal-close:hover {
+  color: #333;
+  background: #f0f0f0;
+}
+
+.year-range-modal-body {
+  padding: 24px;
+}
+
+.year-range-modal-description {
+  margin: 0 0 24px 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.year-range-setting-group {
+  margin-bottom: 24px;
+}
+
+.year-range-setting-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.year-range-setting-group label .material-icons {
+  font-size: 20px;
+  color: #666;
+}
+
+.year-range-setting-group input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.year-range-setting-group input[type="number"]:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.year-range-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+}
+
+.year-range-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  background: #f9f9f9;
+  border-radius: 0 0 12px 12px;
+}
+
+.year-range-modal-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.year-range-modal-btn-primary {
+  background: #2196f3;
+  color: white;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+}
+
+.year-range-modal-btn-primary:hover {
+  background: #1976d2;
+  box-shadow: 0 3px 8px rgba(33, 150, 243, 0.4);
+}
+
+.year-range-modal-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(33, 150, 243, 0.3);
+}
+
+.year-range-modal-btn-secondary {
+  background: white;
+  color: #666;
+  border: 1px solid #d0d0d0;
+}
+
+.year-range-modal-btn-secondary:hover {
+  background: #f5f5f5;
+  border-color: #a0a0a0;
+}
+
+.year-range-modal-btn-secondary:active {
+  background: #e8e8e8;
+}
+
+/* Year settings button in navbar */
+.year-settings-btn {
+  min-width: 32px;
+}
+
+.year-settings-btn .material-icons {
+  font-size: 20px;
+}
+
+/* ===== Documentation Dropdown Styles ===== */
+.docs-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.docs-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  min-width: 200px;
+  padding: 4px 0;
+}
+
+.docs-dropdown-menu.show {
+  display: block;
+}
+
+.docs-dropdown-header {
+  padding: 4px 10px;
+  font-weight: normal;
+  font-size: 12px;
+  color: #000;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  margin-bottom: 2px;
+}
+
+.docs-dropdown-item {
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  color: #000;
+  font-size: 12px;
+}
+
+.docs-dropdown-item:hover {
+  background: #f0f0f0;
+}
+
+.docs-dropdown-item .material-icons {
+  font-size: 18px;
+  color: #666;
+}
+
+.docs-dropdown-item span:not(.material-icons) {
+  flex: 1;
+}
+
+/* ===== Welcome Screen Styles ===== */
+#welcome-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-content {
+  text-align: center;
+  color: #2c3e50;
+  max-width: 600px;
+  padding: 40px;
+}
+
+.welcome-logo {
+  margin-bottom: 30px;
+}
+
+.welcome-logo img {
+  width: 150px;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+.welcome-title {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-description {
+  font-size: 20px;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  color: #4a5568;
+  font-weight: 400;
+}
+
+.welcome-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+
+.welcome-enter-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 40px;
+  background: #3b82f6;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.welcome-enter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  background: #2563eb;
+}
+
+.welcome-enter-btn .material-icons {
+  font-size: 24px;
+}
+
+.welcome-tutorial-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: transparent;
+  color: #4a5568;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 2px solid #cbd5e0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.welcome-tutorial-btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: #a0aec0;
+  transform: translateY(-1px);
+}
+
+.welcome-tutorial-btn .material-icons {
+  font-size: 20px;
+}
+
+.welcome-footer {
+  margin-top: 60px;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.welcome-footer p {
+  margin: 5px 0;
 }

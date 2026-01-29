@@ -19,6 +19,7 @@ import felixLogo from "../imgs/felix-png.png";
 import { loadTargets, updateAllGraphTargets } from "../lib/utils.js";
 import { targetsVisible } from "../stores/targets-store.js";
 import { graphViews } from "../stores/graphs-store.js";
+import { defaultMinYear, defaultMaxYear, presentYear, resetYearRangeSettings } from "../stores/year-range-store.js";
 
 // Inject a 50px-tall nav bar split into three equal sections
 export function loadNavBar() {
@@ -202,9 +203,10 @@ export function loadNavBar() {
   
   $titleContainer.append($logo, $title);
   
-  // Make the entire container clickable to go to default page (without URL parameters)
+  // Make the entire container clickable to go to default page with ?app parameter
+  // This resets to default state without showing the welcome screen
   $titleContainer.on("click", () => {
-    window.location.href = window.location.pathname;
+    window.location.href = window.location.pathname + '?app';
   });
   
   $sect2.append($titleContainer);
@@ -284,12 +286,16 @@ export function loadNavBar() {
 
   // Bulls-eye button - toggle target points on graphs
   const $bullseyeBtn = $(`
-    <button title="Toggle Target Points" class="targets-toggle-btn">
-      <span class="material-icons">adjust</span>
+    <button title="Toggle Target Points" class="targets-toggle-btn active">
+      <span class="material-icons">my_location</span>
     </button>
   `);
+  
+  // Load targets on initialization (targetsVisible is true by default in store)
+  loadTargets();
+  
   $bullseyeBtn.on("click", async () => {
-    // Load targets on first click
+    // Load targets on first click if not already loaded
     await loadTargets();
     
     // Toggle the targets visibility
@@ -308,50 +314,160 @@ export function loadNavBar() {
   });
   $sect3.append($bullseyeBtn);
 
-  // Year selector for present-day reference line - AFTER bulls-eye
-  const $yearSelectorContainer = $('<div class="year-selector-container" title="Reference Year"></div>');
-  const $yearIcon = $('<span class="material-icons year-icon">event</span>');
-  const $yearInput = $(`
-    <input 
-      type="number" 
-      id="present-year-input" 
-      min="1950" 
-      max="2100" 
-      value="2025" 
-      title="Reference Year"
-    />
-  `);
+  // Year range settings dropdown
+  let currentMinYear, currentMaxYear, currentPresentYear;
   
-  $yearInput.on("change", function() {
-    const year = parseInt($(this).val(), 10);
-    if (year >= 1950 && year <= 2100) {
-      // Update the reference line year in graph-view
-      window.presentDayYear = year;
-      // Refresh all graphs to show new reference line
-      const selectedGraphCategory = $(".graph-category-selector-option.selected").data("value");
-      if (selectedGraphCategory) {
-        initGraphsUI(selectedGraphCategory, selectedGraphCount.get());
-      }
-    } else {
-      // Reset to 2025 if invalid
-      $(this).val(2025);
-      window.presentDayYear = 2025;
+  // Subscribe to stores to track current values
+  defaultMinYear.subscribe(v => { currentMinYear = v; });
+  defaultMaxYear.subscribe(v => { currentMaxYear = v; });
+  presentYear.subscribe(v => { currentPresentYear = v; });
+
+  const $yearDropdownContainer = $(`
+    <div class="year-dropdown-wrapper">
+      <button title="Year Range Settings" class="year-settings-btn">
+        <span class="material-icons">event</span>
+      </button>
+      <div class="year-dropdown-menu">
+        <div class="year-dropdown-header">Year Range Settings</div>
+        <div class="year-dropdown-item">
+          <label>Min Year</label>
+          <input type="number" id="dropdown-min-year" min="1900" max="2200" step="1" value="${currentMinYear || 2000}" />
+        </div>
+        <div class="year-dropdown-item">
+          <label>Max Year</label>
+          <input type="number" id="dropdown-max-year" min="1900" max="2200" step="1" value="${currentMaxYear || 2050}" />
+        </div>
+        <div class="year-dropdown-item">
+          <label>Reference Line</label>
+          <input type="number" id="dropdown-present-year" min="1900" max="2200" step="1" value="${currentPresentYear || 2025}" />
+        </div>
+        <div class="year-dropdown-footer">
+          <button class="year-dropdown-reset">Reset</button>
+          <button class="year-dropdown-apply">Apply</button>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // Toggle dropdown on button click
+  $yearDropdownContainer.find(".year-settings-btn").on("click", function(e) {
+    e.stopPropagation();
+    const $dropdown = $yearDropdownContainer.find(".year-dropdown-menu");
+    
+    // Update input values with current store values before showing
+    $("#dropdown-min-year").val(currentMinYear || 2000);
+    $("#dropdown-max-year").val(currentMaxYear || 2050);
+    $("#dropdown-present-year").val(currentPresentYear || 2025);
+    
+    // Close other dropdowns
+    $(".year-dropdown-menu").not($dropdown).removeClass("show");
+    
+    $dropdown.toggleClass("show");
+  });
+
+  // Close dropdown when clicking outside
+  $(document).on("click", function(e) {
+    if (!$(e.target).closest(".year-dropdown-wrapper").length) {
+      $(".year-dropdown-menu").removeClass("show");
     }
   });
-  
-  $yearSelectorContainer.append($yearIcon, $yearInput);
-  $sect3.append($yearSelectorContainer);
 
-  // Documentation button with icon
-  const $documentationBtn = $(`
-    <button title="Documentation">
-      <span class="material-icons">menu_book</span>
-    </button>
-  `);
-  $documentationBtn.on("click", () => {
-    window.open("https://iiasa.github.io/felix_docs/", "_blank");
+  // Handle Enter key on input fields to trigger apply
+  $yearDropdownContainer.find("input[type=number]").on("keypress", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      $yearDropdownContainer.find(".year-dropdown-apply").click();
+    }
   });
-  $sect3.append($documentationBtn);
+
+  // Reset button
+  $yearDropdownContainer.find(".year-dropdown-reset").on("click", function(e) {
+    e.stopPropagation();
+    resetYearRangeSettings();
+  });
+
+  // Apply button
+  $yearDropdownContainer.find(".year-dropdown-apply").on("click", function(e) {
+    e.stopPropagation();
+    const minYr = parseInt($("#dropdown-min-year").val(), 10);
+    const maxYr = parseInt($("#dropdown-max-year").val(), 10);
+    const presentYr = parseInt($("#dropdown-present-year").val(), 10);
+
+    if (minYr >= maxYr) {
+      alert("Min year must be less than max year!");
+      return;
+    }
+
+    defaultMinYear.set(minYr);
+    defaultMaxYear.set(maxYr);
+    presentYear.set(presentYr);
+
+    // Refresh graphs
+    const selectedGraphCategory = $(".graph-category-selector-option.selected").data("value");
+    if (selectedGraphCategory) {
+      initGraphsUI(selectedGraphCategory, selectedGraphCount.get());
+    }
+
+    $yearDropdownContainer.find(".year-dropdown-menu").removeClass("show");
+  });
+  
+  $sect3.append($yearDropdownContainer);
+
+  // Documentation dropdown with menu options
+  const $documentationDropdownContainer = $(`
+    <div class="docs-dropdown-wrapper">
+      <button title="Documentation & Updates" class="docs-btn">
+        <span class="material-icons">menu_book</span>
+      </button>
+      <div class="docs-dropdown-menu">
+        <div class="docs-dropdown-header">Resources</div>
+        <div class="docs-dropdown-item" data-action="documentation">
+          <span class="material-icons">article</span>
+          <span>Documentation</span>
+        </div>
+        <div class="docs-dropdown-item" data-action="update-log">
+          <span class="material-icons">update</span>
+          <span>Update Log</span>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // Toggle dropdown on button click
+  $documentationDropdownContainer.find(".docs-btn").on("click", function(e) {
+    e.stopPropagation();
+    const $dropdown = $documentationDropdownContainer.find(".docs-dropdown-menu");
+    
+    // Close other dropdowns
+    $(".docs-dropdown-menu").not($dropdown).removeClass("show");
+    $(".year-dropdown-menu").removeClass("show");
+    
+    $dropdown.toggleClass("show");
+  });
+
+  // Handle menu item clicks
+  $documentationDropdownContainer.find(".docs-dropdown-item").on("click", function(e) {
+    e.stopPropagation();
+    const action = $(this).data("action");
+    
+    if (action === "documentation") {
+      window.open("https://iiasa.github.io/felix_docs/", "_blank");
+    } else if (action === "update-log") {
+      // TODO: Add update log functionality
+      alert("Update log feature coming soon!");
+    }
+    
+    $documentationDropdownContainer.find(".docs-dropdown-menu").removeClass("show");
+  });
+
+  // Close dropdown when clicking outside
+  $(document).on("click", function(e) {
+    if (!$(e.target).closest(".docs-dropdown-wrapper").length) {
+      $(".docs-dropdown-menu").removeClass("show");
+    }
+  });
+
+  $sect3.append($documentationDropdownContainer);
 
   // Bug report button with icon
   const $bugBtn = $(`
