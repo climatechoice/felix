@@ -332,15 +332,15 @@ export function loadNavBar() {
         <div class="year-dropdown-header">Year Range Settings</div>
         <div class="year-dropdown-item">
           <label>Min Year</label>
-          <input type="number" id="dropdown-min-year" min="1900" max="2200" step="1" value="${currentMinYear || 2000}" />
+          <input type="number" id="dropdown-min-year" min="1900" max="2100" step="1" value="${currentMinYear || 2000}" />
         </div>
         <div class="year-dropdown-item">
           <label>Max Year</label>
-          <input type="number" id="dropdown-max-year" min="1900" max="2200" step="1" value="${currentMaxYear || 2050}" />
+          <input type="number" id="dropdown-max-year" min="1900" max="2100" step="1" value="${currentMaxYear || 2050}" />
         </div>
         <div class="year-dropdown-item">
           <label>Reference Line</label>
-          <input type="number" id="dropdown-present-year" min="1900" max="2200" step="1" value="${currentPresentYear || 2025}" />
+          <input type="number" id="dropdown-present-year" min="1900" max="2100" step="1" value="${currentPresentYear || 2025}" />
         </div>
         <div class="year-dropdown-footer">
           <button class="year-dropdown-reset">Reset</button>
@@ -362,6 +362,7 @@ export function loadNavBar() {
     
     // Close other dropdowns
     $(".year-dropdown-menu").not($dropdown).removeClass("show");
+    $(".docs-dropdown-menu").removeClass("show");
     
     $dropdown.toggleClass("show");
   });
@@ -370,6 +371,9 @@ export function loadNavBar() {
   $(document).on("click", function(e) {
     if (!$(e.target).closest(".year-dropdown-wrapper").length) {
       $(".year-dropdown-menu").removeClass("show");
+    }
+    if (!$(e.target).closest(".docs-dropdown-wrapper").length) {
+      $(".docs-dropdown-menu").removeClass("show");
     }
   });
 
@@ -385,6 +389,20 @@ export function loadNavBar() {
   $yearDropdownContainer.find(".year-dropdown-reset").on("click", function(e) {
     e.stopPropagation();
     resetYearRangeSettings();
+    
+    // Update input fields to show reset values
+    $("#dropdown-min-year").val(2000);
+    $("#dropdown-max-year").val(2050);
+    $("#dropdown-present-year").val(2025);
+    
+    // Immediately refresh graphs with reset values
+    const selectedGraphCategory = $(".graph-category-selector-option.selected").data("value");
+    if (selectedGraphCategory) {
+      initGraphsUI(selectedGraphCategory, selectedGraphCount.get());
+    }
+    
+    // Close the dropdown
+    $(".year-dropdown-menu").removeClass("show");
   });
 
   // Apply button
@@ -393,6 +411,22 @@ export function loadNavBar() {
     const minYr = parseInt($("#dropdown-min-year").val(), 10);
     const maxYr = parseInt($("#dropdown-max-year").val(), 10);
     const presentYr = parseInt($("#dropdown-present-year").val(), 10);
+
+    // Validate year range
+    if (minYr < 1900 || minYr > 2100) {
+      alert("Min year must be between 1900 and 2100!");
+      return;
+    }
+    
+    if (maxYr < 1900 || maxYr > 2100) {
+      alert("Max year must be between 1900 and 2100!");
+      return;
+    }
+    
+    if (presentYr < 1900 || presentYr > 2100) {
+      alert("Reference line year must be between 1900 and 2100!");
+      return;
+    }
 
     if (minYr >= maxYr) {
       alert("Min year must be less than max year!");
