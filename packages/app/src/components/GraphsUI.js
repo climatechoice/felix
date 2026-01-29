@@ -464,7 +464,7 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
   // ! For each selected graph, figure out which row it goes in
   graphIds.forEach((id, index) => {
     const spec = coreConfig.graphs.get(id);
-    const outer = $(`<div class="outer-graph-container"></div>`);
+    const outer = $(`<div class="outer-graph-container" data-category="${spec.graphCategory}"></div>`);
     
     // Explicitly clear any potential inherited styles
     outer.css({

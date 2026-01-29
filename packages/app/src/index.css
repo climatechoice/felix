@@ -1752,6 +1752,12 @@ p {
 
 .survey-container {
   padding: 20px;
+  position: relative;
+}
+
+/* Ensure survey container can be highlighted properly */
+.survey-container.tutorial-highlight {
+  z-index: 99999 !important;
 }
 
 .survey-container h2 {
@@ -2439,4 +2445,156 @@ p {
 
 .welcome-footer p {
   margin: 5px 0;
+}
+
+/* Tutorial styles */
+#tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99998;
+  pointer-events: none;
+}
+
+.tutorial-highlight {
+  position: relative;
+  z-index: 99999 !important;
+  outline: 2px solid var(--highlight-color, #3b82f6) !important;
+  outline-offset: -2px;
+  border-radius: 4px;
+  pointer-events: auto;
+}
+
+/* Don't override background for popup elements */
+.tutorial-highlight:not(.popup):not(.survey-popup) {
+  background: white !important;
+}
+
+/* Ensure parent popup is also elevated when survey container is highlighted */
+.survey-popup:has(.tutorial-highlight) {
+  z-index: 100000 !important;
+}
+
+.tutorial-highlight::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid var(--highlight-color, #3b82f6);
+  border-radius: 4px;
+  pointer-events: none;
+  animation: tutorial-pulse 2s infinite;
+  z-index: -1;
+}
+
+@keyframes tutorial-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+#tutorial-tooltip {
+  position: fixed;
+  width: 360px;
+  min-width: 360px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 100000;
+  pointer-events: auto;
+}
+
+.tutorial-content {
+  padding: 24px;
+}
+
+.tutorial-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 12px 0;
+}
+
+.tutorial-description {
+  font-size: 15px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.tutorial-controls {
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.tutorial-skip-btn {
+  all: unset;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tutorial-skip-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.tutorial-navigation {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
+.tutorial-step-indicator {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tutorial-prev-btn,
+.tutorial-next-btn {
+  all: unset;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tutorial-prev-btn {
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.tutorial-prev-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.tutorial-next-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.tutorial-next-btn:hover {
+  background: #2563eb;
 }

@@ -18,6 +18,7 @@ import { copyShareableURLToClipboard } from "../utils/url-state.js";
 import felixLogo from "../imgs/felix-png.png";
 import { loadTargets, updateAllGraphTargets } from "../lib/utils.js";
 import { targetsVisible } from "../stores/targets-store.js";
+import { startTutorial } from "./Tutorial.js";
 import { graphViews } from "../stores/graphs-store.js";
 import { defaultMinYear, defaultMaxYear, presentYear, resetYearRangeSettings } from "../stores/year-range-store.js";
 
@@ -425,6 +426,10 @@ export function loadNavBar() {
           <span class="material-icons">article</span>
           <span>Documentation</span>
         </div>
+        <div class="docs-dropdown-item" data-action="quick-guide">
+          <span class="material-icons">help_outline</span>
+          <span>Quick Guide</span>
+        </div>
         <div class="docs-dropdown-item" data-action="update-log">
           <span class="material-icons">update</span>
           <span>Update Log</span>
@@ -452,6 +457,8 @@ export function loadNavBar() {
     
     if (action === "documentation") {
       window.open("https://iiasa.github.io/felix_docs/", "_blank");
+    } else if (action === "quick-guide") {
+      startTutorial();
     } else if (action === "update-log") {
       // TODO: Add update log functionality
       alert("Update log feature coming soon!");
