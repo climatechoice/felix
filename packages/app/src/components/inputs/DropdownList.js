@@ -135,6 +135,47 @@ export function addDropdownListItem(inputInstance, container = $("#inputs-conten
   selectContainer.append($select);
   wrapper.append(selectContainer);
 
+  // Allow a segmented 'Custom' button to open this dropdown (if present).
+  // Uses a delegated click handler scoped by spec.id to avoid coupling files.
+  try {
+    $(document).on(`click.dropdown_custom_${spec.id}`, `.segmented-button[data-input-id="${spec.id}"]`, function () {
+      try {
+        // Prefer an explicit data attribute set by the segmented button render
+        const isCustom = $(this).attr('data-custom') === 'true';
+        if (isCustom) {
+          try {
+            const sel = $select[0];
+            if (sel) {
+              // Focus first
+              try { sel.focus(); } catch (e) {}
+
+              // Try native click (works in some browsers)
+              try { if (typeof sel.click === 'function') sel.click(); } catch (e) {}
+
+              // As a fallback, temporarily set `size` on the select to show options
+              try {
+                const count = sel.options ? sel.options.length : 0;
+                if (count > 1) {
+                  const prev = sel.getAttribute('size');
+                  sel.setAttribute('size', Math.min(6, count));
+                  const restore = () => {
+                    if (prev === null) sel.removeAttribute('size'); else sel.setAttribute('size', prev);
+                    sel.removeEventListener('blur', restore);
+                  };
+                  sel.addEventListener('blur', restore);
+                  // also auto-close after a short timeout
+                  setTimeout(() => {
+                    try { restore(); } catch (e) {}
+                  }, 2500);
+                }
+              } catch (e) {}
+            }
+          } catch (e) {}
+        }
+      } catch (e) {}
+    });
+  } catch (e) {}
+
   // Handle change event
   $select.on("change", async function() {
     const newValue = parseFloat($(this).val());
@@ -144,7 +185,7 @@ export function addDropdownListItem(inputInstance, container = $("#inputs-conten
     if (spec.id === "ed8") {
       const selectedIndex = $(this).prop('selectedIndex');
       const scenarioName = str(spec.rangeLabelKeys[selectedIndex]); // "Optimistic", "Reference", or "Pessimistic"
-      console.log(`Loading external drivers for SSP scenario: ${scenarioName}`);
+    
       
       // Capture ALL input values before the change
       const allInputsBefore = {};
@@ -160,7 +201,6 @@ export function addDropdownListItem(inputInstance, container = $("#inputs-conten
       
       try {
         const result = await loadExternalDrivers(scenarioName, activeModel.get());
-        console.log(`SSP ${scenarioName}: ${result.applied} variables applied, ${result.warnings} not found in inputs.csv`);
         
         // Capture ALL input values after the change
         const allInputsAfter = {};
@@ -192,12 +232,10 @@ export function addDropdownListItem(inputInstance, container = $("#inputs-conten
           redoStack.set([]);
           updateUndoRedoButtons();
           
-          console.log(`SSP change recorded: ${affectedIds.length} inputs changed`);
+          
         }
         
-        if (result.applied > 0) {
-          console.log(`Successfully applied ${result.applied} external driver variables`);
-        }
+        
         
         if (result.warnings > 0) {
           console.warn(`${result.warnings} variables from ${scenarioName}.csv were not found in the model inputs`);

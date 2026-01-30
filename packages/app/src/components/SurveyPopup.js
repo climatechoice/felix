@@ -113,15 +113,11 @@ export function showSurveyPopup() {
         try {
           console.log('Survey responses:', surveyResponses);
           
-          // Generate scenario based on responses (using defaults for unanswered)
-          const responses = {
-            diet: surveyResponses.diet !== null ? surveyResponses.diet : 0,
-            waste: surveyResponses.waste !== null ? surveyResponses.waste : 0,
-            altproteins: surveyResponses.altproteins !== null ? surveyResponses.altproteins : 0
-          };
-          
+          // Generate scenario based on responses. Do NOT fill unanswered categories
+          // with defaults — that would reset existing inputs. Only include answered
+          // categories so we don't overwrite Diet/FLW when the user only set APs.
           console.log('Calling generateScenarioFromSurvey...');
-          const scenarioData = generateScenarioFromSurvey(responses);
+          const scenarioData = generateScenarioFromSurvey(surveyResponses);
           console.log('Generated scenario data:', scenarioData);
           
           if (!scenarioData || scenarioData.length === 0) {
@@ -195,7 +191,7 @@ export function showSurveyPopup() {
         
         // Store individual answers for diet assessment
         if (!surveyResponses.dietAnswers) {
-          surveyResponses.dietAnswers = { q1: null, q2: null, q3: null };
+          surveyResponses.dietAnswers = { q1: null, q2: null, q3: null, q4: null };
         }
         
         questionHTML = `
@@ -228,6 +224,16 @@ export function showSurveyPopup() {
               <label><input type="radio" name="diet_q3" value="plant-based" ${surveyResponses.dietAnswers.q3 === 'plant-based' ? 'checked' : ''}> Mainly plants (beans, lentils, tofu, nuts)</label>
             </div>
           </div>
+          
+          <div class="survey-question">
+            <label><strong>Question 4: How often do you choose meat-free meals (e.g., vegetarian days)?</strong></label>
+            <div class="survey-options">
+              <label><input type="radio" name="diet_q4" value="never" ${surveyResponses.dietAnswers.q4 === 'never' ? 'checked' : ''}> Never</label>
+              <label><input type="radio" name="diet_q4" value="rarely" ${surveyResponses.dietAnswers.q4 === 'rarely' ? 'checked' : ''}> Rarely</label>
+              <label><input type="radio" name="diet_q4" value="sometimes" ${surveyResponses.dietAnswers.q4 === 'sometimes' ? 'checked' : ''}> Sometimes</label>
+              <label><input type="radio" name="diet_q4" value="often" ${surveyResponses.dietAnswers.q4 === 'often' ? 'checked' : ''}> Often or regularly</label>
+            </div>
+          </div>
         `;
       } else if (category === 'waste') {
         questionTitle = 'Food Waste and Loss - Quick Assessment';
@@ -235,7 +241,7 @@ export function showSurveyPopup() {
         
         // Store individual answers for waste assessment
         if (!surveyResponses.wasteAnswers) {
-          surveyResponses.wasteAnswers = { q1: null, q2: null, q3: null };
+          surveyResponses.wasteAnswers = { q1: null, q2: null, q3: null, q4: null };
         }
         
         questionHTML = `
@@ -268,6 +274,16 @@ export function showSurveyPopup() {
               <label><input type="radio" name="waste_q3" value="proactive" ${surveyResponses.wasteAnswers.q3 === 'proactive' ? 'checked' : ''}> I keep track and use older items first</label>
             </div>
           </div>
+          
+          <div class="survey-question">
+            <label><strong>Question 4: How often do you plan meals specifically to avoid waste?</strong></label>
+            <div class="survey-options">
+              <label><input type="radio" name="waste_q4" value="never" ${surveyResponses.wasteAnswers.q4 === 'never' ? 'checked' : ''}> Never</label>
+              <label><input type="radio" name="waste_q4" value="sometimes" ${surveyResponses.wasteAnswers.q4 === 'sometimes' ? 'checked' : ''}> Sometimes</label>
+              <label><input type="radio" name="waste_q4" value="often" ${surveyResponses.wasteAnswers.q4 === 'often' ? 'checked' : ''}> Often</label>
+              <label><input type="radio" name="waste_q4" value="always" ${surveyResponses.wasteAnswers.q4 === 'always' ? 'checked' : ''}> Always</label>
+            </div>
+          </div>
         `;
       } else if (category === 'altproteins') {
         questionTitle = 'Alternative Proteins - Quick Assessment';
@@ -275,7 +291,7 @@ export function showSurveyPopup() {
         
         // Store individual answers for alternative proteins assessment
         if (!surveyResponses.altproteinsAnswers) {
-          surveyResponses.altproteinsAnswers = { q1: null, q2: null, q3: null };
+          surveyResponses.altproteinsAnswers = { q1: null, q2: null, q3: null, q4: null };
         }
         
         questionHTML = `
@@ -308,6 +324,15 @@ export function showSurveyPopup() {
               <label><input type="radio" name="altproteins_q3" value="most" ${surveyResponses.altproteinsAnswers.q3 === 'most' ? 'checked' : ''}> I mostly or only use plant-based</label>
             </div>
           </div>
+          
+          <div class="survey-question">
+            <label><strong>Question 4: Would you replace one meal per day with plant-based alternatives?</strong></label>
+            <div class="survey-options">
+              <label><input type="radio" name="altproteins_q4" value="no" ${surveyResponses.altproteinsAnswers.q4 === 'no' ? 'checked' : ''}> No</label>
+              <label><input type="radio" name="altproteins_q4" value="maybe" ${surveyResponses.altproteinsAnswers.q4 === 'maybe' ? 'checked' : ''}> Maybe</label>
+              <label><input type="radio" name="altproteins_q4" value="yes" ${surveyResponses.altproteinsAnswers.q4 === 'yes' ? 'checked' : ''}> Yes</label>
+            </div>
+          </div>
         `;
       }
       
@@ -330,171 +355,192 @@ export function showSurveyPopup() {
       surveyContent.find('#survey-question-form').on('submit', function(e) {
         e.preventDefault();
         
-        // Handle diet question specially - calculate diet type from 3 questions
+        // Handle diet question specially - calculate diet type from 4 questions
         if (questionName === 'diet') {
           const q1 = $('input[name="diet_q1"]:checked').val();
           const q2 = $('input[name="diet_q2"]:checked').val();
           const q3 = $('input[name="diet_q3"]:checked').val();
-          
-          if (!q1 || !q2 || !q3) {
-            alert('Please answer all three questions');
+          const q4 = $('input[name="diet_q4"]:checked').val();
+
+          if (!q1 || !q2 || !q3 || !q4) {
+            alert('Please answer all four questions');
             return;
           }
-          
+
           // Save individual answers
-          surveyResponses.dietAnswers = { q1, q2, q3 };
-          
+          surveyResponses.dietAnswers = { q1, q2, q3, q4 };
+
           // Calculate diet type based on answers
-          // Reference (0): High meat consumption, low fruits/veg
-          // Healthy (1): Moderate meat, good fruits/veg
-          // Mediterranean (2): Less red meat, fish/poultry, high fruits/veg
-          // Flexitarian (3): Rare meat, high plant-based
-          
+          // Diet categories (new):
+          // 0: Meat-heavy (US)
+          // 1: OECD affluent
+          // 2: Reference
+          // 3: Healthy
+          // 4: Flexitarian
+
           let score = 0;
-          
+
           // Q1: Red meat frequency (lower is better)
           if (q1 === 'rarely') score += 3;
           else if (q1 === 'occasional') score += 2;
           else if (q1 === 'weekly') score += 1;
           else score += 0; // daily
-          
+
           // Q2: Fruits and vegetables (higher is better)
           if (q2 === 'very-high') score += 3;
           else if (q2 === 'high') score += 2;
           else if (q2 === 'medium') score += 1;
           else score += 0; // low
-          
+
           // Q3: Protein sources (plant-based weighted higher)
           if (q3 === 'plant-based') score += 3;
           else if (q3 === 'fish-poultry') score += 2;
           else if (q3 === 'mixed') score += 1;
           else score += 0; // meat-heavy
-          
-          // Map score to diet type
-          // 0-2: Reference, 3-4: Healthy, 5-6: Mediterranean, 7-9: Flexitarian
+
+          // Q4: Frequency of meat-free meals (more meat-free -> higher score)
+          if (q4 === 'often') score += 3;
+          else if (q4 === 'sometimes') score += 2;
+          else if (q4 === 'rarely') score += 1;
+          else score += 0; // never
+
+          // Map score to new diet type categories (score range 0-12)
           let dietType;
-          if (score <= 2) dietType = 0; // Reference
-          else if (score <= 4) dietType = 1; // Healthy
-          else if (score <= 6) dietType = 2; // Mediterranean
-          else dietType = 3; // Flexitarian
-          
+          if (score <= 2) dietType = 0; // Meat-heavy (US)
+          else if (score <= 5) dietType = 1; // OECD affluent
+          else if (score <= 7) dietType = 2; // Reference
+          else if (score <= 9) dietType = 3; // Healthy
+          else dietType = 4; // Flexitarian
+
           surveyResponses.diet = dietType;
-          
-          console.log('Diet assessment - Scores:', { q1, q2, q3, score, dietType });
-          
+
+          console.log('Diet assessment - Scores:', { q1, q2, q3, q4, score, dietType });
+
           // Return to intro page
           renderPage('intro');
           return;
         }
         
-        // Handle waste question - calculate waste reduction from 3 questions
+        // Handle waste question - calculate waste reduction from 4 questions
         if (questionName === 'waste') {
           const q1 = $('input[name="waste_q1"]:checked').val();
           const q2 = $('input[name="waste_q2"]:checked').val();
           const q3 = $('input[name="waste_q3"]:checked').val();
-          
-          if (!q1 || !q2 || !q3) {
-            alert('Please answer all three questions');
+          const q4 = $('input[name="waste_q4"]:checked').val();
+
+          if (!q1 || !q2 || !q3 || !q4) {
+            alert('Please answer all four questions');
             return;
           }
-          
+
           // Save individual answers
-          surveyResponses.wasteAnswers = { q1, q2, q3 };
-          
+          surveyResponses.wasteAnswers = { q1, q2, q3, q4 };
+
           // Calculate waste reduction level
-          // 0: Reference (no reduction)
-          // 25: -25% reduction
-          // 50: -50% reduction
-          // 75: -75% reduction (not used in original, using 50 as max)
-          
+          // Values: -50, -25, 0, 25, 50
+          // -50: worse (more loss/waste), 50: best (largest reduction)
+
           let score = 0;
-          
+
           // Q1: Current waste level (less waste = higher score)
           if (q1 === 'none') score += 3;
           else if (q1 === 'minimal') score += 2;
           else if (q1 === 'moderate') score += 1;
           else score += 0; // very-high
-          
+
           // Q2: Planning habits
           if (q2 === 'always') score += 3;
           else if (q2 === 'often') score += 2;
           else if (q2 === 'sometimes') score += 1;
           else score += 0; // never
-          
+
           // Q3: Food management
           if (q3 === 'proactive') score += 3;
           else if (q3 === 'creative') score += 2;
           else if (q3 === 'sometimes-save') score += 1;
           else score += 0; // throw
-          
-          // Map score to waste reduction level
-          // 0-2: 0 (Reference), 3-5: 25 (-25%), 6-9: 50 (-50%)
+
+          // Q4: How often do you plan meals specifically to avoid waste?
+          if (q4 === 'always') score += 3;
+          else if (q4 === 'often') score += 2;
+          else if (q4 === 'sometimes') score += 1;
+          else score += 0; // never
+
+          // Map score to waste reduction level (score range 0-12)
+          // bins: low -> -50, low-mid -> -25, mid -> 0, high -> 25, very-high -> 50
           let wasteLevel;
-          if (score <= 2) wasteLevel = 0; // Reference
-          else if (score <= 5) wasteLevel = 25; // -25%
-          else wasteLevel = 50; // -50%
-          
+          if (score <= 2) wasteLevel = -50;
+          else if (score <= 4) wasteLevel = -25;
+          else if (score <= 7) wasteLevel = 0;
+          else if (score <= 9) wasteLevel = 25;
+          else wasteLevel = 50;
+
           surveyResponses.waste = wasteLevel;
-          
-          console.log('Waste assessment - Scores:', { q1, q2, q3, score, wasteLevel });
-          
+
+          console.log('Waste assessment - Scores:', { q1, q2, q3, q4, score, wasteLevel });
+
           // Return to intro page
           renderPage('intro');
           return;
         }
         
-        // Handle alternative proteins question - calculate adoption from 3 questions
+        // Handle alternative proteins question - calculate adoption from 4 questions
         if (questionName === 'altproteins') {
           const q1 = $('input[name="altproteins_q1"]:checked').val();
           const q2 = $('input[name="altproteins_q2"]:checked').val();
           const q3 = $('input[name="altproteins_q3"]:checked').val();
-          
-          if (!q1 || !q2 || !q3) {
-            alert('Please answer all three questions');
+          const q4 = $('input[name="altproteins_q4"]:checked').val();
+
+          if (!q1 || !q2 || !q3 || !q4) {
+            alert('Please answer all four questions');
             return;
           }
-          
+
           // Save individual answers
-          surveyResponses.altproteinsAnswers = { q1, q2, q3 };
-          
+          surveyResponses.altproteinsAnswers = { q1, q2, q3, q4 };
+
           // Calculate alternative protein adoption level
           // 0: Reference (no adoption)
           // 33: 10% adoption
           // 66: 20% adoption
           // 100: 30% adoption
-          
+
           let score = 0;
-          
+
           // Q1: Plant-based meat willingness
           if (q1 === 'regular') score += 3;
           else if (q1 === 'occasional') score += 2;
           else if (q1 === 'curious') score += 1;
           else score += 0; // no
-          
+
           // Q2: Lab-grown meat attitude
           if (q2 === 'eager') score += 3;
           else if (q2 === 'willing') score += 2;
           else if (q2 === 'skeptical') score += 1;
           else score += 0; // against
-          
+
           // Q3: Dairy alternatives
           if (q3 === 'most') score += 3;
           else if (q3 === 'half') score += 2;
           else if (q3 === 'some') score += 1;
           else score += 0; // no
-          
-          // Map score to adoption level
-          // 0-2: 0 (Reference), 3-4: 33 (10%), 5-6: 66 (20%), 7-9: 100 (30%)
+
+          // Q4: Would you replace one meal per day with plant-based alternatives?
+          if (q4 === 'yes') score += 3;
+          else if (q4 === 'maybe') score += 1;
+          else score += 0; // no
+
+          // Map score to adoption level (score range 0-12)
           let adoptionLevel;
-          if (score <= 2) adoptionLevel = 0; // Reference
-          else if (score <= 4) adoptionLevel = 33; // 10%
-          else if (score <= 6) adoptionLevel = 66; // 20%
+          if (score <= 3) adoptionLevel = 0; // Reference
+          else if (score <= 6) adoptionLevel = 33; // 10%
+          else if (score <= 9) adoptionLevel = 66; // 20%
           else adoptionLevel = 100; // 30%
-          
+
           surveyResponses.altproteins = adoptionLevel;
-          
-          console.log('Alternative proteins assessment - Scores:', { q1, q2, q3, score, adoptionLevel });
-          
+
+          console.log('Alternative proteins assessment - Scores:', { q1, q2, q3, q4, score, adoptionLevel });
+
           // Return to intro page
           renderPage('intro');
           return;
@@ -522,8 +568,8 @@ export function showSurveyPopup() {
         `
         : `<button type="button" class="survey-submit-btn">Generate & Load Scenario</button>`;
       
-      const dietLabels = ['Reference', 'Healthy', 'Mediterranean', 'Flexitarian'];
-      const wasteLabels = ['Reference', '-25%', '-50%', '-75%'];
+      const dietLabels = ['Meat-heavy (US)', 'OECD affluent', 'Reference', 'Healthy', 'Flexitarian'];
+      const wasteLabels = ['-50%', '-25%', 'Reference', '50%', '60%'];
       const altproteinLabels = ['Reference', '10%', '20%', '30%'];
       
       const getDietLabel = (val) => {
@@ -531,14 +577,16 @@ export function showSurveyPopup() {
         if (val === 1) return dietLabels[1];
         if (val === 2) return dietLabels[2];
         if (val === 3) return dietLabels[3];
+        if (val === 4) return dietLabels[4];
         return 'Unknown';
       };
       
       const getWasteLabel = (val) => {
-        if (val === 0) return wasteLabels[0];
-        if (val === 25) return wasteLabels[1];
-        if (val === 50) return wasteLabels[2];
-        if (val === 75) return wasteLabels[3];
+        if (val === -50) return wasteLabels[0];
+        if (val === -25) return wasteLabels[1];
+        if (val === 0) return wasteLabels[2];
+        if (val === 25) return wasteLabels[3];
+        if (val === 50) return wasteLabels[4];
         return 'Unknown';
       };
       
@@ -579,7 +627,7 @@ export function showSurveyPopup() {
         try {
           console.log('Survey responses:', surveyResponses);
           
-          // Generate scenario based on responses
+          // Generate scenario based on responses (only include answered categories)
           console.log('Calling generateScenarioFromSurvey...');
           const scenarioData = generateScenarioFromSurvey(surveyResponses);
           console.log('Generated scenario data:', scenarioData);
@@ -667,24 +715,21 @@ export function showSurveyPopup() {
  */
 function generateScenarioFromSurvey(responses) {
   const scenarios = [];
-  
-  // Diet Change: 0=Reference, 1=Healthy, 2=Mediterranean, 3=Flexitarian, 4=Custom
-  scenarios.push({ 
-    varName: 'Global Diet Composition Switch', 
-    value: responses.diet 
-  });
-  
-  // Food Loss and Waste: 0=Reference, 25=-25%, 50=-50%, 75=-75%
-  scenarios.push({ 
-    varName: 'FWL Multiplier', 
-    value: responses.waste 
-  });
-  
-  // Alternative Proteins: 0=Reference, 33=10%, 66=20%, 100=30%
-  scenarios.push({ 
-    varName: 'Market share AP multiplier', 
-    value: responses.altproteins 
-  });
+  // Only include entries for categories the user actually answered
+  // Diet Change mapping (updated): 0..4
+  if (responses && responses.diet !== null && responses.diet !== undefined) {
+    scenarios.push({ varName: 'Global Diet Composition Switch', value: responses.diet });
+  }
+
+  // Food Loss and Waste: values = -50, -25, 0, 25, 50
+  if (responses && responses.waste !== null && responses.waste !== undefined) {
+    scenarios.push({ varName: 'FWL Multiplier', value: responses.waste });
+  }
+
+  // Alternative Proteins: 0, 33, 66, 100
+  if (responses && responses.altproteins !== null && responses.altproteins !== undefined) {
+    scenarios.push({ varName: 'Market share AP multiplier', value: responses.altproteins });
+  }
   
   return scenarios;
 }
@@ -766,6 +811,17 @@ function applyGeneratedScenario(scenarioData, modelNumber = 1) {
       console.warn(`Input not found for VarName "${item.varName}"`);
       warnings++;
       return;
+    }
+
+    // Sanity check: common survey varNames should map to expected input ids
+    const expectedIdMap = {
+      'Global Diet Composition Switch': 'a_dc',
+      'FWL Multiplier': 'a_flw',
+      'Market share AP multiplier': 'a_ap'
+    };
+    const expectedId = expectedIdMap[item.varName];
+    if (expectedId && spec.id !== expectedId) {
+      console.warn(`VarName \"${item.varName}\" resolved to spec.id \"${spec.id}\" but expected \"${expectedId}\". This may explain unexpected input changes.`);
     }
 
     console.log(`Found spec for ${item.varName}:`, spec.id);

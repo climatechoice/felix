@@ -71,7 +71,7 @@ async function initApp() {
   // Get unique categories, excluding HIDDEN graphs
   const graphCategories = new Set(
     Array.from(coreConfig.graphs.values())
-      .filter((spec) => spec.maingraph !== "HIDDEN")
+      .filter((spec) => (spec.scenarioMode || "").toUpperCase() !== "HIDDEN")
       .map((spec) => spec.graphCategory)
   );
 

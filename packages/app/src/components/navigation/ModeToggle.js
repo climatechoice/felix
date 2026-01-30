@@ -76,17 +76,17 @@ export function filterGraphCategoriesByMode(isMultiMode) {
     const $btn = $(this);
     const category = $btn.data("value");
     
-    // Find a graph in this category to check its mainGraphs value (exclude HIDDEN graphs)
+    // Find a graph in this category to check its scenarioMode value (exclude HIDDEN graphs)
     const graphInCategory = Array.from(coreConfig.graphs.values()).find(
-      (spec) => spec.graphCategory === category && spec.maingraph !== "HIDDEN"
+      (spec) => spec.graphCategory === category && spec.scenarioMode !== "HIDDEN"
     );
     
     if (graphInCategory) {
-      const mainGraphs = (graphInCategory.mainGraphs || "").toLowerCase();
-      const modes = mainGraphs.split(";").map(m => m.trim());
-      const showInSingle = modes.includes("single") || mainGraphs === "";
-      const showInMulti = modes.includes("multi") || mainGraphs === "";
-      const showInBoth = mainGraphs === "" || mainGraphs.includes("single;multi") || mainGraphs.includes("multi;multi");
+      const scenarioMode = (graphInCategory.scenarioMode || "").toLowerCase();
+      const modes = scenarioMode.split(";").map(m => m.trim());
+      const showInSingle = modes.includes("single") || scenarioMode === "";
+      const showInMulti = modes.includes("multi") || scenarioMode === "";
+      const showInBoth = scenarioMode === "" || scenarioMode.includes("single;multi") || scenarioMode.includes("multi;multi");
       
       const shouldShow = showInBoth || (isMultiMode ? showInMulti : showInSingle);
       
@@ -114,9 +114,9 @@ export function filterGraphCategoriesByMode(isMultiMode) {
     } else {
       // Get default from the first graph in this category (exclude HIDDEN graphs)
       const graphInCategory = Array.from(coreConfig.graphs.values()).find(
-        (spec) => spec.graphCategory === firstVisible && spec.maingraph !== "HIDDEN"
+        (spec) => spec.graphCategory === firstVisible && (spec.scenarioMode || "").toUpperCase() !== "HIDDEN"
       );
-      graphCount = graphInCategory && graphInCategory.graphType ? parseInt(graphInCategory.graphType, 10) : 4;
+      graphCount = graphInCategory && graphInCategory.graphLayout ? parseInt(graphInCategory.graphLayout, 10) : 4;
     }
     selectedGraphCount.set(graphCount);
     $("#layout-select").val(graphCount);

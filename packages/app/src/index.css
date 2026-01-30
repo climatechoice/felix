@@ -398,6 +398,62 @@ p {
   padding: 10px;
 }
 
+/* --- Custom gear button highlight (non-black) --- */
+.segmented-button-custom.custom-active,
+.segmented-button[data-custom="true"].custom-active {
+  background-color: #f0f0f0; /* subtle grey */
+  border-radius: 4px;
+}
+
+.segmented-button-custom .material-icons {
+  vertical-align: middle;
+  color: #666666; /* grey icon color */
+}
+
+/* Active state: make gear icon black to indicate activation */
+.segmented-button-custom.custom-active .material-icons,
+.segmented-button[data-custom="true"].custom-active .material-icons {
+  color: #000000;
+}
+
+/* When the segment's value is recorded (input value equals this segment),
+   show the gear as active (black icon). Uses the existing 'active' class */
+.segmented-button-custom.active .material-icons,
+.segmented-button[data-custom="true"].active .material-icons {
+  color: #000000;
+}
+
+.segmented-button-custom.active {
+  background-color: #e9e9e9; /* slightly darker grey to indicate recorded active */
+}
+
+/* Survey mode toggle styling (guided vs experienced) */
+.survey-mode-toggle .mode-btn {
+  font-size: 13px;
+}
+.survey-mode-toggle .mode-btn.active {
+  box-shadow: 0 1px 3px rgba(11,95,255,0.12);
+}
+
+/* Ensure the gear button never uses a black background on hover/active */
+.segmented-button-custom,
+.segmented-button[data-custom="true"] {
+  background: transparent !important;
+}
+
+.segmented-button-custom:hover,
+.segmented-button[data-custom="true"]:hover {
+  background-color: rgba(0,0,0,0.04) !important;
+}
+
+/* Ensure custom gear is fixed-width */
+.segmented-button-custom,
+.segmented-button[data-custom="true"] {
+  width: 1px !important;
+  min-width: 1px !important;
+  padding: 1px !important;
+}
+
 /*
 * For Input Category Selection
 */

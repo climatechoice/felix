@@ -1,0 +1,67 @@
+{
+  "name": "@ryantyw/felix-plugin-config",
+  "version": "0.0.2",
+  "files": [
+    "dist/**",
+    "template-config/**"
+  ],
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts --max-warnings 0",
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "precommit": "../../scripts/precommit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "vitest run",
+    "type-check": "tsc --noEmit -p tsconfig-test.json",
+    "bundle": "tsup",
+    "copy-types": "cp src/spec-types.ts dist",
+    "build": "run-s bundle copy-types",
+    "docs": "../../scripts/gen-docs.js",
+    "ci:build": "run-s clean lint prettier:check test:ci type-check build docs"
+  },
+  "dependencies": {
+    "@ryantyw/felix-plugin-config": "^0.0.2",
+    "byline": "^5.0.0",
+    "csv-parse": "^5.3.3",
+    "sanitize-html": "^2.13.0"
+  },
+  "peerDependencies": {
+    "@sdeverywhere/build": "^0.3.7"
+  },
+  "devDependencies": {
+    "@sdeverywhere/build": "*",
+    "@types/byline": "^4.2.33",
+    "@types/dedent": "^0.7.0",
+    "@types/marked": "^4.0.1",
+    "@types/node": "^20.5.7",
+    "@types/sanitize-html": "^2.13.0",
+    "@types/temp": "^0.9.1",
+    "dedent": "^0.7.0",
+    "npm-run-all": "^4.1.5",
+    "temp": "^0.9.4"
+  },
+  "author": "Climate Interactive",
+  "license": "MIT",
+  "homepage": "https://sdeverywhere.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/philmard/SDEverywhere.git",
+    "directory": "packages/plugin-config"
+  },
+  "bugs": {
+    "url": "https://github.com/philmard/SDEverywhere/issues"
+  }
+}

@@ -81,8 +81,8 @@ export function createPDFChart(
   const yMin = spec.yMin;
   const yMax = spec.yMax;
   
-  // Get scale multiplier from subClassification field
-  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  // Get scale multiplier from scale field
+  type MaybeScaleCarrier = { modes?: unknown; scale?: unknown; graphLayout?: unknown };
   const specAny = spec as unknown as MaybeScaleCarrier;
   
   function coerceToNumber(value: unknown): number | undefined {
@@ -98,7 +98,7 @@ export function createPDFChart(
     return undefined;
   }
   
-  const rawScale = specAny?.modes ?? specAny?.subClassification ?? specAny?.graphType ?? undefined;
+  const rawScale = specAny?.modes ?? specAny?.scale ?? specAny?.graphLayout ?? undefined;
   const scaleMultiplier = coerceToNumber(rawScale) ?? 1;
   
   // Extract parameters from model at specified year
@@ -255,8 +255,8 @@ export function updatePDFChartJsData(
   const xMin = spec.xMin || 0;
   const xMax = spec.xMax || 100;
   
-  // Get scale multiplier from subClassification field
-  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  // Get scale multiplier from scale field
+  type MaybeScaleCarrier = { modes?: unknown; scale?: unknown; graphLayout?: unknown };
   const specAny = spec as unknown as MaybeScaleCarrier;
   
   function coerceToNumber(value: unknown): number | undefined {
@@ -272,7 +272,7 @@ export function updatePDFChartJsData(
     return undefined;
   }
   
-  const rawScale = specAny?.modes ?? specAny?.subClassification ?? specAny?.graphType ?? undefined;
+  const rawScale = specAny?.modes ?? specAny?.scale ?? specAny?.graphLayout ?? undefined;
   const scaleMultiplier = coerceToNumber(rawScale) ?? 1;
   
   // Extract parameters

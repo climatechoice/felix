@@ -59,11 +59,11 @@ export function updateRadarChartJsData(
   const varCount = spec.datasets.length;
   
   // Read per-axis scale multipliers (same as in createRadarChart)
-  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  type MaybeScaleCarrier = { modes?: unknown; scale?: unknown; graphLayout?: unknown };
   const specAny = spec as unknown as MaybeScaleCarrier;
   
   const scaleMultipliers: number[] = [];
-  const rawScale = specAny?.subClassification ?? specAny?.modes ?? specAny?.graphType ?? undefined;
+  const rawScale = specAny?.scale ?? specAny?.modes ?? specAny?.graphLayout ?? undefined;
   
   if (typeof rawScale === 'string' && rawScale.includes(',')) {
     // Parse comma-separated scale values
@@ -233,13 +233,13 @@ export function createRadarChart(
   const targetYear = spec.xMax || 2050;
   const isCombined = spec.scenarioDisplay === "combined";
   
-  // Read per-axis scale multipliers from subClassification field
+  // Read per-axis scale multipliers from `scale` field
   // Format: comma-separated values, one per axis (e.g., "1,0.5,2,1,1.5,0.8")
-  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  type MaybeScaleCarrier = { modes?: unknown; scale?: unknown; graphLayout?: unknown };
   const specAny = spec as unknown as MaybeScaleCarrier;
   
   const scaleMultipliers: number[] = [];
-  const rawScale = specAny?.subClassification ?? specAny?.modes ?? specAny?.graphType ?? undefined;
+  const rawScale = specAny?.scale ?? specAny?.modes ?? specAny?.graphLayout ?? undefined;
   
   if (typeof rawScale === 'string' && rawScale.includes(',')) {
     // Parse comma-separated scale values

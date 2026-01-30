@@ -204,9 +204,9 @@ export async function loadExternalDrivers(scenario, modelInstance) {
       }
     }
 
-    console.log(`External Drivers (${scenario}): Applied ${applied} values, ${warnings} warnings`);
     if (notFoundVars.length > 0) {
-      console.log(`Variables not in inputs.csv (${notFoundVars.length}):`, notFoundVars.slice(0, 10));
+      // keep a warning for missing vars but avoid verbose logging
+      console.warn(`Variables not in inputs.csv (${notFoundVars.length}) - see console for details`);
     }
 
     return { applied, warnings, notFoundVars };

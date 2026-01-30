@@ -15,7 +15,7 @@
     "packages/app"
   ],
   "dependencies": {
-    "@fmard/felix-plugin-config": "^0.2.2",
+    "@ryantyw/felix-plugin-config": "^0.0.2",
     "@sdeverywhere/build": "^0.3.4",
     "@sdeverywhere/check-core": "^0.1.2",
     "@sdeverywhere/cli": "^0.7.23",

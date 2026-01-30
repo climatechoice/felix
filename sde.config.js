@@ -2,7 +2,7 @@ import { dirname, join as joinPath } from "path";
 import { fileURLToPath } from "url";
 
 import { checkPlugin } from "@sdeverywhere/plugin-check";
-import { configProcessor } from "@fmard/felix-plugin-config";
+import { configProcessor } from "@ryantyw/felix-plugin-config";
 import { vitePlugin } from "@sdeverywhere/plugin-vite";
 import { wasmPlugin } from "@sdeverywhere/plugin-wasm";
 import { workerPlugin } from "@sdeverywhere/plugin-worker";

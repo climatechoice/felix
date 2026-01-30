@@ -3,7 +3,7 @@
  * Manages graph rendering, selection, and layout
  * 
  * HIDDEN GRAPHS FEATURE:
- * Graphs can be completely hidden from the UI by setting the "maingraph" column 
+ * Graphs can be completely hidden from the UI by setting the "scenario mode" column 
  * to "HIDDEN" in graphs.csv. Hidden graphs will:
  * - Not appear in graph category buttons
  * - Not appear in graph selector dropdowns
@@ -62,18 +62,18 @@ $("#graph-category-selector-container").on(
 
 /*
  * Get the default number of graphs for a given category.
- * This reads from the graphType field in the graph spec.
+ * This reads from the graphLayout field in the graph spec.
  * Falls back to 4 if not specified.
  */
 export function getDefaultGraphCountForCategory(category) {
-  // Find any graph in this category and get its graphType (repurposed for default count)
+  // Find any graph in this category and get its graphLayout (repurposed for default count)
   // Exclude HIDDEN graphs
   const graphInCategory = Array.from(coreConfig.graphs.values()).find(
-    (spec) => spec.graphCategory === category && spec.maingraph !== "HIDDEN"
+    (spec) => spec.graphCategory === category && (spec.scenarioMode || "").toUpperCase() !== "HIDDEN"
   );
   
-  if (graphInCategory && graphInCategory.graphType) {
-    const count = parseInt(graphInCategory.graphType, 10);
+  if (graphInCategory && graphInCategory.graphLayout) {
+    const count = parseInt(graphInCategory.graphLayout, 10);
     // Ensure it's a valid layout option (1, 2, 4, 6, or 9)
     if (layoutConfig[count]) {
       return count;
@@ -134,7 +134,7 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
   const seenTitles = new Set();
   const graphs = Array.from(coreConfig.graphs.values()).filter((spec) => {
     if (spec.graphCategory !== category) return false;
-    if (spec.maingraph === "HIDDEN") return false; // Hide graphs with maingraph = "HIDDEN"
+    if ((spec.scenarioMode || "").toUpperCase() === "HIDDEN") return false; // Hide graphs with scenarioMode = "HIDDEN"
     const title = str(spec.titleKey);
     if (seenTitles.has(title)) return false;
     seenTitles.add(title);
@@ -441,10 +441,10 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
 
   // Dynamically build graph categories based on coreConfig.graphs
   // ! Build a flat list of the first N graph IDs in this category
-  // ! Exclude graphs with maingraph = "HIDDEN"
+  // ! Exclude graphs with scenarioMode = "HIDDEN"
   const dynamicGraphCategories = {};
   for (const spec of coreConfig.graphs.values()) {
-    if (spec.maingraph === "HIDDEN") continue; // Skip hidden graphs
+    if ((spec.scenarioMode || "").toUpperCase() === "HIDDEN") continue; // Skip hidden graphs
     const cat = spec.graphCategory;
     (dynamicGraphCategories[cat] ||= []).push(spec.id);
   }

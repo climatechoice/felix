@@ -112,11 +112,32 @@ export function addSegmentedItem(inputInstance, container = $("#inputs-content")
   spec.rangeLabelKeys.forEach((labelKey, idx) => {
     const targetValue = segmentValues[idx];
     const isDefaultValue = targetValue === defaultValue; // Check against actual default value
-    const btn = $(
-      `<button type="button" class="segmented-button" data-input-id="${spec.id}" data-value="${targetValue}" data-is-default="${isDefaultValue}">${str(
-        labelKey
-      )}</button>`
-    );
+    const labelText = (str(labelKey) || "").toString();
+    const labelLower = labelText.trim().toLowerCase();
+
+    // If this segment is a "Custom" option, render a small gear icon instead
+    let btn;
+    if (labelLower === "custom") {
+      // Render compact gear icon as a fixed-width container
+      btn = $(`
+        <button
+          type="button"
+          class="segmented-button segmented-button-custom"
+          data-input-id="${spec.id}"
+          data-value="${targetValue}"
+          data-is-default="${isDefaultValue}"
+          data-custom="true"
+          title="${labelText}"
+          style="flex:0 0 36px; max-width:36px; min-width:36px; height:26px; border:0; background:transparent; box-shadow:none; outline:0; display:flex; align-items:center; justify-content:center; padding:0; margin-left:4px;"
+        >
+          <span class="material-icons" style="font-size:18px; line-height:18px;">settings</span>
+        </button>
+      `);
+    } else {
+      btn = $(
+        `<button type="button" class="segmented-button" data-input-id="${spec.id}" data-value="${targetValue}" data-is-default="${isDefaultValue}">${labelText}</button>`
+      );
+    }
     if (currentValue === targetValue) btn.addClass("active");
 
     btn.on("click", async () => {
@@ -126,7 +147,6 @@ export function addSegmentedItem(inputInstance, container = $("#inputs-content")
       // Special handling for SSPs (ed8) - load external drivers
       if (spec.id === "ed8") {
         const scenarioName = str(labelKey); // "Optimistic", "Reference", or "Pessimistic"
-        console.log(`Loading external drivers for SSP scenario: ${scenarioName}`);
         
         // Capture ALL input values before the change
         const allInputsBefore = {};
@@ -142,9 +162,8 @@ export function addSegmentedItem(inputInstance, container = $("#inputs-content")
         segmentsContainer.find(".segmented-button").removeClass("active");
         btn.addClass("active");
         
-        try {
+          try {
           const result = await loadExternalDrivers(scenarioName, activeModel.get());
-          console.log(`SSP ${scenarioName}: ${result.applied} variables applied, ${result.warnings} not found in inputs.csv`);
           
           // Capture ALL input values after the change
           const allInputsAfter = {};
@@ -161,7 +180,7 @@ export function addSegmentedItem(inputInstance, container = $("#inputs-content")
           });
           
           // Create a compound undo record for ALL changed inputs
-          if (affectedIds.length > 0) {
+            if (affectedIds.length > 0) {
             const undoArr = [...undoStack.get()];
             const prevValues = affectedIds.map(id => allInputsBefore[id]);
             const newValues = affectedIds.map(id => allInputsAfter[id]);
@@ -176,12 +195,10 @@ export function addSegmentedItem(inputInstance, container = $("#inputs-content")
             redoStack.set([]);
             updateUndoRedoButtons();
             
-            console.log(`SSP change recorded: ${affectedIds.length} inputs changed`);
+            
           }
           
-          if (result.applied > 0) {
-            console.log(`Successfully applied ${result.applied} external driver variables`);
-          }
+          
           
           if (result.warnings > 0) {
             console.warn(`${result.warnings} variables from ${scenarioName}.csv were not found in the model inputs`);

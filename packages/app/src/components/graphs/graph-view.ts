@@ -689,8 +689,8 @@ function updateLineChartJsData(
   chartData: ChartData
 ): void {
   // Read per-graph scale multiplier. The CSV generator may not emit a `modes` field.
-  // Fallbacks: allow numeric values to be placed in `subClassification` or `graphType`.
-  type MaybeScaleCarrier = { modes?: unknown; subClassification?: unknown; graphType?: unknown };
+  // Fallbacks: allow numeric values to be placed in `scale` or `graphLayout`.
+  type MaybeScaleCarrier = { modes?: unknown; scale?: unknown; graphLayout?: unknown };
   const specAny = viewModel.spec as unknown as MaybeScaleCarrier;
 
   function coerceToNumber(value: unknown): number | undefined {
@@ -709,7 +709,7 @@ function updateLineChartJsData(
   }
 
   const rawScale =
-    specAny?.modes ?? specAny?.subClassification ?? specAny?.graphType ?? undefined;
+    specAny?.modes ?? specAny?.scale ?? specAny?.graphLayout ?? undefined;
   const candidate = coerceToNumber(rawScale);
   const scaleMultiplier = candidate != null ? candidate : 1;
 

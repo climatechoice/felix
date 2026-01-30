@@ -24,7 +24,7 @@ export async function exportInputsToCSV() {
 
   coreConfig.inputs.forEach((spec) => {
     // Skip hidden external driver variables (controlled by SSP scenarios)
-    if (spec.secondaryType === "hidden" || spec.maingraph === "HIDDEN") {
+    if (spec.secondaryType === "hidden" || (spec.scenarioMode || "").toUpperCase() === "HIDDEN") {
       return;
     }
     

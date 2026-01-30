@@ -84,12 +84,27 @@ export function createDropdownGroup(
       // Bind click handler: open on 'Custom', close on other segments
       segmentedDiv.find('.segmented-button').on('click', function (e) {
         e.stopPropagation();
-        const isCustom = $(this).text().trim().toLowerCase() === 'custom';
+        // Detect custom segment by explicit attribute or class (supports gear icon),
+        // fallback to text comparison for backwards compatibility
+        const $btn = $(this);
+        const isCustom = $btn.attr('data-custom') === 'true' || $btn.hasClass('segmented-button-custom') || $btn.text().trim().toLowerCase() === 'custom';
+
         if (isCustom) {
-          // Open this dropdown (if not already open)
-          if (!dropdownContent.is(':visible')) {
+          // Toggle dropdown visibility when gear/custom is clicked
+          if (dropdownContent.is(':visible')) {
+            dropdownContent.slideUp(150);
+            dropdownContainer.find('.expand-button .material-icons').text('expand_more');
+            // Remove active highlight from gear (CSS class only)
+            segmentedDiv.find('.segmented-button-custom, .segmented-button[data-custom="true"]').each(function () {
+              $(this).removeClass('custom-active');
+            });
+          } else {
             dropdownContent.slideDown(200);
             dropdownContainer.find('.expand-button .material-icons').text('expand_less');
+            // Add a light highlight for the gear to indicate open state (CSS class only)
+            segmentedDiv.find('.segmented-button-custom, .segmented-button[data-custom="true"]').each(function () {
+              $(this).addClass('custom-active');
+            });
           }
         } else {
           // Close if open and clicking non-Custom segment
@@ -97,6 +112,10 @@ export function createDropdownGroup(
             dropdownContent.slideUp(150);
             dropdownContainer.find('.expand-button .material-icons').text('expand_more');
           }
+          // Clear any custom-active state when selecting non-custom
+          segmentedDiv.find('.segmented-button-custom, .segmented-button[data-custom="true"]').each(function () {
+            $(this).removeClass('custom-active');
+          });
         }
       });
       // Disable arrow toggle for segmented mains
