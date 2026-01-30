@@ -31,8 +31,41 @@ export async function loadTargets() {
   }
 
   try {
-    // Use relative path that works both in dev and production
-    const response = await fetch('/targets.csv');
+    // Resolve a URL that works both in dev and when deployed to a sub-path.
+    // Prefer a path relative to the current document (works with or without <base>),
+    // but fall back to the site-root `/targets.csv` if needed.
+    let targetsUrl = '/targets.csv';
+    if (typeof document !== 'undefined' && document.baseURI) {
+      try {
+        targetsUrl = new URL('./targets.csv', document.baseURI).toString();
+      } catch (e) {
+        targetsUrl = '/targets.csv';
+      }
+    }
+
+    let response;
+    try {
+      console.info(`Loading targets.csv from: ${targetsUrl}`);
+      response = await fetch(targetsUrl);
+      console.info(`targets.csv fetch returned: ${response.status} ${response.statusText} (url: ${response.url})`);
+      if (!response.ok && targetsUrl !== '/targets.csv') {
+        // try fallback to root
+        console.info('Falling back to /targets.csv');
+        response = await fetch('/targets.csv');
+        console.info(`Fallback fetch returned: ${response.status} ${response.statusText} (url: ${response.url})`);
+      }
+    } catch (err) {
+      // network error; try the root fallback
+      console.warn('Initial fetch failed, trying /targets.csv fallback', err);
+      try {
+        response = await fetch('/targets.csv');
+        console.info(`Fallback fetch returned: ${response.status} ${response.statusText} (url: ${response.url})`);
+      } catch (err2) {
+        console.error('Both attempts to fetch targets.csv failed', err2);
+        throw err2;
+      }
+    }
+
     const csvText = await response.text();
     
     // Parse CSV with proper handling of quoted fields

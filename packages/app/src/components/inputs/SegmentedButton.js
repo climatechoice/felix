@@ -128,7 +128,7 @@ export function addSegmentedItem(inputInstance, container = $("#inputs-content")
           data-is-default="${isDefaultValue}"
           data-custom="true"
           title="${labelText}"
-          style="flex:0 0 36px; max-width:36px; min-width:36px; height:26px; border:0; background:transparent; box-shadow:none; outline:0; display:flex; align-items:center; justify-content:center; padding:0; margin-left:4px;"
+          style="flex:0 0 28px; max-width:28px; min-width:28px; height:22px; border:0; background:transparent; box-shadow:none; outline:0; display:flex; align-items:center; justify-content:center; padding:0; margin-left:2px;"
         >
           <span class="material-icons" style="font-size:18px; line-height:18px;">settings</span>
         </button>

@@ -427,14 +427,6 @@ p {
   background-color: #e9e9e9; /* slightly darker grey to indicate recorded active */
 }
 
-/* Survey mode toggle styling (guided vs experienced) */
-.survey-mode-toggle .mode-btn {
-  font-size: 13px;
-}
-.survey-mode-toggle .mode-btn.active {
-  box-shadow: 0 1px 3px rgba(11,95,255,0.12);
-}
-
 /* Ensure the gear button never uses a black background on hover/active */
 .segmented-button-custom,
 .segmented-button[data-custom="true"] {
@@ -1076,19 +1068,29 @@ p {
 
 .segmented-buttons {
   display: flex;
-  flex-wrap: wrap; /* allow buttons to flow onto the next line */
-  gap: 0.5rem;
+  flex-wrap: nowrap; /* keep buttons on a single line */
+  gap: 0.25rem; /* tighter spacing between buttons */
   margin-top: 0.5rem;
 }
 .segmented-button {
-  flex: 1;
-  padding: 0.4rem 0.8rem;
+  flex: 1 1 0; /* allow buttons to grow/shrink evenly to fit container */
+  min-width: 0; /* allow flex items to shrink below their content width */
+  padding: 0.35rem 0.35rem; /* increase vertical padding to make buttons taller */
+  min-height: 28px; /* ensure a consistent minimum height */
   border: 1px solid #d0d0d0;
   background: #f5f5f5;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.2s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  font-size: 1rem; /* restored size */
+  line-height: 1.1;
+  /* allow wrapping inside the button, but clamp to two lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow: hidden; /* hide overflow when squeezed */
 }
 
 .segmented-button:hover {
