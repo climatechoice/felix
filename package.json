@@ -8,7 +8,7 @@
     "dev": "sde dev",
     "build": "sde bundle",
     "save-baseline": "sde-check baseline --save",
-    "deploy": "gh-pages -d packages/app/public"
+    "deploy": "npx gh-pages-clean && npx gh-pages -d packages/app/public"
   },
   "workspaces": [
     "packages/core",
