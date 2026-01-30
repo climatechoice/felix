@@ -722,6 +722,18 @@ function coerceValueForSpec(rawValue, spec) {
   const num = Number(str);
   if (Number.isNaN(num))
     throw new Error(`Cannot parse "${str}" as a number for input ${spec.id}`);
+  
+  // Validate that the value is within the min/max range
+  if (spec.minValue !== undefined && num < spec.minValue) {
+    console.warn(`Value ${num} for input ${spec.id} is below minimum ${spec.minValue}. Rejecting and using default value ${spec.defaultValue}.`);
+    return spec.defaultValue;
+  }
+  
+  if (spec.maxValue !== undefined && num > spec.maxValue) {
+    console.warn(`Value ${num} for input ${spec.id} is above maximum ${spec.maxValue}. Rejecting and using default value ${spec.defaultValue}.`);
+    return spec.defaultValue;
+  }
+  
   return num;
 }
 
