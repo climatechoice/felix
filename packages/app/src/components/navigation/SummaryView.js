@@ -67,7 +67,18 @@ function formatInputChange(spec, defaultValue, currentValue) {
  * Build segment values array from spec (for segmented buttons)
  */
 function buildSegmentValues(spec) {
-  let values = [spec.minValue, ...spec.rangeDividers];
+  // If the plugin included an explicit first-range start by prepending it
+  // into `rangeDividers`, then `rangeDividers.length === rangeLabelKeys.length`
+  // and the dividers array already contains starts for ranges 1..N. In that
+  // case use `rangeDividers` as-is. Otherwise fall back to legacy behavior
+  // where the first value is `minValue` and `rangeDividers` contains starts
+  // for ranges 2..N.
+  let values;
+  if (spec.rangeDividers && spec.rangeDividers.length === spec.rangeLabelKeys.length) {
+    values = [...spec.rangeDividers];
+  } else {
+    values = [spec.minValue, ...(spec.rangeDividers || [])];
+  }
   if (values.length < spec.rangeLabelKeys.length) {
     values.push(spec.maxValue);
   }
