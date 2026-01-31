@@ -35,8 +35,19 @@ export function addSegmentedItem(inputInstance, container = $("#inputs-content")
 
   const currentValue = inputInstance.get();
 
-  // Build segment values array: first min, then dividers, then maybe max
-  let segmentValues = [spec.minValue, ...spec.rangeDividers];
+  // Build segment values array. If the plugin included an explicit
+  // first-range start by prepending it into `rangeDividers`, then
+  // `rangeDividers.length === rangeLabelKeys.length` and we should use
+  // the dividers array as-is (starts for ranges 1..N). Otherwise fall
+  // back to the legacy behavior: first value = minValue and dividers
+  // are starts for ranges 2..N.
+  let segmentValues;
+  if (spec.rangeDividers && spec.rangeDividers.length === spec.rangeLabelKeys.length) {
+    segmentValues = [...spec.rangeDividers];
+  } else {
+    const firstStart = spec.minValue;
+    segmentValues = [firstStart, ...(spec.rangeDividers || [])];
+  }
   if (segmentValues.length < spec.rangeLabelKeys.length) {
     segmentValues.push(spec.maxValue);
   }

@@ -741,6 +741,7 @@ function inputSpecFromCsv(r, context) {
       rangeLabelKeys,
       rangeDividers,
       format,
+      format,
       viewLevel,
       categoryId,
       inputGroup,
@@ -827,9 +828,15 @@ function getSliderRangeInfo(r, maxValue, context) {
     rangeNum++;
   }
   const numRanges = rangeNum - 1;
-  for (rangeNum = 2; rangeNum <= numRanges; rangeNum++) {
+  for (rangeNum = 1; rangeNum <= numRanges; rangeNum++) {
     let divider = optionalNumber(r[`range ${rangeNum} start`]);
     if (divider === void 0) {
+      // If the first-range start is missing, skip it so we keep
+      // legacy behavior where `rangeDividers` contains starts for
+      // ranges 2..N. For later ranges, fall back to maxValue.
+      if (rangeNum === 1) {
+        continue;
+      }
       divider = maxValue;
     }
     dividers.push(divider);
