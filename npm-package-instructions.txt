@@ -1,0 +1,5 @@
+npm version patch
+
+npm publish --access public
+
+npm install @ryantyw/felix-plugin-config@latest --save
