@@ -24,10 +24,15 @@ function getPointColor(value: number, min: number = -100, max: number = 100): st
 
   const d = 220;
 
+  // Use a non-linear mapping so color intensity increases faster near 0.
+  // Applying an exponent < 1 makes small normalized values appear
+  // stronger; use a more aggressive exponent so colors darken earlier.
+  const adjusted = Math.min(1, Math.pow(Math.abs(normalized), 0.3));
+
   if (normalized >= 0) {
     // Positive: interpolate from white to green
     // White: rgb(d, d, d), Green: rgb(34, 197, 94)
-    const t = normalized; // 0 = white, 1 = green
+    const t = adjusted; // 0 = white, 1 = green (adjusted non-linear)
     const r = Math.round(d + (34 - d) * t);
     const g = Math.round(d + (197 - d) * t);
     const b = Math.round(d + (94 - d) * t);
@@ -35,7 +40,7 @@ function getPointColor(value: number, min: number = -100, max: number = 100): st
   } else {
     // Negative: interpolate from white to red
     // White: rgb(d, d, d), Red: rgb(239, 68, 68)
-    const t = -normalized; // 0 = white, 1 = red
+    const t = adjusted; // 0 = white, 1 = red (adjusted non-linear)
     const r = Math.round(d + (239 - d) * t);
     const g = Math.round(d + (68 - d) * t);
     const b = Math.round(d + (68 - d) * t);
@@ -325,15 +330,40 @@ export function createRadarChart(
     colors.push('#999');
   }
   
+  // Determine render bounds and step size.
+  // If spec provides yMin/yMax, use them; otherwise pick a symmetric auto range
+  // based on the data (default to at least +/-50).
+  const combinedActuals = dataPointsS1.concat(isCombined ? dataPointsS2 : []);
+  const combinedMaxAbs = combinedActuals.length ? Math.max(...combinedActuals.map(v => Math.abs(v))) : 0;
+  const autoRange = Math.max(50, Math.ceil(combinedMaxAbs / 10) * 10);
+
+  const renderMin = spec.yMin !== undefined ? spec.yMin : -autoRange;
+  const renderMax = spec.yMax !== undefined ? spec.yMax : autoRange;
+
+  // Compute a "nice" step size so the number of ticks stays reasonable.
+  function niceStep(range: number, maxTicks = 5) {
+    const rough = range / maxTicks;
+    const exp = Math.floor(Math.log10(rough));
+    const base = Math.pow(10, exp);
+    const frac = rough / base;
+    let niceFrac = 1;
+    if (frac <= 1) niceFrac = 1;
+    else if (frac <= 2) niceFrac = 2;
+    else if (frac <= 5) niceFrac = 5;
+    else niceFrac = 10;
+    return niceFrac * base;
+  }
+
+  const range = renderMax - renderMin || 100;
+  const stepSize = niceStep(range, 5);
+
   // Clamp values for visual display while preserving originals for tooltips
-  const min = spec.yMin !== undefined ? spec.yMin : -100;
-  const max = spec.yMax !== undefined ? spec.yMax : 100;
-  const clampedS1 = dataPointsS1.map(v => Math.max(min, Math.min(max, v)));
-  const clampedS2 = isCombined ? dataPointsS2.map(v => Math.max(min, Math.min(max, v))) : [];
-  
+  const clampedS1 = dataPointsS1.map(v => Math.max(renderMin, Math.min(renderMax, v)));
+  const clampedS2 = isCombined ? dataPointsS2.map(v => Math.max(renderMin, Math.min(renderMax, v))) : [];
+
   // Generate gradient point colors based on value magnitude (use original values)
-  const pointColorsS1 = dataPointsS1.map(value => getPointColor(value, min, max));
-  const pointColorsS2 = isCombined ? dataPointsS2.map(value => getPointColor(value, min, max)) : [];
+  const pointColorsS1 = dataPointsS1.map(value => getPointColor(value, renderMin, renderMax));
+  const pointColorsS2 = isCombined ? dataPointsS2.map(value => getPointColor(value, renderMin, renderMax)) : [];
   
   // Build chart datasets
   const datasets: any[] = [{
@@ -392,10 +422,10 @@ export function createRadarChart(
       },
       scale: {
         ticks: {
-          beginAtZero: true,
-          min: spec.yMin !== undefined ? spec.yMin : -100,
-          max: spec.yMax !== undefined ? spec.yMax : 100,
-          stepSize: 25, // Show ticks at 100, 75, 50, 25, 0, -25, -50, -75, -100
+          beginAtZero: false,
+          min: renderMin,
+          max: renderMax,
+          stepSize: stepSize,
           callback: (value) => {
             return Number(value).toFixed(0) + '%';
           },
