@@ -8,6 +8,7 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
+  overflow-x: hidden; /* ensure no horizontal scrolling globally */
   box-sizing: border-box;
   background: radial-gradient(ellipse at top, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%);
   font-family: "arial", sans-serif;
@@ -17,6 +18,12 @@ body {
   font-variation-settings: "wdth" 100;
   font-size: 13px;
 }
+
+/* Make sure all elements use border-box sizing to avoid width+padding overflow */
+*, *:before, *:after { box-sizing: inherit; }
+
+/* Prevent horizontal scroll on main app containers */
+#root, #app, #inputs-graphs-section { overflow-x: hidden; }
 
 p {
   margin-top: 0;
@@ -805,10 +812,11 @@ p {
 
 .custom-graph-selector {
   position: relative;
-  width: 90%;
+  width: 95%;
   max-width: 980px;
   cursor: pointer;
   opacity: 1;
+  min-width: 220px;
 }
 
 .selected-option {
@@ -816,8 +824,7 @@ p {
   border: 1px solid #ccc;
   border-radius: 4px;
   display: flex;
-  /* justify-content: space-between; */
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   background: white;
   opacity: 1;
@@ -1290,19 +1297,23 @@ p {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
   background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-x: hidden;
 }
 
 .popup {
   background: white;
   color: black;
   width: 55vw;
+  max-width: calc(100% - 40px);
 
   overflow-y: auto;
   /* So that padding is included inside, and therefore popup-left is aligned with input panel */
@@ -1320,24 +1331,24 @@ p {
 }
 
 .popup-left {
-  position: fixed; /* important */
+  position: absolute; /* keep it inside overlay */
   top: 40px;
   left: 0;
   margin: 0;
-  width: 33.333vw;
-  height: 95vh;
+  width: 33.333%;
+  height: calc(100% - 40px);
   border-width: 0 1px 0 0;
   border-style: solid;
   border-color: #c9c9c9;
 }
 
 .popup-right {
-  margin-left: auto;
+  margin-left: 33.333%;
   margin-right: 0;
   align-self: flex-start;
   margin-top: 40px; /* same as nav-bar */
-  width: 66.666vw;
-  max-height: 95vh;
+  width: 66.666%;
+  max-height: calc(100% - 40px);
 }
 
 .popup-close {
@@ -2657,3 +2668,249 @@ p {
 .tutorial-next-btn:hover {
   background: #2563eb;
 }
+
+/* Lesson styles: visually match the quick guide but occupy most of the screen */
+#lesson-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 110000;
+  /* Allow interactions to pass through to underlying graphs while keeping the overlay visible */
+  pointer-events: none;
+  display: block;
+}
+
+#lesson-tooltip {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  /* Use responsive sizing so inner containers scale with viewport */
+  width: min(72vw, 1000px);
+  max-width: 1000px;
+  height: auto;
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 18px 48px rgba(0,0,0,0.45);
+  z-index: 110001;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overflow-x: hidden; /* prevent horizontal overflow inside the tooltip */
+}
+
+#lesson-tooltip .lesson-content {
+  padding: 20px 24px;
+  overflow: auto; /* allow internal scrolling if content too large */
+  flex: 1 1 auto;
+}
+
+#lesson-tooltip .lesson-title {
+  margin: 0 0 3px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+#lesson-tooltip .lesson-subtitle {
+  margin: 0 0 3px 0;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+#lesson-tooltip .lesson-body {
+  display: grid;
+  /* Make left (image + text) wider and right (graph) narrower */
+  grid-template-columns: minmax(200px, 70%) minmax(220px, 30%);
+  gap: 16px;
+  align-items: stretch; /* ensure left and right columns match height */
+  height: 100%;
+  overflow-x: hidden;
+}
+
+ #lesson-tooltip .lesson-left { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+ #lesson-tooltip .lesson-right { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+
+ #lesson-tooltip .lesson-image-wrapper { width: 100%; min-width: 300px; box-sizing: border-box; }
+ #lesson-tooltip .lesson-image-wrapper { border: 1px solid #e5e7eb; padding: 6px; border-radius: 10px; background: #ffffff; }
+ #lesson-tooltip .lesson-image { width: 100%; height: 100%; max-height: calc(82vh - 260px); border-radius: 6px; object-fit: contain; display: block; }
+
+ #lesson-tooltip .lesson-text { display:flex; flex-direction:column; gap:8px; padding-right:8px; box-sizing: border-box; }
+
+ #lesson-tooltip .lesson-text { flex: 1 1 auto; color: #374151; font-size: 14px; line-height: 1.35; }
+
+ /* boxed text container */
+ #lesson-tooltip .lesson-text { background: #ffffff; border: 1px solid #e6e7eb; padding: 12px; border-radius: 8px; box-shadow: 0 6px 18px rgba(15,23,42,0.03); }
+ #lesson-tooltip .lesson-text p { margin-top: 0; margin-bottom: 6px; }
+
+ /* place image above text but keep it visually aligned with right column */
+ #lesson-tooltip .lesson-image-wrapper { margin-bottom: 6px; }
+
+/* lesson graph sizing: fixed lesson graph container */
+
+.lesson-graph-container { width: 100%; height: min(320px, 40vh); min-height: 180px; display: flex; align-items: stretch; justify-content: center; box-sizing: border-box; }
+.lesson-graph-outer { width: 100%; height: 100%; display: flex; align-items: stretch; justify-content: center; }
+.lesson-graph { width: 100%; height: 100%; border-radius: 8px; background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.lesson-graph canvas { width: 100% !important; height: 100% !important; display: block; }
+/* Cap the lesson canvas height to avoid oversized charts; responsive to viewport */
+.lesson-graph canvas { max-height: min(320px, 40vh) !important; }
+
+/* Ensure lesson images stay within viewport when tooltip is tall or fullscreen; make image taller than graph */
+#lesson-tooltip .lesson-image { max-height: min(56vh, 520px); }
+
+/* Ensure graphs rendered inside the lesson fill the fixed container */
+.lesson-graph-container .outer-graph-container { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; }
+.lesson-graph-container .outer-graph-container .title-container { display: flex; justify-content:center; align-items:center; padding:6px 8px; font-size:13px; }
+.lesson-graph-container .outer-graph-container .title-container .custom-graph-selector { width: 100%; max-width: 100%; }
+.lesson-graph-title {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: transparent; /* remove opaque background */
+  border: 1px solid rgba(0,0,0,0.04);
+  margin: 4px 0;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.lesson-graph-title::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-color, transparent);
+  margin-right: 8px;
+  vertical-align: middle;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Lesson title accent: colored dot + subtle pill-underline using --lesson-highlight
+   JS sets --lesson-highlight and adds the .lesson-highlighted class; font color remains unchanged. */
+#lesson-tooltip .lesson-title {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#lesson-tooltip .lesson-title::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--lesson-highlight, currentColor);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* Underline/pill that starts immediately after the title and extends rightwards */
+#lesson-tooltip .lesson-title.lesson-highlighted::after {
+  content: "";
+  display: block;
+  flex: 1 1 auto;
+  height: 6px;
+  margin-left: 12px;
+  align-self: center;
+  background: linear-gradient(90deg, var(--lesson-highlight, rgba(59,130,246,0.95)) 0%, rgba(255,255,255,0.0) 100%);
+  border-radius: 999px;
+  opacity: 0.95;
+  transition: all 180ms ease;
+  min-width: 36px;
+}
+
+#lesson-tooltip .lesson-title, #lesson-tooltip .lesson-subtitle {
+  transition: color 180ms ease, opacity 180ms ease;
+}
+.lesson-graph-container { max-height: 100%; }
+.lesson-graph-container .outer-graph-container .graph-container { box-sizing: border-box; }
+.lesson-graph-container .outer-graph-container .graph-container { flex: 1 1 auto; width: 100%; height: 100%; max-height: none; }
+
+/* Left column: image fixed height where appropriate, text scrolls */
+#lesson-tooltip .lesson-image-wrapper { flex: 0 0 auto; }
+#lesson-tooltip .lesson-text { flex: 1 1 auto; overflow: auto; }
+.lesson-graph-container .outer-graph-container .graph-legend { position: relative; margin-top: 8px; justify-content: center; }
+
+#lesson-tooltip .lesson-controls {
+  padding: 18px 24px;
+  border-top: 1px solid #eee;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+#lesson-tooltip .lesson-step-indicator { color: #6b7280; font-weight: 600; }
+
+/* Lesson control buttons: reuse quick guide (tutorial) styles */
+.lesson-skip-btn {
+  all: unset;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.lesson-skip-btn:hover { background: #f3f4f6; color: #374151; }
+
+.lesson-step-indicator { font-size: 13px; color: #6b7280; font-weight: 500; white-space: nowrap; margin-right: 8px; }
+
+.lesson-prev-btn,
+.lesson-next-btn {
+  all: unset;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: center;
+}
+
+.lesson-prev-btn { color: #6b7280; border: 1px solid #d1d5db; }
+.lesson-prev-btn:hover { background: #f9fafb; border-color: #9ca3af; }
+
+.lesson-next-btn { background: #3b82f6; color: white; }
+.lesson-next-btn:hover { background: #2563eb; }
+
+/* Navigation spacing */
+.lesson-navigation { display:flex; align-items:center; gap: 12px; }
+
+/* top-right close button in lesson tooltip */
+#lesson-tooltip .lesson-top-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 18px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+#lesson-tooltip .lesson-top-close:hover { background: transparent; color: #374151; }
+
+@media (max-width: 800px) {
+  #lesson-tooltip { width: calc(100% - 40px); height: calc(100% - 64px); left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  #lesson-tooltip .lesson-body { grid-template-columns: 1fr; gap: 18px; }
+  #lesson-tooltip .lesson-image-wrapper { width: 100%; }
+  #lesson-tooltip .lesson-content { padding: 18px 18px; }
+}
+ 

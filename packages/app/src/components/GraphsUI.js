@@ -21,6 +21,17 @@ import { graphViews } from "../stores/graphs-store.js";
 import { categoryLayouts } from "../stores/category-layout-store.js";
 import { targetsVisible } from "../stores/targets-store.js";
 
+// Hardcoded lesson color overrides for specific graph IDs (user-provided hexes)
+const LESSON_COLOR_OVERRIDES = {
+  x1: '#000000',
+  x2: '#00BFFF',
+  x3: '#996633',
+  x4: '#FFD700',
+  x5: '#228B22',
+  x6: '#ED7014',
+  x7: '#FF6347'
+};
+
 // jquery Click event for Selecting Graph Category (Food, Climate, LandUse, Fertilizer)
 $("#graph-category-selector-container").on(
   "click",
@@ -243,9 +254,17 @@ function showGraph(graphSpec, outerContainer, category) {
   // Check if there's a previous GraphView in this container and remove it from graphViews
   const previousGraphView = outerContainer.data("graphView");
   if (previousGraphView) {
+    try {
+      // destroy the previous view to clean up Chart.js resources and listeners
+      if (typeof previousGraphView.destroy === 'function') previousGraphView.destroy();
+    } catch (e) {
+      // ignore
+    }
     const index = graphViews.get().indexOf(previousGraphView);
     if (index > -1) {
-      graphViews.get().splice(index, 1);
+      const arr = graphViews.get().slice();
+      arr.splice(index, 1);
+      graphViews.set(arr);
     }
   }
 
@@ -326,6 +345,12 @@ function showGraph(graphSpec, outerContainer, category) {
   }
   
   outerContainer.append(titleContainer);
+  // Mark which graph id is rendered into this outer container
+  try {
+    outerContainer.attr('data-graph-id', graphSpec.id);
+  } catch (e) {
+    // ignore if DOM isn't ready
+  }
 
   // Show the canvas/graph
   const canvas = $("<canvas></canvas>")[0];
@@ -360,7 +385,20 @@ function showGraph(graphSpec, outerContainer, category) {
   );
 
   outerContainer.data("graphView", graphView);
-  graphViews.set([...graphViews.get(), graphView]);
+  // If this outer container is inside the lesson tooltip, do NOT register
+  // the resulting GraphView in the global graphViews array. Lesson graphs
+  // are transient and will be destroyed by the lesson cleanup.
+  let registerGlobally = true;
+  try {
+    if (outerContainer.closest && outerContainer.closest('#lesson-tooltip').length) {
+      registerGlobally = false;
+    }
+  } catch (e) {
+    // ignore
+  }
+  if (registerGlobally) {
+    graphViews.set([...graphViews.get(), graphView]);
+  }
   
   // Update target annotations if targets are currently visible
   if (targetsVisible.get()) {
@@ -491,4 +529,134 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
       `No graphs configured. You can edit 'config/graphs.csv' to get started.`
     );
   }
+}
+
+/*
+ * Listen for lesson requests to show a specific graph.
+ * The lesson dispatches a CustomEvent 'lesson:showGraph' with
+ * detail: { graphId: string, stepIndex: number }
+ */
+try {
+  window.addEventListener('lesson:showGraph', function (ev) {
+    try {
+      const detail = ev && ev.detail;
+      const graphId = detail && detail.graphId;
+      if (!graphId) return;
+      const spec = coreConfig.graphs.get(graphId);
+      if (!spec) {
+        console.warn('lesson:showGraph - unknown graphId', graphId);
+        return;
+      }
+
+      // 1) If a container already has this graph, re-render into it
+      let outer = $(`#graphs-container .outer-graph-container[data-graph-id="${graphId}"]`).first();
+      if (outer && outer.length) {
+        outer.off(); outer.attr('style', ''); outer.empty();
+        showGraph(spec, outer, spec.graphCategory);
+        return;
+      }
+
+      // 2) Otherwise try to find a container in the same category and render there
+      outer = $(`#graphs-container .outer-graph-container[data-category="${spec.graphCategory}"]`).first();
+      if (outer && outer.length) {
+        outer.off(); outer.attr('style', ''); outer.empty();
+        showGraph(spec, outer, spec.graphCategory);
+        return;
+      }
+
+      // 3) Fallback: initialize the UI for that category so the graph will be visible
+      const defaultCount = getDefaultGraphCountForCategory(spec.graphCategory);
+      initGraphsUI(spec.graphCategory, defaultCount);
+    } catch (e) {
+      console.warn('Error handling lesson:showGraph', e);
+    }
+  });
+} catch (e) {
+  // ignore if window unavailable (e.g., server-side)
+}
+
+// Also listen for lesson:showGraphInLesson which includes a container to render into
+try {
+  window.addEventListener('lesson:showGraphInLesson', function (ev) {
+    try {
+      const detail = ev && ev.detail;
+      const graphId = detail && detail.graphId;
+      const container = detail && detail.container;
+      if (!graphId) return;
+      const spec = coreConfig.graphs.get(graphId);
+      if (!spec) return;
+
+      if (container) {
+        const $outer = $(container);
+        // Ensure the container looks like an outer-graph-container so CSS applies
+        try { $outer.addClass('outer-graph-container'); } catch (e) {}
+        $outer.off(); $outer.attr('style','height: 100%; width: 100%;'); $outer.empty();
+        // ensure data attributes
+        try { $outer.attr('data-graph-id', graphId); $outer.attr('data-category', spec.graphCategory); } catch (e) {}
+        // Render the graph into the lesson container
+        showGraph(spec, $outer, spec.graphCategory);
+        // Ensure the title is visible inside the lesson (some dropdowns may hide text)
+        try {
+          const titleText = str(spec.titleKey) || '';
+          const $titleContainer = $outer.find('.title-container');
+          if ($titleContainer && $titleContainer.length) {
+            // Determine primary color: prefer hardcoded overrides, then legend, then scenarioDisplay
+            let primaryColor = LESSON_COLOR_OVERRIDES[spec.id] || null;
+            if (!primaryColor) {
+              if (spec.legendItems && spec.legendItems.length && spec.legendItems[0].color) {
+                primaryColor = spec.legendItems[0].color;
+              } else if (spec.scenarioDisplay && typeof spec.scenarioDisplay === 'string') {
+                const parts = spec.scenarioDisplay.split(';');
+                if (parts.length >= 3 && parts[2]) primaryColor = parts[2];
+              }
+            }
+
+            const safeText = titleText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // Render title as a boxed label; use CSS variable --accent-color for a small dot accent
+            const accentStyle = primaryColor ? `--accent-color: ${primaryColor};` : '';
+            $titleContainer.empty().append(`<div class="lesson-graph-title" style="display:inline-block;padding:6px 10px;border-radius:6px;margin:4px 0;font-weight:600;${accentStyle}">${safeText}</div>`);
+
+            // Apply the primaryColor as a highlight (CSS variable) rather than changing font color
+            try {
+              if (primaryColor) {
+                const $lesson = $outer.closest('#lesson-tooltip');
+                if ($lesson && $lesson.length) {
+                  const $mainTitle = $lesson.find('.lesson-title');
+                  if ($mainTitle && $mainTitle.length) {
+                    $mainTitle.css('--lesson-highlight', primaryColor);
+                    $mainTitle.addClass('lesson-highlighted');
+                  }
+                }
+              }
+            } catch (e) {
+              // ignore highlighting errors
+            }
+          }
+          // Highlight the lesson's main title using the graph's primary color.
+          // Prefer the first legend item color, fall back to parsing `scenarioDisplay`.
+          // (color applied above along with the title box)
+        } catch (e) {
+          // ignore
+        }
+        return;
+      }
+    } catch (e) {
+      console.warn('Error handling lesson:showGraphInLesson', e);
+    }
+  });
+} catch (e) {
+  // ignore
+}
+
+/**
+ * Programmatic render API: render a graph inside a given DOM element (jQuery or DOM node)
+ */
+export function renderGraphInElement(el, graphId) {
+  if (!el || !graphId) return null;
+  const spec = coreConfig.graphs.get(graphId);
+  if (!spec) return null;
+  const $outer = $(el);
+  $outer.off(); $outer.attr('style', ''); $outer.empty();
+  try { $outer.attr('data-graph-id', graphId); $outer.attr('data-category', spec.graphCategory); } catch (e) {}
+  return showGraph(spec, $outer, spec.graphCategory);
 }

@@ -444,7 +444,30 @@ function createChart(
   // (in `px` or `vw` units) and `position: relative`.  For more information:
   //   https://www.chartjs.org/docs/latest/general/responsive.html
   chartJsConfig.options.responsive = true;
-  chartJsConfig.options.maintainAspectRatio = false;
+  // If this canvas is rendered inside the lesson tooltip, prefer maintaining
+  // aspect ratio and compute an aspectRatio from the container so the chart
+  // fits the available space without becoming excessively tall.
+  try {
+    const inLesson = !!canvas.closest && !!canvas.closest('#lesson-tooltip');
+    if (inLesson) {
+      chartJsConfig.options.maintainAspectRatio = true;
+      // compute approximate aspect ratio from parent container if possible
+      try {
+        const rect = (canvas.parentElement as HTMLElement)?.getBoundingClientRect();
+        if (rect && rect.width && rect.height) {
+          chartJsConfig.options.aspectRatio = rect.width / rect.height;
+        } else {
+          chartJsConfig.options.aspectRatio = 1.6; // fallback
+        }
+      } catch (e) {
+        chartJsConfig.options.aspectRatio = 1.6;
+      }
+    } else {
+      chartJsConfig.options.maintainAspectRatio = false;
+    }
+  } catch (e) {
+    chartJsConfig.options.maintainAspectRatio = false;
+  }
 
   // Disable the built-in title and legend
   chartJsConfig.options.title = { display: false };
