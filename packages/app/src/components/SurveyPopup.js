@@ -467,13 +467,13 @@ export function showSurveyPopup() {
           else score += 0; // never
 
           // Map score to waste reduction level (score range 0-12)
-          // bins: low -> -50, low-mid -> -25, mid -> 0, high -> 25, very-high -> 50
+          // bins: low -> -100, low-mid -> -50, mid -> 0, high -> 50, very-high -> 100
           let wasteLevel;
-          if (score <= 2) wasteLevel = -50;
-          else if (score <= 4) wasteLevel = -25;
+          if (score <= 2) wasteLevel = -100;
+          else if (score <= 4) wasteLevel = -50;
           else if (score <= 7) wasteLevel = 0;
-          else if (score <= 9) wasteLevel = 25;
-          else wasteLevel = 50;
+          else if (score <= 9) wasteLevel = 50;
+          else wasteLevel = 100;
 
           surveyResponses.waste = wasteLevel;
 
@@ -531,11 +531,13 @@ export function showSurveyPopup() {
           else score += 0; // no
 
           // Map score to adoption level (score range 0-12)
+          // New config includes an extra option (133 -> 40%)
           let adoptionLevel;
           if (score <= 3) adoptionLevel = 0; // Reference
           else if (score <= 6) adoptionLevel = 33; // 10%
           else if (score <= 9) adoptionLevel = 66; // 20%
-          else adoptionLevel = 100; // 30%
+          else if (score <= 11) adoptionLevel = 100; // 30%
+          else adoptionLevel = 133; // 40%
 
           surveyResponses.altproteins = adoptionLevel;
 
@@ -568,9 +570,8 @@ export function showSurveyPopup() {
         `
         : `<button type="button" class="survey-submit-btn">Generate & Load Scenario</button>`;
       
-      const dietLabels = ['Meat-heavy (US)', 'OECD affluent', 'Reference', 'Healthy', 'Flexitarian'];
-      const wasteLabels = ['-50%', '-25%', 'Reference', '50%', '60%'];
-      const altproteinLabels = ['Reference', '10%', '20%', '30%'];
+      const dietLabels = ['Meat-heavy (US)', 'OECD affluent', 'Average', 'Healthy', 'Flexitarian'];
+      const wasteLabels = ['-100%', '-50%', 'Average', '50%', '100%'];
       
       const getDietLabel = (val) => {
         if (val === 0) return dietLabels[0];
@@ -582,19 +583,21 @@ export function showSurveyPopup() {
       };
       
       const getWasteLabel = (val) => {
-        if (val === -50) return wasteLabels[0];
-        if (val === -25) return wasteLabels[1];
+        if (val === -100) return wasteLabels[0];
+        if (val === -50) return wasteLabels[1];
         if (val === 0) return wasteLabels[2];
-        if (val === 25) return wasteLabels[3];
-        if (val === 50) return wasteLabels[4];
+        if (val === 50) return wasteLabels[3];
+        if (val === 100) return wasteLabels[4];
         return 'Unknown';
       };
       
+      const altproteinLabels = ['Average', '10%', '20%', '30%', '40%'];
       const getAltProteinLabel = (val) => {
         if (val === 0) return altproteinLabels[0];
         if (val === 33) return altproteinLabels[1];
         if (val === 66) return altproteinLabels[2];
         if (val === 100) return altproteinLabels[3];
+        if (val === 133) return altproteinLabels[4];
         return 'Unknown';
       };
       
@@ -746,6 +749,8 @@ function getSpecByVarName(varName) {
   }
   return found;
 }
+
+
 
 /**
  * Helper function to coerce value based on spec type
