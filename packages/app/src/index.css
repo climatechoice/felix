@@ -805,7 +805,8 @@ p {
 
 .custom-graph-selector {
   position: relative;
-  width: 85%;
+  width: 90%;
+  max-width: 980px;
   cursor: pointer;
   opacity: 1;
 }

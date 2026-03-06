@@ -215,10 +215,25 @@ export function createInfoIcon(hoverText, opts = {}) {
   const isGraph = opts.graph === true;
   const tooltip = $(`<div class="${isGraph ? 'graph-tooltip' : 'tooltip'}">${parsedHTML}</div>`);
 
-  infoIconContainer.append(icon, tooltip);
+  // Append only the icon to the inline container; keep the tooltip out of
+  // the document flow by placing it on the body so it cannot affect menu
+  // heights when hidden. This avoids strange layout shifts when hovering.
+  infoIconContainer.append(icon);
+
+  // Ensure graph tooltips are placed on the body and positioned fixed
+  // so they do not influence parent container layout.
+  if (isGraph) {
+    if (!tooltip.parent().is(document.body)) {
+      tooltip.appendTo(document.body);
+    }
+    tooltip.css({ position: 'fixed', visibility: 'hidden', zIndex: 10001 });
+  } else {
+    // input/tooltips remain inline and use positionTooltip
+    infoIconContainer.append(tooltip);
+  }
 
   if (isGraph) {
-    let tooltipAppendedTo = null;
+    // Tooltip already appended to body and hidden; just position and show it.
     icon.on("mouseenter", function () {
       // Determine the boundary container to keep the tooltip inside the graph layout
       const mainGraphContainer = icon.closest('#graphs-container, .all-graphs-container, .graphs-root, .main-graphs');
@@ -226,11 +241,7 @@ export function createInfoIcon(hoverText, opts = {}) {
         ? mainGraphContainer[0].getBoundingClientRect()
         : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
 
-      // Append tooltip to body to avoid clipping by overflow:hidden ancestors
-      if (!tooltip.parent().is(document.body)) {
-        tooltip.appendTo(document.body);
-        tooltipAppendedTo = document.body;
-      }
+      // tooltip is already on document.body and positioned fixed
 
       // Compute positions in viewport coordinates and clamp to containerRect
       const iconRect = icon[0].getBoundingClientRect();
@@ -266,23 +277,11 @@ export function createInfoIcon(hoverText, opts = {}) {
       if (top + tooltipHeight > window.innerHeight - 8) top = window.innerHeight - tooltipHeight - 8;
 
       tooltip.removeClass('tooltip').addClass('graph-tooltip');
-      tooltip.css({
-        position: 'fixed',
-        left: `${left}px`,
-        top: `${top}px`,
-        transform: 'none',
-        visibility: 'visible',
-        zIndex: 10001
-      });
+      tooltip.css({ left: `${left}px`, top: `${top}px`, transform: 'none', visibility: 'visible' });
     });
 
     icon.on("mouseleave", function () {
       tooltip.css("visibility", "hidden");
-      // Move tooltip back under the icon container to keep DOM tidy
-      if (tooltipAppendedTo && tooltipAppendedTo === document.body) {
-        infoIconContainer.append(tooltip);
-        tooltipAppendedTo = null;
-      }
     });
   } else {
     // InputUI: fixed window-based
