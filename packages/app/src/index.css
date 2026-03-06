@@ -2419,7 +2419,7 @@ p {
 .welcome-content {
   text-align: center;
   color: #2c3e50;
-  max-width: 600px;
+  max-width: 820px;
   padding: 40px;
 }
 
@@ -2450,10 +2450,21 @@ p {
 
 .welcome-buttons {
   display: flex;
-  gap: 15px;
+  flex-direction: column;
+  gap: 18px;
   justify-content: center;
   align-items: center;
 }
+
+.welcome-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.welcome-row-main { }
+.welcome-row-secondary { }
 
 .welcome-enter-btn {
   all: unset;
@@ -2481,7 +2492,8 @@ p {
   font-size: 24px;
 }
 
-.welcome-tutorial-btn {
+.welcome-tutorial-btn,
+.welcome-lesson-btn {
   all: unset;
   display: inline-flex;
   align-items: center;
@@ -2497,13 +2509,15 @@ p {
   transition: all 0.3s ease;
 }
 
-.welcome-tutorial-btn:hover {
+.welcome-tutorial-btn:hover,
+.welcome-lesson-btn:hover {
   background: rgba(255, 255, 255, 0.5);
   border-color: #a0aec0;
   transform: translateY(-1px);
 }
 
-.welcome-tutorial-btn .material-icons {
+.welcome-tutorial-btn .material-icons,
+.welcome-lesson-btn .material-icons {
   font-size: 20px;
 }
 

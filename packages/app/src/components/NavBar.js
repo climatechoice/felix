@@ -465,10 +465,7 @@ export function loadNavBar() {
           <span class="material-icons">help_outline</span>
           <span>Quick Guide</span>
         </div>
-        <div class="docs-dropdown-item" data-action="lesson">
-          <span class="material-icons">school</span>
-          <span>Interactive Lesson</span>
-        </div>
+        <!-- Interactive Lesson removed from Resources: use the nav button instead -->
         <div class="docs-dropdown-item" data-action="update-log">
           <span class="material-icons">update</span>
           <span>Update Log</span>
@@ -498,8 +495,6 @@ export function loadNavBar() {
       window.open("https://iiasa.github.io/felix_docs/", "_blank");
     } else if (action === "quick-guide") {
       startTutorial();
-    } else if (action === "lesson") {
-      try { startLesson8(); } catch (e) { console.error('Failed to start lesson', e); }
     } else if (action === "update-log") {
       // TODO: Add update log functionality
       alert("Update log feature coming soon!");
@@ -516,6 +511,23 @@ export function loadNavBar() {
   });
 
   $sect3.append($documentationDropdownContainer);
+
+  // Interactive lesson quick button (visible on nav)
+  const $lessonBtn = $(
+    `
+    <button title="Interactive Lesson">
+      <span class="material-icons">school</span>
+    </button>
+  `
+  );
+  $lessonBtn.on("click", () => {
+    try {
+      startLesson8();
+    } catch (e) {
+      console.error('Failed to start lesson', e);
+    }
+  });
+  $sect3.append($lessonBtn);
 
   // Bug report button with icon
   const $bugBtn = $(`
