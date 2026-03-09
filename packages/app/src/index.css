@@ -820,19 +820,40 @@ p {
 }
 
 .selected-option {
-  padding: 4px;
+  padding: 4px 18px; /* reduced horizontal padding for tighter layout */
   border: 1px solid #ccc;
   border-radius: 4px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center; /* center the title regardless of children */
   align-items: center;
   background: white;
   opacity: 1;
+  position: relative; /* allow absolute-positioned icons */
 }
 
 .selected-option:hover {
   background: white;
   opacity: 1;
+}
+
+/* Keep the expand icon visually at the left while the title stays centered */
+.selected-option .expand-icon {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+/* Keep the info icon visually at the right while the title stays centered */
+.selected-option .info-icon-container {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
 }
 
 .dropdown-menu {
@@ -868,7 +889,7 @@ p {
 }
 
 .dropdown-option {
-  padding: 8px;
+  padding: 6px 8px; /* slightly reduced vertical padding */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -882,7 +903,7 @@ p {
 }
 
 .option-title {
-  margin-right: 8px;
+  margin: 0 4px; /* tightened spacing */
 }
 
 .material-icons.expand-icon {

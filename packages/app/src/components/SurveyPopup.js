@@ -291,46 +291,37 @@ export function showSurveyPopup() {
         
         // Store individual answers for alternative proteins assessment
         if (!surveyResponses.altproteinsAnswers) {
-          surveyResponses.altproteinsAnswers = { q1: null, q2: null, q3: null, q4: null };
+          surveyResponses.altproteinsAnswers = { q1: null, q2: null, q3: null };
         }
         
         questionHTML = `
           <div class="survey-question">
             <label><strong>Question 1: Have you tried or would you eat plant-based meat (like Beyond Meat or Impossible)?</strong></label>
             <div class="survey-options">
-              <label><input type="radio" name="altproteins_q1" value="no" ${surveyResponses.altproteinsAnswers.q1 === 'no' ? 'checked' : ''}> No, I prefer real meat</label>
-              <label><input type="radio" name="altproteins_q1" value="curious" ${surveyResponses.altproteinsAnswers.q1 === 'curious' ? 'checked' : ''}> I'd try it if it tastes good</label>
-              <label><input type="radio" name="altproteins_q1" value="occasional" ${surveyResponses.altproteinsAnswers.q1 === 'occasional' ? 'checked' : ''}> I eat it sometimes</label>
-              <label><input type="radio" name="altproteins_q1" value="regular" ${surveyResponses.altproteinsAnswers.q1 === 'regular' ? 'checked' : ''}> I eat it often instead of meat</label>
+              <label><input type="radio" name="altproteins_q1" value="no" ${surveyResponses.altproteinsAnswers.q1 === 'no' ? 'checked' : ''}> I don't eat meat</label>
+              <label><input type="radio" name="altproteins_q1" value="curious" ${surveyResponses.altproteinsAnswers.q1 === 'curious' ? 'checked' : ''}> Yes, I'd try it if it tastes good</label>
+              <label><input type="radio" name="altproteins_q1" value="occasional" ${surveyResponses.altproteinsAnswers.q1 === 'occasional' ? 'checked' : ''}> Yes, I eat it sometimes</label>
+              <label><input type="radio" name="altproteins_q1" value="regular" ${surveyResponses.altproteinsAnswers.q1 === 'regular' ? 'checked' : ''}> Yes, I eat it often instead of meat</label>
             </div>
           </div>
           
           <div class="survey-question">
-            <label><strong>Question 2: What do you think about lab-grown meat (real meat grown from cells)?</strong></label>
+            <label><strong>Question 2: Have you tried or would you eat lab-grown meat (grown from cells)?</strong></label>
             <div class="survey-options">
-              <label><input type="radio" name="altproteins_q2" value="against" ${surveyResponses.altproteinsAnswers.q2 === 'against' ? 'checked' : ''}> I don't like the idea</label>
-              <label><input type="radio" name="altproteins_q2" value="skeptical" ${surveyResponses.altproteinsAnswers.q2 === 'skeptical' ? 'checked' : ''}> I'm not sure about it</label>
-              <label><input type="radio" name="altproteins_q2" value="willing" ${surveyResponses.altproteinsAnswers.q2 === 'willing' ? 'checked' : ''}> I'd try it if it's safe and not too expensive</label>
-              <label><input type="radio" name="altproteins_q2" value="eager" ${surveyResponses.altproteinsAnswers.q2 === 'eager' ? 'checked' : ''}> I'm interested - sounds good for the environment</label>
+              <label><input type="radio" name="altproteins_q2" value="against" ${surveyResponses.altproteinsAnswers.q2 === 'against' ? 'checked' : ''}> I don't eat meat</label>
+              <label><input type="radio" name="altproteins_q2" value="skeptical" ${surveyResponses.altproteinsAnswers.q2 === 'skeptical' ? 'checked' : ''}> No, I'm not sure about it</label>
+              <label><input type="radio" name="altproteins_q2" value="willing" ${surveyResponses.altproteinsAnswers.q2 === 'willing' ? 'checked' : ''}> No, I don't yet, but I'd try it if it's safe and not too expensive</label>
+              <label><input type="radio" name="altproteins_q2" value="eager" ${surveyResponses.altproteinsAnswers.q2 === 'eager' ? 'checked' : ''}> Yes, I already consume it / would consume it</label>
             </div>
           </div>
           
           <div class="survey-question">
             <label><strong>Question 3: Do you drink plant-based milk or eat plant-based cheese/yogurt?</strong></label>
             <div class="survey-options">
-              <label><input type="radio" name="altproteins_q3" value="no" ${surveyResponses.altproteinsAnswers.q3 === 'no' ? 'checked' : ''}> No, I only use regular dairy</label>
-              <label><input type="radio" name="altproteins_q3" value="some" ${surveyResponses.altproteinsAnswers.q3 === 'some' ? 'checked' : ''}> Sometimes I use plant-based milk</label>
-              <label><input type="radio" name="altproteins_q3" value="half" ${surveyResponses.altproteinsAnswers.q3 === 'half' ? 'checked' : ''}> I use about half plant-based, half regular</label>
-              <label><input type="radio" name="altproteins_q3" value="most" ${surveyResponses.altproteinsAnswers.q3 === 'most' ? 'checked' : ''}> I mostly or only use plant-based</label>
-            </div>
-          </div>
-          
-          <div class="survey-question">
-            <label><strong>Question 4: Would you replace one meal per day with plant-based alternatives?</strong></label>
-            <div class="survey-options">
-              <label><input type="radio" name="altproteins_q4" value="no" ${surveyResponses.altproteinsAnswers.q4 === 'no' ? 'checked' : ''}> No</label>
-              <label><input type="radio" name="altproteins_q4" value="maybe" ${surveyResponses.altproteinsAnswers.q4 === 'maybe' ? 'checked' : ''}> Maybe</label>
-              <label><input type="radio" name="altproteins_q4" value="yes" ${surveyResponses.altproteinsAnswers.q4 === 'yes' ? 'checked' : ''}> Yes</label>
+              <label><input type="radio" name="altproteins_q3" value="no" ${surveyResponses.altproteinsAnswers.q3 === 'no' ? 'checked' : ''}> I don't consume animal products</label>
+              <label><input type="radio" name="altproteins_q3" value="some" ${surveyResponses.altproteinsAnswers.q3 === 'some' ? 'checked' : ''}> Yes, sometimes I use plant-based milk</label>
+              <label><input type="radio" name="altproteins_q3" value="half" ${surveyResponses.altproteinsAnswers.q3 === 'half' ? 'checked' : ''}> Yes, I use about half plant-based, half regular</label>
+              <label><input type="radio" name="altproteins_q3" value="most" ${surveyResponses.altproteinsAnswers.q3 === 'most' ? 'checked' : ''}> Yes, I mostly or only use plant-based</label>
             </div>
           </div>
         `;
@@ -486,24 +477,25 @@ export function showSurveyPopup() {
         
         // Handle alternative proteins question - calculate adoption from 4 questions
         if (questionName === 'altproteins') {
+
           const q1 = $('input[name="altproteins_q1"]:checked').val();
           const q2 = $('input[name="altproteins_q2"]:checked').val();
           const q3 = $('input[name="altproteins_q3"]:checked').val();
-          const q4 = $('input[name="altproteins_q4"]:checked').val();
 
-          if (!q1 || !q2 || !q3 || !q4) {
-            alert('Please answer all four questions');
+          if (!q1 || !q2 || !q3) {
+            alert('Please answer all three questions');
             return;
           }
 
           // Save individual answers
-          surveyResponses.altproteinsAnswers = { q1, q2, q3, q4 };
+          surveyResponses.altproteinsAnswers = { q1, q2, q3 };
 
-          // Calculate alternative protein adoption level
+          // Calculate alternative protein adoption level using three questions
           // 0: Reference (no adoption)
-          // 33: 10% adoption
-          // 66: 20% adoption
-          // 100: 30% adoption
+          // 33: low adoption
+          // 66: medium adoption
+          // 100: high adoption
+          // 133: very high (all-max)
 
           let score = 0;
 
@@ -513,11 +505,11 @@ export function showSurveyPopup() {
           else if (q1 === 'curious') score += 1;
           else score += 0; // no
 
-          // Q2: Lab-grown meat attitude
+          // Q2: Lab-grown meat consumption/attitude
           if (q2 === 'eager') score += 3;
           else if (q2 === 'willing') score += 2;
           else if (q2 === 'skeptical') score += 1;
-          else score += 0; // against
+          else score += 0; // against / I don't eat meat
 
           // Q3: Dairy alternatives
           if (q3 === 'most') score += 3;
@@ -525,23 +517,17 @@ export function showSurveyPopup() {
           else if (q3 === 'some') score += 1;
           else score += 0; // no
 
-          // Q4: Would you replace one meal per day with plant-based alternatives?
-          if (q4 === 'yes') score += 3;
-          else if (q4 === 'maybe') score += 1;
-          else score += 0; // no
-
-          // Map score to adoption level (score range 0-12)
-          // New config includes an extra option (133 -> 40%)
+          // Map score to adoption level (score range 0-9)
           let adoptionLevel;
-          if (score <= 3) adoptionLevel = 0; // Reference
-          else if (score <= 6) adoptionLevel = 33; // 10%
-          else if (score <= 9) adoptionLevel = 66; // 20%
-          else if (score <= 11) adoptionLevel = 100; // 30%
-          else adoptionLevel = 133; // 40%
+          if (score <= 2) adoptionLevel = 0.0001; // Reference
+          else if (score <= 4) adoptionLevel = 33;
+          else if (score <= 6) adoptionLevel = 66;
+          else if (score <= 8) adoptionLevel = 100;
+          else adoptionLevel = 133;
 
           surveyResponses.altproteins = adoptionLevel;
 
-          console.log('Alternative proteins assessment - Scores:', { q1, q2, q3, q4, score, adoptionLevel });
+          console.log('Alternative proteins assessment - Scores:', { q1, q2, q3, score, adoptionLevel });
 
           // Return to intro page
           renderPage('intro');
