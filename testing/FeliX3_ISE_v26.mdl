@@ -3681,7 +3681,7 @@ FWL Variation System Level[FoodCategories, SupplyChain]=
 	IF THEN ELSE(FWL Multiplier = -1, 
 	
 	(1 - (Target Percentage for Change/"100 percent") * (1 - FWL Fraction Variation by Supply Chain\
-		[SupplyChain]*"100 percent")) 
+		[SupplyChain]/"100 percent")) 
 	* Reference FWL Fraction by Supply Chain and Food Category[FoodCategories,SupplyChain\
 		],
 	
