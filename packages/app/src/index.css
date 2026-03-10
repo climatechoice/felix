@@ -2723,11 +2723,11 @@ p {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  /* Use responsive sizing so inner containers scale with viewport */
+  /* Fixed size so every slide (1-8) is identically sized */
   width: min(72vw, 1000px);
   max-width: 1000px;
-  height: auto;
-  max-height: 80vh;
+  height: min(78vh, 680px);
+  min-height: 480px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 18px 48px rgba(0,0,0,0.45);
@@ -2741,8 +2741,9 @@ p {
 
 #lesson-tooltip .lesson-content {
   padding: 20px 24px;
-  overflow: auto; /* allow internal scrolling if content too large */
-  flex: 1 1 auto;
+  overflow: auto;
+  flex: 1 1 0;   /* fill all remaining height after controls bar */
+  min-height: 0; /* required for flex children to shrink below content size */
 }
 
 #lesson-tooltip .lesson-title {
@@ -2761,9 +2762,9 @@ p {
 
 #lesson-tooltip .lesson-body {
   display: grid;
-  /* Make left (image + text) wider and right (graph) narrower */
-  grid-template-columns: minmax(200px, 70%) minmax(220px, 30%);
-  gap: 16px;
+  /* Left (image + text) = 66%, right (graph) = remaining 34% */
+  grid-template-columns: 66% 1fr;
+  gap: 20px;
   align-items: stretch; /* ensure left and right columns match height */
   height: 100%;
   overflow-x: hidden;
@@ -2773,7 +2774,7 @@ p {
  #lesson-tooltip .lesson-right { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
 
  #lesson-tooltip .lesson-image-wrapper { width: 100%; min-width: 300px; box-sizing: border-box; }
- #lesson-tooltip .lesson-image-wrapper { border: 1px solid #e5e7eb; padding: 6px; border-radius: 10px; background: #ffffff; }
+ #lesson-tooltip .lesson-image-wrapper { border: 1px solid #e5e7eb; padding: 12px; border-radius: 10px; background: #ffffff; }
  #lesson-tooltip .lesson-image { width: 100%; height: 100%; max-height: calc(82vh - 260px); border-radius: 6px; object-fit: contain; display: block; }
 
  #lesson-tooltip .lesson-text { display:flex; flex-direction:column; gap:8px; padding-right:8px; box-sizing: border-box; }
@@ -2785,7 +2786,7 @@ p {
  #lesson-tooltip .lesson-text p { margin-top: 0; margin-bottom: 6px; }
 
  /* place image above text but keep it visually aligned with right column */
- #lesson-tooltip .lesson-image-wrapper { margin-bottom: 6px; }
+ #lesson-tooltip .lesson-image-wrapper { margin-bottom: 12px; }
 
 /* lesson graph sizing: fixed lesson graph container */
 
@@ -2844,6 +2845,35 @@ p {
   border-radius: 50%;
   background: var(--lesson-highlight, currentColor);
   box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* For the intro slide we hide the title dot and position text in the upper-centre of the right column */
+#lesson-tooltip.lesson-intro .lesson-title::before { display: none; }
+#lesson-tooltip.lesson-intro .lesson-right { justify-content: center; align-items: stretch; padding-bottom: 0%; }
+
+/* 7 coloured dots row rendered inside the subtitle element on the intro slide */
+#lesson-tooltip.lesson-intro .lesson-subtitle { display: flex; align-items: center; padding: 4px 0 8px; }
+#lesson-tooltip.lesson-intro .lesson-subtitle .lesson-intro-dots { display: inline-flex; gap: 10px; align-items: center; }
+#lesson-tooltip.lesson-intro .lesson-subtitle .lesson-intro-dots .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.18); border: 1px solid rgba(0,0,0,0.08); }
+
+/* Intro: narrow image column, wider text column */
+#lesson-tooltip.lesson-intro .lesson-body {
+  grid-template-columns: minmax(180px,66%) 1fr;
+  align-items: stretch;
+}
+
+/* Intro: smaller fitted image, contained and centred within its wrapper */
+#lesson-tooltip.lesson-intro .lesson-image-wrapper { display: flex; align-items: center; justify-content: center; }
+#lesson-tooltip.lesson-intro .lesson-image { max-height: min(50vh, 2000px); width: auto; max-width: 80%; object-fit: contain; display: block; margin: 0 auto; }
+
+/* Intro text: normal flow, no transform */
+#lesson-tooltip.lesson-intro .lesson-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-self: stretch;
+  transform: none;
+  will-change: auto;
 }
 
 /* Underline/pill that starts immediately after the title and extends rightwards */
@@ -2943,7 +2973,7 @@ p {
 #lesson-tooltip .lesson-top-close:hover { background: transparent; color: #374151; }
 
 @media (max-width: 800px) {
-  #lesson-tooltip { width: calc(100% - 40px); height: calc(100% - 64px); left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  #lesson-tooltip { width: calc(100% - 40px); height: calc(100% - 64px); left: 50%; top: 50%; transform: translate(-50%, -50%); min-height: unset; }
   #lesson-tooltip .lesson-body { grid-template-columns: 1fr; gap: 18px; }
   #lesson-tooltip .lesson-image-wrapper { width: 100%; }
   #lesson-tooltip .lesson-content { padding: 18px 18px; }

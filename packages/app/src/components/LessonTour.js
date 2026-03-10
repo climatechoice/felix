@@ -61,6 +61,10 @@ export function startLesson(steps = [], opts = {}) {
   const $img = $tooltip.find('.lesson-image');
   const $graph = $tooltip.find('.lesson-graph');
   const $graphOuter = $tooltip.find('.lesson-graph-outer');
+  const $left = $tooltip.find('.lesson-left');
+  const $right = $tooltip.find('.lesson-right');
+  const $textBlock = $tooltip.find('.lesson-text');
+  const $graphContainer = $tooltip.find('.lesson-graph-container');
   const $indicator = $tooltip.find('.lesson-step-indicator');
   const $prev = $tooltip.find('.lesson-prev-btn');
   const $next = $tooltip.find('.lesson-next-btn');
@@ -69,13 +73,38 @@ export function startLesson(steps = [], opts = {}) {
   function render() {
     const step = steps[idx];
     $title.text(step.title || `Step ${idx + 1}`);
-    $subtitle.text(step.subtitle || '');
+    $subtitle.html(step.subtitle || '');
     $desc.html(step.description || '');
     if (step.image) {
       $img.attr('src', step.image).show();
     } else {
       $img.hide();
     }
+    // Special-case layout for initial intro step (index 0):
+    // use a two-column layout: left = image, right = text. Hide graph area.
+    if (idx === 0) {
+      try {
+        // keep the graph container in layout but hide its contents so
+        // the intro page preserves the same overall size as other steps
+        $graphContainer.css({ visibility: 'hidden' });
+        // move text into right column if not already there
+        if ($textBlock.parent()[0] !== $right[0]) $textBlock.appendTo($right);
+        // ensure left column only shows the image
+        $left.find('.lesson-image-wrapper').css({ display: 'block' });
+        // align text block to bottom of right column
+        $right.css({ display: 'flex', 'flex-direction': 'column', 'justify-content': 'flex-end' });
+      } catch (e) {}
+    } else {
+      try {
+        $graphContainer.css({ visibility: '' });
+        // restore text into left column if not already there
+        if ($textBlock.parent()[0] !== $left[0]) $textBlock.appendTo($left);
+        $left.find('.lesson-image-wrapper').css({ display: '' });
+        $right.attr('style', '');
+      } catch (e) {}
+    }
+    // mark tooltip as intro for CSS overrides when idx===0
+    try { $tooltip.toggleClass('lesson-intro', idx === 0); } catch (e) {}
     $indicator.text(`${idx + 1} / ${total}`);
     if (idx === 0) $prev.hide(); else $prev.show();
     if (idx === total - 1) $next.text('Finish'); else $next.text('Next');

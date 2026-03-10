@@ -1,5 +1,6 @@
 import startLesson from './LessonTour';
 
+import img0 from '../imgs/lesson/Lesson.png';
 import img1 from '../imgs/lesson/1.png';
 import img2 from '../imgs/lesson/2.png';
 import img3 from '../imgs/lesson/3.png';
@@ -15,6 +16,13 @@ import img7 from '../imgs/lesson/7.png';
  */
 export function startLesson8() {
   const steps = [
+    {
+      title: 'Introduction',
+      subtitle: '<span class="lesson-intro-dots"><span class="dot" style="background:#000000"></span><span class="dot" style="background:#00BFFF"></span><span class="dot" style="background:#996633"></span><span class="dot" style="background:#FFD700"></span><span class="dot" style="background:#228B22"></span><span class="dot" style="background:#ED7014"></span><span class="dot" style="background:#FF6347"></span></span>',
+      description: `<p>The global food system is one of the largest drivers of environmental and human sustainability challenges worldwide. In this lesson, we will explore how our everyday food behaviours place pressure on key systems including land, water, fertilizers, biodiversity, climate, and human nutrition.</p>`,
+      image: img0,
+      graphId: null
+    },
     {
       title: 'Food Demand',
       subtitle: 'How it all begins',
@@ -54,7 +62,7 @@ export function startLesson8() {
     {
       title: 'Climate',
       subtitle: 'How our choices affect us and nature',
-      description: `<p>Food production also releases greenhouse gases—from livestock, fertilizers, and land-use change. These emissions warm the climate, which over time can affect crops, water, and ecosystems.</p>`,
+      description: `<p>Food production also releases greenhouse gases—from livestock, fertilizers, and land-use change. These emissions warm the climate, which over time can affect crops and ecosystems.</p>`,
       image: img6,
       graphId: 'x6'
     },
