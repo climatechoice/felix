@@ -21,6 +21,10 @@ import { graphViews } from "../stores/graphs-store.js";
 import { categoryLayouts } from "../stores/category-layout-store.js";
 import { targetsVisible } from "../stores/targets-store.js";
 
+// Persists the user's graph dropdown selections per category.
+// key: category string, value: array of graphIds ordered by panel position
+const categoryGraphSelections = {};
+
 // Hardcoded lesson color overrides for specific graph IDs (user-provided hexes)
 const LESSON_COLOR_OVERRIDES = {
   x1: '#000000',
@@ -101,6 +105,9 @@ function createGraphViewModel(graphSpec, modelToUse) {
    * series data for the varId, or BOTH models' series data.
    */
   const isCombined = graphSpec.scenarioDisplay === "combined";
+  // Cache model references once — getSeriesForVar is called on every chart render tick
+  const modelAInstance = model.get();
+  const modelBInstance = modelB.get();
   return {
     spec: graphSpec,
     model: modelToUse,
@@ -111,8 +118,8 @@ function createGraphViewModel(graphSpec, modelToUse) {
     getSeriesForVar: (varId, sourceName) => {
       if (isCombined) {
         // both models' series data are used here
-        const seriesA = model.get().getSeriesForVar(varId, sourceName);
-        const seriesB = modelB.get().getSeriesForVar(varId, sourceName);
+        const seriesA = modelAInstance.getSeriesForVar(varId, sourceName);
+        const seriesB = modelBInstance.getSeriesForVar(varId, sourceName);
         const mergedSeries = {
           ...seriesA,
           points: [...seriesA.points, ...seriesB.points], // concatenate points
@@ -132,6 +139,15 @@ function createGraphViewModel(graphSpec, modelToUse) {
     },
   };
 }
+
+// Single module-level handler: closes all graph-selector dropdowns when the user
+// clicks anywhere outside a .custom-graph-selector. Replaces the per-dropdown
+// document handlers that were registered (and leaked) on every initGraphsUI call.
+$(document).on("click.graphDropdownClose", function (e) {
+  if (!$(e.target).closest(".custom-graph-selector").length) {
+    $(".custom-graph-selector .dropdown-menu").hide();
+  }
+});
 
 /**
  * Create a dropdown selector for switching graphs.
@@ -163,15 +179,14 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
   const selectedOption = $('<div class="selected-option"></div>');
   const dropdownMenu = $('<div class="dropdown-menu"></div>').hide();
 
-  // Add classification groups to the dropdown
+  // Add classification groups to the dropdown using a DocumentFragment to
+  // batch all DOM insertions into a single reflow.
+  const fragment = document.createDocumentFragment();
   Object.entries(groups).forEach(([classification, specs]) => {
-    // Add classification header
-    const header = $(
-      `<div class="classification-header">${classification}</div>`
+    fragment.appendChild(
+      $(`<div class="classification-header">${classification}</div>`)[0]
     );
-    dropdownMenu.append(header);
 
-    // Add each graph under the classification
     specs.forEach((spec) => {
       const option = $(
         `<div class="dropdown-option" data-value="${spec.id}"></div>`
@@ -179,9 +194,9 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
       const title = $(
         `<span class="option-title">${str(spec.titleKey)}</span>`
       );
-  const infoIcon = createInfoIcon(str(spec.descriptionKey), { graph: true });
+      const infoIcon = createInfoIcon(str(spec.descriptionKey), { graph: true });
       option.append(title, infoIcon);
-      dropdownMenu.append(option);
+      fragment.appendChild(option[0]);
 
       // Set the initially selected graph
       if (spec.id === currentGraphId) {
@@ -189,11 +204,12 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
           '<span class="material-icons expand-icon">expand_more</span>'
         );
         const selectedTitle = title.clone();
-  const selectedInfoIcon = createInfoIcon(str(spec.descriptionKey), { graph: true });
+        const selectedInfoIcon = createInfoIcon(str(spec.descriptionKey), { graph: true });
         selectedOption.append($expandIcon, selectedTitle, selectedInfoIcon);
       }
     });
   });
+  dropdownMenu[0].appendChild(fragment);
 
   // Handle option selection
   dropdownMenu.on("click", ".dropdown-option", function (e) {
@@ -231,26 +247,15 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
     }
   });
 
-  // Close dropdown when clicking outside - use event delegation to avoid multiple handlers
-  // Only add this handler once per dropdown by using a unique namespace
-  $(document).off("click.graphDropdown" + currentGraphId).on("click.graphDropdown" + currentGraphId, function (e) {
-    // Only close if clicking outside the dropdown container
-    if (
-      !dropdownContainer.is(e.target) &&
-      dropdownContainer.has(e.target).length === 0
-    ) {
-      dropdownMenu.hide();
-      // Clean up the handler when dropdown is closed
-      $(document).off("click.graphDropdown" + currentGraphId);
-    }
-  });
+  // Dropdown close-on-outside-click is handled by the module-level
+  // "click.graphDropdownClose" handler above — no per-dropdown document handler needed.
 
   // Assemble the dropdown
   dropdownContainer.append(selectedOption, dropdownMenu);
   return dropdownContainer;
 }
 
-function showGraph(graphSpec, outerContainer, category) {
+function showGraph(graphSpec, outerContainer, category, skipRegistration = false) {
   // Check if there's a previous GraphView in this container and remove it from graphViews
   const previousGraphView = outerContainer.data("graphView");
   if (previousGraphView) {
@@ -388,9 +393,9 @@ function showGraph(graphSpec, outerContainer, category) {
   // If this outer container is inside the lesson tooltip, do NOT register
   // the resulting GraphView in the global graphViews array. Lesson graphs
   // are transient and will be destroyed by the lesson cleanup.
-  let registerGlobally = true;
+  let registerGlobally = !skipRegistration;
   try {
-    if (outerContainer.closest && outerContainer.closest('#lesson-tooltip').length) {
+    if (registerGlobally && outerContainer.closest && outerContainer.closest('#lesson-tooltip').length) {
       registerGlobally = false;
     }
   } catch (e) {
@@ -399,9 +404,11 @@ function showGraph(graphSpec, outerContainer, category) {
   if (registerGlobally) {
     graphViews.set([...graphViews.get(), graphView]);
   }
-  
-  // Update target annotations if targets are currently visible
-  if (targetsVisible.get()) {
+
+  // Update target annotations if targets are currently visible.
+  // When called in batch mode from initGraphsUI (skipRegistration=true),
+  // the caller handles a single batched annotation update instead.
+  if (registerGlobally && targetsVisible.get()) {
     setTimeout(() => {
       graphView.updateTargetAnnotations();
     }, 100);
@@ -415,26 +422,17 @@ function showGraph(graphSpec, outerContainer, category) {
   if (graphSpec.kind !== 'radar') {
     const legendContainer = $('<div class="graph-legend"></div>');
     outerContainer.append(legendContainer);
-    for (const itemSpec of graphSpec.legendItems) {
-      const attrs = `class="graph-legend-item" style="background-color: ${itemSpec.color}"`;
-      const label = str(itemSpec.labelKey);
-      const itemElem = $(`<div ${attrs}>${label}</div>`);
-      legendContainer.append(itemElem);
-    }
-    // If "scenario display" is "combined",
-    // also get the second graphSpec's legends.
+    // Build all legend HTML in one string and set it in one DOM call to avoid per-item reflows
+    const buildLegendHTML = (items) =>
+      items.map(itemSpec =>
+        `<div class="graph-legend-item" style="background-color: ${itemSpec.color}">${str(itemSpec.labelKey)}</div>`
+      ).join('');
+    let legendHTML = buildLegendHTML(graphSpec.legendItems);
     if (graphSpec.scenarioDisplay === "combined") {
-      // search and find the second graphSpec whose title is the same
       const matchingSpec = findMatchingGraphSpec(graphSpec);
-
-      // now loop over this matchingSpec and get its graph legends
-      for (const itemSpec of matchingSpec.legendItems) {
-        const attrs = `class="graph-legend-item" style="background-color: ${itemSpec.color}"`;
-        const label = str(itemSpec.labelKey);
-        const itemElem = $(`<div ${attrs}>${label}</div>`);
-        legendContainer.append(itemElem);
-      }
+      legendHTML += buildLegendHTML(matchingSpec.legendItems);
     }
+    legendContainer.html(legendHTML);
   }
 
   return graphView;
@@ -461,7 +459,23 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
   // then remove any old graphs-N class from #graphs-container
   // and then add e.g. "graphs-1" or "graphs-4"
   const graphsContainer = $("#graphs-container");
-  
+
+  // Save the currently-rendered selections before clearing, keyed by their category
+  const existingContainers = graphsContainer.find(".outer-graph-container");
+  if (existingContainers.length > 0) {
+    const renderingCategory = existingContainers.first().attr("data-category");
+    if (renderingCategory) {
+      const currentSelections = [];
+      existingContainers.each(function () {
+        const graphId = $(this).attr("data-graph-id");
+        if (graphId) currentSelections.push(graphId);
+      });
+      if (currentSelections.length > 0) {
+        categoryGraphSelections[renderingCategory] = currentSelections;
+      }
+    }
+  }
+
   // Remove all event handlers from graph containers before clearing
   graphsContainer.find(".outer-graph-container").off();
   
@@ -488,8 +502,23 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
   }
   const catIds = dynamicGraphCategories[category] || [];
 
-  // This is the total amount of graphIds that we will render
-  const graphIds = catIds.slice(0, amountOfGraphs);
+  // This is the total amount of graphIds that we will render.
+  // Restore saved selections for this category where available.
+  const savedSelections = categoryGraphSelections[category] || [];
+  const graphIds = catIds.slice(0, amountOfGraphs).map((defaultId, index) => {
+    const savedId = savedSelections[index];
+    if (savedId) {
+      const savedSpec = coreConfig.graphs.get(savedId);
+      if (
+        savedSpec &&
+        savedSpec.graphCategory === category &&
+        (savedSpec.scenarioMode || "").toUpperCase() !== "HIDDEN"
+      ) {
+        return savedId;
+      }
+    }
+    return defaultId;
+  });
 
   // Create as many rows as needed (according to layoutConfig)
   const rowDivs = [];
@@ -499,11 +528,14 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
     graphsContainer.append(row);
   }
 
-  // ! For each selected graph, figure out which row it goes in
-  graphIds.forEach((id, index) => {
+  // ! For each selected graph, figure out which row it goes in.
+  // Build all containers synchronously (so the DOM is laid out), then render
+  // all charts in a SINGLE setTimeout — one event-loop turn, one paint cycle,
+  // and one graphViews store notification instead of N each.
+  const pendingRenders = graphIds.map((id, index) => {
     const spec = coreConfig.graphs.get(id);
     const outer = $(`<div class="outer-graph-container" data-category="${spec.graphCategory}"></div>`);
-    
+
     // Explicitly clear any potential inherited styles
     outer.css({
       "background-color": "",
@@ -515,13 +547,25 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
 
     const rowIndex = Math.floor(index / cols);
     rowDivs[rowIndex].append(outer);
-
-    // Add the graph rendering after a delay, so that it always has animations
-    setTimeout(() => {
-      const view = showGraph(spec, outer, category);
-      graphViews.set([...graphViews.get(), view]);
-    }, 50);
+    return { spec, outer };
   });
+
+  setTimeout(() => {
+    const newViews = [];
+    pendingRenders.forEach(({ spec, outer }) => {
+      // skipRegistration=true: we do ONE store update below instead of N
+      const view = showGraph(spec, outer, category, true);
+      if (view) newViews.push(view);
+    });
+    // Single store notification for all new views
+    graphViews.set([...graphViews.get(), ...newViews]);
+    // Single batched annotation update if targets are visible
+    if (targetsVisible.get()) {
+      setTimeout(() => {
+        newViews.forEach(v => v.updateTargetAnnotations());
+      }, 100);
+    }
+  }, 50);
 
   // Fallback if nothing to show
   if (graphIds.length === 0) {
