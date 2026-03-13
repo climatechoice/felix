@@ -7,7 +7,7 @@ import $ from "jquery";
 import { config as coreConfig } from "@core";
 import { selectedGraphCount, layoutConfig } from "../../stores/layout-store.js";
 import { categoryLayouts } from "../../stores/category-layout-store.js";
-import { initGraphsUI } from "../GraphsUI.js";
+import { initGraphsUI, clearCategoryGraphSelections } from "../GraphsUI.js";
 
 /**
  * Handle graph layout selection change
@@ -72,8 +72,8 @@ export function resetGraphsView() {
     selectedGraphCount.set(defaultGraphCount);
     $("#layout-select").val(defaultGraphCount);
     
-    // Reinitialize graphs with the default count
-    initGraphsUI(currentCategoryName, defaultGraphCount);
+    // Reinitialize graphs with the default count, clearing saved selections
+    initGraphsUI(currentCategoryName, defaultGraphCount, true);
     
     console.log(`Reset ${currentCategoryName} to default layout: ${defaultGraphCount} graphs`);
   }

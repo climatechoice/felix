@@ -451,29 +451,47 @@ function findMatchingGraphSpec(graphSpec) {
 }
 
 /*
+ * Clear the saved graph selections for a given category (or all categories).
+ * Used by the reset button to restore default graph choices.
+ */
+export function clearCategoryGraphSelections(category) {
+  if (category) {
+    delete categoryGraphSelections[category];
+  } else {
+    Object.keys(categoryGraphSelections).forEach(k => delete categoryGraphSelections[k]);
+  }
+}
+
+/*
  * Initialize the graphs according to selected category and selected layout.
  * Default layout is 4 graphs.
  */
-export function initGraphsUI(category, amountOfGraphs = 4) {
+export function initGraphsUI(category, amountOfGraphs = 4, resetToDefaults = false) {
   // First, clear previous graphs,
   // then remove any old graphs-N class from #graphs-container
   // and then add e.g. "graphs-1" or "graphs-4"
   const graphsContainer = $("#graphs-container");
 
-  // Save the currently-rendered selections before clearing, keyed by their category
-  const existingContainers = graphsContainer.find(".outer-graph-container");
-  if (existingContainers.length > 0) {
-    const renderingCategory = existingContainers.first().attr("data-category");
-    if (renderingCategory) {
-      const currentSelections = [];
-      existingContainers.each(function () {
-        const graphId = $(this).attr("data-graph-id");
-        if (graphId) currentSelections.push(graphId);
-      });
-      if (currentSelections.length > 0) {
-        categoryGraphSelections[renderingCategory] = currentSelections;
+  // Save the currently-rendered selections before clearing, keyed by their category.
+  // Skip this when resetting to defaults so stale selections aren't re-saved.
+  if (!resetToDefaults) {
+    const existingContainers = graphsContainer.find(".outer-graph-container");
+    if (existingContainers.length > 0) {
+      const renderingCategory = existingContainers.first().attr("data-category");
+      if (renderingCategory) {
+        const currentSelections = [];
+        existingContainers.each(function () {
+          const graphId = $(this).attr("data-graph-id");
+          if (graphId) currentSelections.push(graphId);
+        });
+        if (currentSelections.length > 0) {
+          categoryGraphSelections[renderingCategory] = currentSelections;
+        }
       }
     }
+  } else {
+    // When resetting, clear any saved selections for this category
+    delete categoryGraphSelections[category];
   }
 
   // Remove all event handlers from graph containers before clearing
@@ -503,8 +521,8 @@ export function initGraphsUI(category, amountOfGraphs = 4) {
   const catIds = dynamicGraphCategories[category] || [];
 
   // This is the total amount of graphIds that we will render.
-  // Restore saved selections for this category where available.
-  const savedSelections = categoryGraphSelections[category] || [];
+  // Restore saved selections for this category where available (unless resetting).
+  const savedSelections = resetToDefaults ? [] : (categoryGraphSelections[category] || []);
   const graphIds = catIds.slice(0, amountOfGraphs).map((defaultId, index) => {
     const savedId = savedSelections[index];
     if (savedId) {
