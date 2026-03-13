@@ -119,6 +119,10 @@ function coerceValueForSpec(rawValue, spec) {
  * @returns {Promise<{applied: number, warnings: number}>}
  */
 export async function loadExternalDrivers(scenario, modelInstance) {
+  // Normalize the scenario name: strip trailing decorators (e.g. "*") that may
+  // appear in button labels but are not part of the actual scenario identifier.
+  scenario = scenario.replace(/[*\s]+$/, "").trim();
+
   const validScenarios = ["Reference", "Optimistic", "Pessimistic"];
   
   if (!validScenarios.includes(scenario)) {
