@@ -2894,6 +2894,54 @@ p {
 #lesson-tooltip .lesson-title, #lesson-tooltip .lesson-subtitle {
   transition: color 180ms ease, opacity 180ms ease;
 }
+/* Legend toggle button – sits in bottom-right corner of the image wrapper */
+.lesson-image-wrapper { position: relative; }
+.lesson-legend-btn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.25);
+  background: rgba(255,255,255,0.92);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  color: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  z-index: 10;
+  transition: background 120ms, color 120ms;
+}
+.lesson-legend-btn:hover, .lesson-legend-btn--active {
+  background: #222;
+  color: #fff;
+  border-color: #222;
+}
+.lesson-legend-panel {
+  position: absolute;
+  bottom: 34px;
+  right: 6px;
+  background: rgba(255,255,255,0.97);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  padding: 10px 13px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  max-width: 200px;
+  z-index: 20;
+  color: #222;
+}
+.lesson-legend-panel b { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #555; }
+.lesson-legend-panel .ll-row { display: flex; align-items: baseline; gap: 8px; margin: 4px 0; }
+.lesson-legend-panel .ll-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
+.lesson-legend-panel .ll-arrow { font-size: 12px; font-weight: 700; min-width: 32px; text-align: center; flex-shrink: 0; }
+
 .lesson-graph-container { max-height: 100%; }
 .lesson-graph-container .outer-graph-container .graph-container { box-sizing: border-box; }
 .lesson-graph-container .outer-graph-container .graph-container { flex: 1 1 auto; width: 100%; height: 100%; max-height: none; }
