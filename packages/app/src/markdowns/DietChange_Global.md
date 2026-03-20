@@ -3,23 +3,30 @@
 ### Overview
 This scenario enables the exploration of diets exogenously, examining the impact of the world transitioning towards a specific diet type, which allows for the exploration of a wide range of impacts across health and the environment.
 
+---
+
 ### Reference Data
-Here, we provide four dietary compositions in terms of their **caloric composition**, based on the FeliX Model's eight food categories:
+Here, we provide five dietary compositions in terms of their **caloric composition**, based on the FeliX Model's eight food categories:
 
-
+- **Meat Diet**: Represents a high animal product intake based on existing US 2018 dietary patterns ([USDA, 2018](https://www.ers.usda.gov/data-products/food-consumption-nutrient-intakes-and-diet-quality))  
+- **Affluent Diet**: Represents a high-income dietary pattern based on OECD average dietary estimates  
 - **Reference Diet**: Represents a baseline or current average dietary intake, based on FAO Diet Composition Statistics ([FAO, 2013](https://www.fao.org/faostat/en/#data/FBS)) calibrated for this analysis  
-- **Healthy Diet**: Updated plant-forward diet with adjusted caloric proportions, based on [WHO Healthy Diet Guidelines](https://www.who.int/news-room/fact-sheets/detail/healthy-diet) estimated by [Springmann et al. (2018)](https://doi.org/10.1038/s41586-018-0594-0) 
-- **Mediterranean Diet**: Plant-forward with olive oil, grains, fruits, and modest meat and dairy, estimated based on general dietary guidelines  
-- **Flexitarian Diet**: Mostly plant-based with moderate amounts of animal products, estimated based on general dietary guidelines  
+- **Healthy Diet**: Updated plant-forward diet with adjusted caloric proportions, based on [WHO Healthy Diet Guidelines](https://www.who.int/news-room/fact-sheets/detail/healthy-diet)
+- **Flexitarian Diet**: Mostly plant-based with moderate amounts of animal products, based on the [EAT-Lancet Planetary Health Diet](https://eatforum.org/eat-lancet/the-planetary-health-diet/)
 
+<br>
 
-| **Category**   | **Reference (%)** | **Healthy (%)** | **Mediterranean (%)** | **Flexitarian (%)** |
-|----------------|------------------:|----------------:|----------------------:|--------------------:|
-| **Pasture Meat**     | 1.8               | 1.34            | 1.0                   | 0.4                 |
-| **Crop Meat**    | 5.6               | 4.09            | 6.0                   | 2.5                 |
-| **Dairy**       | 6.8               | 7.78            | 8.0                   | 8.0                 |
-| **Eggs**        | 1.2               | 0.74            | 2.0                   | 0.8                 |
-| **Pulses**      | 2.4               | 6.88            | 4.0                   | 7.1                 |
-| **Grains**      | 47.9              | 29.23           | 43.0                  | 30.0                |
-| **Vegetable & Fruits**   | 8.3               | 11.76           | 12.0                  | 12.1                |
-| **Other Crops**  | 26.0              | 37.45           | 24.0                  | 38.4                |"
+| **Category**         | **Meat (%)** | **Affluent (%)** | **Reference (%)** | **Healthy (%)** | **Flexitarian (%)** |
+|----------------------|-------------:|-----------------:|------------------:|----------------:|--------------------:|
+| **Pasture Meat**     | 9.6          | 6.0              | 1.8               | 1.34            | 0.4                 |
+| **Crop Meat**        | 8.4          | 8.4              | 5.6               | 4.09            | 2.5                 |
+| **Dairy**            | 10.0         | 1.2              | 6.8               | 7.78            | 8.0                 |
+| **Eggs**             | 1.2          | 4.8              | 1.2               | 0.74            | 0.8                 |
+| **Pulses**           | 4.8          | 10.0             | 2.4               | 6.88            | 7.1                 |
+| **Grains**           | 30.0         | 30.0             | 47.9              | 29.23           | 30.0                |
+| **Vegetable & Fruits** | 17.0       | 17.0             | 8.3               | 11.76           | 12.1                |
+| **Other Crops**      | 19.0         | 22.6             | 26.0              | 37.45           | 38.4                |
+
+_Caloric composition (%) of each diet across the FeliX Model's eight food categories._
+
+---
