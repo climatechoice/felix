@@ -69,6 +69,7 @@ SSP Energy Production Variation Time,10
 SSP Energy Technology Variation Time,10
 SSP Food and Diet Variation Time,10
 SSP Land Use Change Variation Time,10
+SSP PoU Sigma Variation,0.8
 "Secondary education enrollment Variation[female,""10-14""]",1
 "Secondary education enrollment Variation[female,""15-19""]",1
 "Secondary education enrollment Variation[male,""10-14""]",1
