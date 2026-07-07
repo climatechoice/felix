@@ -7,7 +7,6 @@ import { categoryLayouts } from "../stores/category-layout-store.js";
 import { isMultiScenarioMode } from "../stores/scenario-mode-store.js";
 import { initInputsUI } from "./InputsUI";
 import { initGraphsUI } from "./GraphsUI";
-import { showSurveyPopup } from "./SurveyPopup";
 import { undoInputChange, redoInputChange, updateUndoRedoButtons } from "./navigation/UndoRedo.js";
 import { resetActiveModelInputs } from "./navigation/ResetButtons.js";
 import { showChangedInputs } from "./navigation/SummaryView.js";
@@ -184,15 +183,6 @@ export function loadNavBar() {
   $showChangedInputsBtn.on("click", () => showChangedInputs());
   $sect1.append($showChangedInputsBtn);
 
-  // Survey button - generates scenario from user choices
-  const $surveyBtn = $(`
-    <button title="Build Your First Scenario!">
-      <span class="material-icons">lightbulb</span>
-    </button>
-  `);
-  $surveyBtn.on("click", () => showSurveyPopup());
-  $sect1.append($surveyBtn);
-
   /*
    * Section 2 - Title
    */
@@ -364,6 +354,7 @@ export function loadNavBar() {
     // Close other dropdowns
     $(".year-dropdown-menu").not($dropdown).removeClass("show");
     $(".docs-dropdown-menu").removeClass("show");
+    $(".bug-dropdown-menu").removeClass("show");
     
     $dropdown.toggleClass("show");
   });
@@ -375,6 +366,9 @@ export function loadNavBar() {
     }
     if (!$(e.target).closest(".docs-dropdown-wrapper").length) {
       $(".docs-dropdown-menu").removeClass("show");
+    }
+    if (!$(e.target).closest(".bug-dropdown-wrapper").length) {
+      $(".bug-dropdown-menu").removeClass("show");
     }
   });
 
@@ -482,6 +476,7 @@ export function loadNavBar() {
     // Close other dropdowns
     $(".docs-dropdown-menu").not($dropdown).removeClass("show");
     $(".year-dropdown-menu").removeClass("show");
+    $(".bug-dropdown-menu").removeClass("show");
     
     $dropdown.toggleClass("show");
   });
@@ -529,16 +524,53 @@ export function loadNavBar() {
   });
   $sect3.append($lessonBtn);
 
-  // Bug report button with icon
-  const $bugBtn = $(`
-    <button title="Submit A Bug">
-      <span class="material-icons">bug_report</span>
-    </button>
+  // Bug report / survey dropdown
+  const $bugDropdownContainer = $(`
+    <div class="bug-dropdown-wrapper">
+      <button title="Feedback" class="bug-btn">
+        <span class="material-icons">rate_review</span>
+      </button>
+      <div class="bug-dropdown-menu">
+        <div class="bug-dropdown-header">Feedback</div>
+        <div class="docs-dropdown-item" data-bug-action="survey">
+          <span class="material-icons">poll</span>
+          <span>Survey</span>
+        </div>
+        <div class="docs-dropdown-item" data-bug-action="report">
+          <span class="material-icons">bug_report</span>
+          <span>Report Bug</span>
+        </div>
+      </div>
+    </div>
   `);
-  $bugBtn.on("click", () => {
-    window.open("https://github.com/climatechoice/felix/issues", "_blank");
+
+  $bugDropdownContainer.find(".bug-btn").on("click", function(e) {
+    e.stopPropagation();
+    const $dropdown = $bugDropdownContainer.find(".bug-dropdown-menu");
+    // Close other dropdowns
+    $(".year-dropdown-menu").removeClass("show");
+    $(".docs-dropdown-menu").removeClass("show");
+    $dropdown.toggleClass("show");
   });
-  $sect3.append($bugBtn);
+
+  $bugDropdownContainer.find(".docs-dropdown-item").on("click", function(e) {
+    e.stopPropagation();
+    const action = $(this).data("bug-action");
+    if (action === "survey") {
+      window.open("https://forms.gle/L56w9mmtaaM6a9i5A", "_blank");
+    } else if (action === "report") {
+      window.open("https://github.com/climatechoice/felix/issues", "_blank");
+    }
+    $bugDropdownContainer.find(".bug-dropdown-menu").removeClass("show");
+  });
+
+  $(document).on("click", function(e) {
+    if (!$(e.target).closest(".bug-dropdown-wrapper").length) {
+      $(".bug-dropdown-menu").removeClass("show");
+    }
+  });
+
+  $sect3.append($bugDropdownContainer);
 
   // Fullscreen button
   const $fsBtn = $(`

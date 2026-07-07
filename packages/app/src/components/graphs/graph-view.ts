@@ -17,6 +17,7 @@ import enStrings from "@core-strings/en";
 
 import { createRadarChart, updateRadarChartJsData } from "./radar-chart";
 import { createPDFChart, updatePDFChartJsData } from "./pdf-chart";
+import { createSquareChart, updateSquareChartData } from "./square-chart";
 import { getTargetsForGraph } from "../../lib/utils";
 import { targetsVisible } from "../../stores/targets-store";
 
@@ -113,16 +114,30 @@ Chart.pluginService.register(annotationPlugin);
 // ^^
 
 export class GraphView {
-  private chart: Chart;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  private chart!: Chart; // assigned in constructor for non-square charts; access guarded by squareContainer checks
   private targetTooltip: HTMLDivElement | null = null;
+  private squareContainer: HTMLElement | null = null;
 
   constructor(
     readonly canvas: HTMLCanvasElement,
     readonly viewModel: GraphViewModel,
     options: GraphViewOptions
   ) {
-    this.chart = createChart(canvas, viewModel, options);
-    this.setupTargetTooltip();
+    if (viewModel.spec.kind === 'square') {
+      // For square charts, replace the canvas with a plain div and render
+      // coloured squares into it — no Chart.js canvas needed.
+      const div = document.createElement('div');
+      div.style.cssText = 'width:100%;height:100%;';
+      if (canvas.parentElement) {
+        canvas.parentElement.replaceChild(div, canvas);
+      }
+      this.squareContainer = div;
+      createSquareChart(div, viewModel);
+    } else {
+      this.chart = createChart(canvas, viewModel, options);
+      this.setupTargetTooltip();
+    }
   }
 
   /**
@@ -230,6 +245,12 @@ export class GraphView {
    * @param animated Whether to animate the data when it is updated.
    */
   updateData(animated = true) {
+    // Square charts render directly to DOM — no Chart.js involved
+    if (this.squareContainer) {
+      updateSquareChartData(this.squareContainer, this.viewModel);
+      return;
+    }
+
     if (this.chart) {
       // Check chart type
       const isRadarChart = this.viewModel.spec.kind === "radar";
@@ -381,7 +402,12 @@ export class GraphView {
       this.targetTooltip.remove();
       this.targetTooltip = null;
     }
-    
+
+    if (this.squareContainer) {
+      this.squareContainer.innerHTML = '';
+      this.squareContainer = null;
+    }
+
     this.chart?.destroy();
     this.chart = undefined;
   }

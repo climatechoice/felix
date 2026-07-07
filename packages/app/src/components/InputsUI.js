@@ -13,6 +13,7 @@ import { addCombined2Slider } from "./inputs/Combined2Slider.js";
 import { addSimpleLabelItem } from "./inputs/SimpleLabelInput.js";
 import { addTextboxItem } from "./inputs/TextboxInput.js";
 import { createDropdownGroup, initDropdownGroup } from "./inputs/DropdownGroup.js";
+import { showSurveyPopup } from "./SurveyPopup.js";
 
 initDropdownGroup({
   addSliderItem,
@@ -148,28 +149,62 @@ export function initInputsUI(category) {
     if (inputSpec.viewId === "HIDDEN") {
       continue;
     }
-    
+
     const inputCategory = inputSpec.categoryId;
-    const inputGroup = inputSpec.inputGroup;
-    if (!inputCategory || !inputGroup) continue;
+    const rawGroup = inputSpec.inputGroup;
+    if (!inputCategory || !rawGroup) continue;
 
     if (!dynamicInputCategories[inputCategory]) {
       dynamicInputCategories[inputCategory] = {};
     }
-    if (!dynamicInputCategories[inputCategory][inputGroup]) {
-      dynamicInputCategories[inputCategory][inputGroup] = [];
+    if (!dynamicInputCategories[inputCategory][rawGroup]) {
+      dynamicInputCategories[inputCategory][rawGroup] = [];
     }
-    dynamicInputCategories[inputCategory][inputGroup].push(inputSpec);
+    dynamicInputCategories[inputCategory][rawGroup].push(inputSpec);
   }
 
   const categoryGroups = dynamicInputCategories[category] || {};
 
-  if (coreConfig.inputs.size > 0) {
+  if (!coreConfig.inputs.size) {
+    const msg = `No sliders configured. Edit ''config/inputs.csv'' to get started.`;
+    $("#inputs-content").html(`<div style="padding-top: 10px">${msg}</div>`);
+    return;
+  }
+
+  // Detect sub-view groupings (inputGroup format: "SubCategory;group")
+  const subViewMap = {}; // { "Consumer": { "dc": [...], ... }, "Production": { ... } }
+  let hasSubViews = false;
+
+  for (const [rawGroup, inputs] of Object.entries(categoryGroups)) {
+    if (rawGroup.includes(";")) {
+      hasSubViews = true;
+      const sepIdx = rawGroup.indexOf(";");
+      const subView = rawGroup.slice(0, sepIdx);
+      const group = rawGroup.slice(sepIdx + 1);
+      if (!subViewMap[subView]) subViewMap[subView] = {};
+      subViewMap[subView][group] = inputs;
+    }
+  }
+
+  if (hasSubViews) {
+    // Render all sub-views with a labeled divider before each section
+    Object.entries(subViewMap).forEach(([subView, groups], index) => {
+      const $divider = $(
+        `<div class="input-subview-divider${index === 0 ? " first" : ""}">${subView}</div>`
+      );
+      if (subView === 'Consumer Actions') {
+        const $surveyBtn = $(`<button class="subview-survey-btn" title="Build Your Consumer Scenario"><span class="subview-survey-bracket">(</span>🔨<span class="subview-survey-bracket">)</span></button>`);
+        $surveyBtn.on('click', () => showSurveyPopup());
+        $divider.append($surveyBtn);
+      }
+      $("#inputs-content").append($divider);
+      Object.entries(groups).forEach(([groupName, groupInputs]) => {
+        renderInputGroup(groupName, groupInputs);
+      });
+    });
+  } else {
     Object.entries(categoryGroups).forEach(([groupName, groupInputs]) => {
       renderInputGroup(groupName, groupInputs);
     });
-  } else {
-    const msg = `No sliders configured. Edit ''config/inputs.csv'' to get started.`;
-    $("#inputs-content").html(`<div style="padding-top: 10px">${msg}</div>`);
   }
 }

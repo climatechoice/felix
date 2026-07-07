@@ -166,7 +166,8 @@ export function createPDFChart(
       borderWidth: 2,
       borderDash: [5, 5],
       pointRadius: 0,
-      pointHoverRadius: 0
+      pointHoverRadius: 0,
+      pointStyle: 'rect'
     } as any);
   }
   
@@ -220,7 +221,8 @@ export function createPDFChart(
           fontStyle: options.fontStyle,
           fontColor: options.fontColor,
           boxWidth: 12,
-          padding: 10
+          padding: 10,
+          usePointStyle: true
         }
       },
       tooltips: {
@@ -338,7 +340,8 @@ export function updatePDFChartJsData(
       borderWidth: 2,
       borderDash: [5, 5],
       pointRadius: 0,
-      pointHoverRadius: 0
+      pointHoverRadius: 0,
+      pointStyle: 'rect'
     } as any);
   }
 }

@@ -54,7 +54,7 @@ export function addSliderItem(sliderInput, container = $("#inputs-content")) {
 
     const iconContainer = $('<div class="info-icon-container">');
     const bookIcon = $(`
-    <span class="material-icons-two-tone book-popup-icon">menu_book</span>
+    <span class="material-icons graph-preview-icon book-popup-icon" title="View Extended Description">chrome_reader_mode</span>
   `);
 
     bookIcon.on("click", async function () {

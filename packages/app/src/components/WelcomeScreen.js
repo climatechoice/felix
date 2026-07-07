@@ -29,8 +29,8 @@ export function createWelcomeScreen() {
           </div>
           <div class="welcome-row welcome-row-secondary">
             <button class="welcome-tutorial-btn">
-              <span class="material-icons">help_outline</span>
-              <span>Quick Guide</span>
+              <span class="material-icons">rocket_launch</span>
+              <span>Get Started</span>
             </button>
             <button class="welcome-lesson-btn">
               <span class="material-icons">school</span>
@@ -45,23 +45,22 @@ export function createWelcomeScreen() {
     </div>
   `);
 
-  // Enter button click handler
+  // Enter button — always triggers the guide
   $welcomeScreen.find(".welcome-enter-btn").on("click", () => {
     $welcomeScreen.fadeOut(300, () => {
       $welcomeScreen.remove();
       enterMainApp();
+      setTimeout(() => {
+        startTutorial();
+      }, 300);
     });
   });
 
-  // Tutorial button click handler
+  // Get Started button — enters the app directly, no guide
   $welcomeScreen.find(".welcome-tutorial-btn").on("click", () => {
     $welcomeScreen.fadeOut(300, () => {
       $welcomeScreen.remove();
       enterMainApp();
-      // Start tutorial after a brief delay to ensure UI is loaded
-      setTimeout(() => {
-        startTutorial();
-      }, 300);
     });
   });
 

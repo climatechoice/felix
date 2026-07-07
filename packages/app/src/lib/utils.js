@@ -131,6 +131,24 @@ export function getTargetsForGraph(graphId) {
 }
 
 /**
+ * Find the first target whose variable name matches varId (searched across all graphs).
+ * Returns null if targets haven't loaded yet or no match is found.
+ */
+export function getTargetForVar(varId) {
+  if (!targetsData || targetsData.length === 0) return null;
+  return targetsData.find(t => t.variable === varId) || null;
+}
+
+/**
+ * Find a target by its targetId field.
+ * Returns null if targets haven't loaded yet or no match is found.
+ */
+export function getTargetById(targetId) {
+  if (!targetsData || targetsData.length === 0) return null;
+  return targetsData.find(t => t.targetId === targetId) || null;
+}
+
+/**
  * Update target annotations on all active graphs
  */
 export function updateAllGraphTargets(graphViewsArray) {
@@ -523,12 +541,18 @@ function openPreviewFor(graphId, title) {
       try {
         const a = currentPreview._anchorRect;
         // compute pane height (fallback)
-        const paneHeight = pane[0].offsetHeight || 240;
-  // Bottom-justify: align the preview TOP to slightly above the anchor's
-  // BOTTOM so the preview doesn't overlap the graph title area. We nudge
-  // it up by ~20px to leave room for the graph title/header.
-  top = Math.round(a.bottom - 37); // move up ~20px
-        top = Math.max(64, Math.min(top, window.innerHeight - paneHeight - 16));
+        const paneHeight = pane[0].offsetHeight || 360;
+        const MARGIN = 8;
+        const downTop = Math.round(a.bottom - 37);
+        const wouldClip = downTop + paneHeight + MARGIN > window.innerHeight;
+
+        if (wouldClip && (a.top - paneHeight + 37) >= 64) {
+          // Not enough room below — open upward instead
+          top = Math.max(64, Math.round(a.top - paneHeight + 80));
+        } else {
+          // Enough room below — original downward behaviour
+          top = Math.max(64, Math.min(downTop, window.innerHeight - paneHeight - MARGIN));
+        }
       } catch (e) {
         top = null;
       }
@@ -645,7 +669,7 @@ export function createGraphPreviewButton(linkedGraphId, title) {
   // Use the same icon/container pattern as other info icons so spacing matches.
   const iconContainer = $('<div class="info-icon-container graph-preview-btn"/>');
   // Use a different material icon for the preview — now 'pie_chart'
-  const icon = $(`<span class="material-icons graph-preview-icon" role="button" tabindex="0" title="Show graph preview" aria-label="Show graph preview">pie_chart</span>`);
+  const icon = $(`<span class="material-icons graph-preview-icon" role="button" tabindex="0" title="Show Graph Preview" aria-label="Show Graph Preview">auto_graph</span>`);
 
   // Click handler toggles preview for the resolved graph id
   const handler = (e) => {

@@ -67,7 +67,7 @@ export function showSurveyPopup() {
       
       // Intro page
         surveyContent.html(`
-          <h2>Build Your Own Scenario <span class="wip-badge" title="This feature is under active development">Work in progress</span></h2>
+          <h2>🔨 Build Your Own Scenario</h2>
         <p style="color: #666; margin-bottom: 30px; line-height: 1.5;">
           Experiencing difficulty understanding what all these numbers mean? Try out our survey questions which are more relatable to you as a consumer, and imagine the future if everyone adopts the same consumer behaviour as you.
         </p>

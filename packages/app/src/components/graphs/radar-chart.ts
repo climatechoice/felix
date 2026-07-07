@@ -18,32 +18,23 @@ function str(key) {
  * Returns gradient: white at 0, green at positive extreme, red at negative extreme.
  */
 function getPointColor(value: number, min: number = -100, max: number = 100): string {
-  // Normalize value to -1 to +1 range
+  // Invert intensity: lower absolute values get full saturation, higher values fade slightly.
+  // t ranges from 1.0 (at value=0) down to 0.6 (at max absolute value).
   const range = Math.max(Math.abs(min), Math.abs(max));
-  const normalized = Math.max(-1, Math.min(1, value / range));
+  const absFraction = Math.min(1, Math.abs(value) / range);
+  const t = 1.0 - 0.4 * absFraction;
 
-  const d = 220;
-
-  // Use a non-linear mapping so color intensity increases faster near 0.
-  // Applying an exponent < 1 makes small normalized values appear
-  // stronger; use a more aggressive exponent so colors darken earlier.
-  const adjusted = Math.min(1, Math.pow(Math.abs(normalized), 0.3));
-
-  if (normalized >= 0) {
-    // Positive: interpolate from white to green
-    // White: rgb(d, d, d), Green: rgb(34, 197, 94)
-    const t = adjusted; // 0 = white, 1 = green (adjusted non-linear)
-    const r = Math.round(d + (34 - d) * t);
-    const g = Math.round(d + (197 - d) * t);
-    const b = Math.round(d + (94 - d) * t);
+  if (value >= 0) {
+    // Positive: green rgb(0, 200, 50), fades slightly at extremes
+    const r = Math.round(255 * (1 - t) + 0 * t);
+    const g = Math.round(255 * (1 - t) + 200 * t);
+    const b = Math.round(255 * (1 - t) + 50 * t);
     return `rgb(${r}, ${g}, ${b})`;
   } else {
-    // Negative: interpolate from white to red
-    // White: rgb(d, d, d), Red: rgb(239, 68, 68)
-    const t = adjusted; // 0 = white, 1 = red (adjusted non-linear)
-    const r = Math.round(d + (239 - d) * t);
-    const g = Math.round(d + (68 - d) * t);
-    const b = Math.round(d + (68 - d) * t);
+    // Negative: red rgb(239, 68, 68), fades slightly at extremes
+    const r = Math.round(255 * (1 - t) + 239 * t);
+    const g = Math.round(255 * (1 - t) + 68 * t);
+    const b = Math.round(255 * (1 - t) + 68 * t);
     return `rgb(${r}, ${g}, ${b})`;
   }
 }
@@ -361,7 +352,7 @@ export function createRadarChart(
   const clampedS1 = dataPointsS1.map(v => Math.max(renderMin, Math.min(renderMax, v)));
   const clampedS2 = isCombined ? dataPointsS2.map(v => Math.max(renderMin, Math.min(renderMax, v))) : [];
 
-  // Generate gradient point colors based on value magnitude (use original values)
+  // Point colors: full intensity at small values, fading slightly at large values
   const pointColorsS1 = dataPointsS1.map(value => getPointColor(value, renderMin, renderMax));
   const pointColorsS2 = isCombined ? dataPointsS2.map(value => getPointColor(value, renderMin, renderMax)) : [];
   

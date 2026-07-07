@@ -306,8 +306,8 @@ function showGraph(graphSpec, outerContainer, category, skipRegistration = false
       
       // Add aesthetic highlight styling - default state matches mouseleave
       outerContainer.css({
-        "background-color": `${highlightColor}12`,
-        "border": `1px solid ${highlightColor}40`,
+        "background-color": `${highlightColor}1A`,
+        "border": `1px solid ${highlightColor}4A`,
         "border-radius": "6px",
         "cursor": targetCategory.toLowerCase() === "empty" ? "default" : "pointer",
         "padding": "2px",
@@ -318,16 +318,16 @@ function showGraph(graphSpec, outerContainer, category, skipRegistration = false
       // Add very subtle hover effect
       outerContainer.on("mouseenter", function() {
         $(this).css({
-          "background-color": `${highlightColor}18`,
-          "border": `1px solid ${highlightColor}80`,
-          "box-shadow": `0 1px 4px ${highlightColor}50`
+          "background-color": `${highlightColor}24`,
+          "border": `1px solid ${highlightColor}88`,
+          "box-shadow": `0 1px 4px ${highlightColor}55`
         });
       });
       
       outerContainer.on("mouseleave", function() {
         $(this).css({
-          "background-color": `${highlightColor}12`,
-          "border": `1px solid ${highlightColor}40`,
+          "background-color": `${highlightColor}1A`,
+          "border": `1px solid ${highlightColor}4A`,
           "box-shadow": "none"
         });
       });
@@ -419,7 +419,7 @@ function showGraph(graphSpec, outerContainer, category, skipRegistration = false
   // Each canvas' parent container should have only the canvas as child.
   // https://github.com/chartjs/Chart.js/issues/5805
 
-  if (graphSpec.kind !== 'radar') {
+  if (graphSpec.kind !== 'radar' && graphSpec.kind !== 'square') {
     const legendContainer = $('<div class="graph-legend"></div>');
     outerContainer.append(legendContainer);
     // Build all legend HTML in one string and set it in one DOM call to avoid per-item reflows
