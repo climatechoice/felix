@@ -19,7 +19,7 @@ const tutorialSteps = [
   {
     target: "button[title='Build Your Consumer Scenario']",
     title: "Optional: Quick Survey (1/2)",
-    description: "Not sure where to start? Click this lightbulb to take a quick survey. We'll set everything up for you automatically.",
+    description: "Not sure where to start? Click this hammer to take a quick survey. This will help you set up a scenario around your food consumption behaviours.",
     position: "bottom",
     waitForSurvey: true
   },

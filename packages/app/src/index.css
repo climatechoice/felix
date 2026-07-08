@@ -985,6 +985,55 @@ p {
   cursor: default;
 }
 
+.others-toggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  /* Keep the same look/height as regular .classification-header */
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+.others-toggle .others-icon {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.others-toggle .others-label {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: none;
+}
+
+.others-submenu {
+  padding: 4px 0;
+}
+
+.others-category-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #111;
+  user-select: none;
+  border-left: 3px solid transparent;
+}
+
+.others-category-option:hover {
+  background-color: #f8f8f8;
+}
+
+.others-category-option.active {
+  background-color: #eee;
+  font-weight: 600;
+  border-left-color: #111;
+}
+
+.others-graph-list .dropdown-option {
+  /* Keep nested graph options consistent with the parent dropdown */
+  padding: 8px 12px;
+}
+
 .dropdown-option {
   padding: 8px 12px;
 }

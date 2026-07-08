@@ -25,6 +25,10 @@ import { targetsVisible } from "../stores/targets-store.js";
 // key: category string, value: array of graphIds ordered by panel position
 const categoryGraphSelections = {};
 
+function isClassificationOthers(classification) {
+  return (classification || "").trim().toLowerCase() === "others";
+}
+
 // Hardcoded lesson color overrides for specific graph IDs (user-provided hexes)
 const LESSON_COLOR_OVERRIDES = {
   x1: '#000000',
@@ -84,7 +88,10 @@ export function getDefaultGraphCountForCategory(category) {
   // Find any graph in this category and get its graphLayout (repurposed for default count)
   // Exclude HIDDEN graphs
   const graphInCategory = Array.from(coreConfig.graphs.values()).find(
-    (spec) => spec.graphCategory === category && (spec.scenarioMode || "").toUpperCase() !== "HIDDEN"
+    (spec) =>
+      spec.graphCategory === category &&
+      (spec.scenarioMode || "").toUpperCase() !== "HIDDEN" &&
+      !isClassificationOthers(spec.classification)
   );
   
   if (graphInCategory && graphInCategory.graphLayout) {
@@ -152,7 +159,11 @@ $(document).on("click.graphDropdownClose", function (e) {
 /**
  * Create a dropdown selector for switching graphs.
  */
-function createGraphSelector(category, currentGraphId, onGraphChange) {
+function createGraphSelector(menuCategory, currentGraphId, onGraphChange) {
+  const isPlaceholderGraphId = (id) =>
+    /^o\d+$/i.test(String(id || "").trim());
+  let resetOthersState = null;
+
   // Get all graphs for the current category and group by classification
   /*
    * seenTitles is used, so that the second graph that has "scenario display" = "combined"
@@ -160,14 +171,17 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
    */
   const seenTitles = new Set();
   const graphs = Array.from(coreConfig.graphs.values()).filter((spec) => {
-    if (spec.graphCategory !== category) return false;
+    if (spec.graphCategory !== menuCategory) return false;
     if ((spec.scenarioMode || "").toUpperCase() === "HIDDEN") return false; // Hide graphs with scenarioMode = "HIDDEN"
+    if (isPlaceholderGraphId(spec.id)) return false; // o1..o6 are placeholders, not real selectable graphs
     const title = str(spec.titleKey);
     if (seenTitles.has(title)) return false;
     seenTitles.add(title);
     return true;
   });
   const groups = {};
+
+  const currentGraphSpec = coreConfig.graphs.get(currentGraphId);
   graphs.forEach((spec) => {
     const classification = spec.classification || "Uncategorized";
     if (!groups[classification]) groups[classification] = [];
@@ -211,6 +225,209 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
   });
   dropdownMenu[0].appendChild(fragment);
 
+  // Fallback selected-option content (e.g. when currentGraphId is in the Others classification)
+  if (selectedOption.children().length === 0 && currentGraphSpec) {
+    const $expandIcon = $(
+      '<span class="material-icons expand-icon">expand_more</span>'
+    );
+    const selectedTitle = $(
+      `<span class="option-title">${str(currentGraphSpec.titleKey)}</span>`
+    );
+    const selectedInfoIcon = createInfoIcon(
+      str(currentGraphSpec.descriptionKey),
+      { graph: true }
+    );
+    selectedOption.append($expandIcon, selectedTitle, selectedInfoIcon);
+  }
+
+  // Special nested "Others" submenu:
+  // Only show the graph categories that are explicitly marked by "o1..o6" rows
+  // in graphs.csv (user-defined whitelist), and NEVER switch the main tab.
+  // IMPORTANT: preserve the order from graphs.csv (coreConfig.graphs iteration order),
+  // do NOT sort alphabetically.
+  const allowedOtherGraphCategories = (() => {
+    const out = [];
+    const seen = new Set();
+    for (const spec of coreConfig.graphs.values()) {
+      if ((spec.scenarioMode || "").toUpperCase() === "HIDDEN") continue;
+      if (!isPlaceholderGraphId(spec.id)) continue; // whitelist rows: o1, o2, ...
+      const cat = spec.graphCategory;
+      if (!cat) continue;
+      if (seen.has(cat)) continue;
+      seen.add(cat);
+      out.push(cat);
+    }
+    // Ensure you can always switch back to the original menu category.
+    if (!seen.has(menuCategory)) out.unshift(menuCategory);
+    return out;
+  })();
+
+  if (allowedOtherGraphCategories.length > 0) {
+    const othersToggle = $(
+      `<div class="classification-header others-toggle" role="button" tabindex="0">
+        <span class="material-icons others-icon">swap_horiz</span>
+        <span class="others-label">Other Systems</span>
+      </div>`
+    );
+    const othersSubmenu = $(
+      '<div class="others-submenu" style="padding: 2px 0;"></div>'
+    ).hide();
+    const othersCategoryList = $('<div class="others-category-list"></div>');
+    const othersGraphList = $('<div class="others-graph-list"></div>');
+
+    // Compose the submenu DOM
+    othersSubmenu.append(othersCategoryList, othersGraphList);
+
+    const defaultOtherCategory = allowedOtherGraphCategories[0];
+
+    // Build submenu categories list
+    allowedOtherGraphCategories.forEach((graphCat) => {
+      const $opt = $(`
+        <div class="others-category-option" data-value="${graphCat}">${graphCat}</div>
+      `);
+      if (graphCat === defaultOtherCategory) $opt.addClass("active");
+      othersCategoryList.append($opt);
+    });
+
+    const buildGroupsForGraphCategory = (chosenGraphCategory) => {
+      // Build the same classification-group dropdown structure
+      // as the normal selector would for this graph category.
+      const seenTitles = new Set();
+      const selectedGroups = {};
+
+      Array.from(coreConfig.graphs.values()).forEach((spec) => {
+        if (spec.graphCategory !== chosenGraphCategory) return;
+        if ((spec.scenarioMode || "").toUpperCase() === "HIDDEN") return;
+        if (isPlaceholderGraphId(spec.id)) return; // don't render o1..o6 as graphs
+
+        const title = str(spec.titleKey);
+        if (seenTitles.has(title)) return;
+        seenTitles.add(title);
+
+        const classification = spec.classification || "Uncategorized";
+        if (!selectedGroups[classification]) selectedGroups[classification] = [];
+        selectedGroups[classification].push(spec);
+      });
+
+      return selectedGroups;
+    };
+
+    const renderMenuForOtherCategory = (chosenGraphCategory) => {
+      othersGraphList.empty();
+
+      const groupsForCategory = buildGroupsForGraphCategory(chosenGraphCategory);
+
+      const fragment = document.createDocumentFragment();
+      Object.entries(groupsForCategory).forEach(([classification, specs]) => {
+        fragment.appendChild(
+          $(`<div class="classification-header">${classification}</div>`)[0]
+        );
+
+        specs.forEach((spec) => {
+          const option = $(
+            `<div class="dropdown-option" data-value="${spec.id}"></div>`
+          );
+          const title = $(
+            `<span class="option-title">${str(spec.titleKey)}</span>`
+          );
+          const infoIcon = createInfoIcon(str(spec.descriptionKey), { graph: true });
+          option.append(title, infoIcon);
+          fragment.appendChild(option[0]);
+        });
+      });
+
+      othersGraphList.append(fragment);
+    };
+
+    // Bind selection inside submenu:
+    // After you pick a category (e.g. Fertilizer), the submenu should look
+    // exactly like the normal dropdown for that category (but keep "Other Systems"
+    // available so you can switch again).
+    othersSubmenu.on("click", ".others-category-option", function (e) {
+      e.stopPropagation();
+      const chosenGraphCategory = $(this).data("value");
+
+      othersCategoryList
+        .find(".others-category-option")
+        .removeClass("active");
+      $(this).addClass("active");
+
+      renderMenuForOtherCategory(chosenGraphCategory);
+
+      // Hide only the chooser; keep the "Other Systems" header visible so the user
+      // can re-open it and switch again (including back to the original category).
+      othersCategoryList.hide();
+      othersGraphList.show();
+
+      // Reflect selection in the header label.
+      try {
+        const base = "Other Systems";
+        const suffix = chosenGraphCategory ? ` (${chosenGraphCategory})` : "";
+        othersToggle.find(".others-label").text(`${base}${suffix}`);
+      } catch (e2) {
+        // ignore
+      }
+    });
+
+    // No initial render; show only category chooser when Others opens.
+    othersGraphList.hide();
+
+    othersToggle.on("click", function (e) {
+      e.stopPropagation();
+      const showingChooser = othersCategoryList.is(":visible");
+
+      // When user clicks "Other Systems", toggle between chooser and the current
+      // category's menu list. Always keep the main selector list hidden while the
+      // submenu is in use.
+      dropdownMenu.find(".classification-header").not(".others-toggle").hide();
+      dropdownMenu.find(".dropdown-option").hide();
+      othersSubmenu.show();
+
+      if (showingChooser) {
+        othersCategoryList.hide();
+        if (othersGraphList.children().length === 0) {
+          // If no category menu has been rendered yet, show chooser again.
+          othersCategoryList.show();
+          othersGraphList.hide();
+        } else {
+          othersGraphList.show();
+        }
+      } else {
+        othersCategoryList.show();
+        othersGraphList.hide();
+      }
+    });
+
+    // Ensure that if the dropdown closes and reopens, the Others UI
+    // returns to the "choose category" state.
+    resetOthersState = () => {
+      dropdownMenu.find(".classification-header").show();
+      dropdownMenu.find(".dropdown-option").show();
+
+      othersToggle.show();
+      othersCategoryList.show();
+      othersGraphList.hide().empty();
+      othersSubmenu.hide();
+
+      // Reset header label
+      try {
+        othersToggle.find(".others-label").text("Other Systems");
+      } catch (e) {
+        // ignore
+      }
+
+      // Reset active state for submenu categories
+      othersCategoryList
+        .find(".others-category-option")
+        .removeClass("active");
+      othersCategoryList
+        .find(`.others-category-option[data-value="${defaultOtherCategory}"]`)
+        .addClass("active");
+    };
+
+    dropdownMenu.append(othersToggle, othersSubmenu);
+  }
+
   // Handle option selection
   dropdownMenu.on("click", ".dropdown-option", function (e) {
     e.stopPropagation(); // Prevent event from bubbling
@@ -243,6 +460,7 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
     
     // Toggle this dropdown
     if (!isVisible) {
+      if (resetOthersState) resetOthersState();
       dropdownMenu.show();
     }
   });
@@ -255,7 +473,13 @@ function createGraphSelector(category, currentGraphId, onGraphChange) {
   return dropdownContainer;
 }
 
-function showGraph(graphSpec, outerContainer, category, skipRegistration = false) {
+function showGraph(
+  graphSpec,
+  outerContainer,
+  tabCategory,
+  skipRegistration = false,
+  menuCategory = graphSpec.graphCategory
+) {
   // Check if there's a previous GraphView in this container and remove it from graphViews
   const previousGraphView = outerContainer.data("graphView");
   if (previousGraphView) {
@@ -284,14 +508,19 @@ function showGraph(graphSpec, outerContainer, category, skipRegistration = false
   const viewModel = createGraphViewModel(graphSpec, modelToUse);
 
   // Create the dropdown selector for switching graphs
-  const selector = createGraphSelector(category, graphSpec.id, (newGraphId) => {
+  const panelIndexAttr = outerContainer.attr("data-panel-index");
+  const panelIndex = panelIndexAttr ? parseInt(panelIndexAttr, 10) : NaN;
+
+  const selector = createGraphSelector(menuCategory, graphSpec.id, (newGraphId) => {
     const newGraphSpec = coreConfig.graphs.get(newGraphId);
     if (newGraphSpec) {
       // Clear the current graph and remove all styles and event handlers
       outerContainer.off(); // Remove all event handlers
       outerContainer.attr("style", ""); // Remove all inline styles
       outerContainer.empty(); // Clear the current graph
-      showGraph(newGraphSpec, outerContainer, category); // Render the new graph
+      // Render the new graph in-place, but keep the overall tab unchanged.
+      // The dropdown menu should now follow the selected graph's own category.
+      showGraph(newGraphSpec, outerContainer, tabCategory, false, newGraphSpec.graphCategory);
     }
   });
 
@@ -353,6 +582,7 @@ function showGraph(graphSpec, outerContainer, category, skipRegistration = false
   // Mark which graph id is rendered into this outer container
   try {
     outerContainer.attr('data-graph-id', graphSpec.id);
+    outerContainer.attr('data-menu-category', menuCategory);
   } catch (e) {
     // ignore if DOM isn't ready
   }
@@ -477,7 +707,9 @@ export function initGraphsUI(category, amountOfGraphs = 4, resetToDefaults = fal
   if (!resetToDefaults) {
     const existingContainers = graphsContainer.find(".outer-graph-container");
     if (existingContainers.length > 0) {
-      const renderingCategory = existingContainers.first().attr("data-category");
+      const renderingCategory =
+        existingContainers.first().attr("data-tab-category") ||
+        existingContainers.first().attr("data-category");
       if (renderingCategory) {
         const currentSelections = [];
         existingContainers.each(function () {
@@ -515,6 +747,7 @@ export function initGraphsUI(category, amountOfGraphs = 4, resetToDefaults = fal
   const dynamicGraphCategories = {};
   for (const spec of coreConfig.graphs.values()) {
     if ((spec.scenarioMode || "").toUpperCase() === "HIDDEN") continue; // Skip hidden graphs
+    if (isClassificationOthers(spec.classification)) continue; // Skip UI "Others" placeholder graphs
     const cat = spec.graphCategory;
     (dynamicGraphCategories[cat] ||= []).push(spec.id);
   }
@@ -529,8 +762,9 @@ export function initGraphsUI(category, amountOfGraphs = 4, resetToDefaults = fal
       const savedSpec = coreConfig.graphs.get(savedId);
       if (
         savedSpec &&
-        savedSpec.graphCategory === category &&
-        (savedSpec.scenarioMode || "").toUpperCase() !== "HIDDEN"
+        (savedSpec.scenarioMode || "").toUpperCase() !== "HIDDEN" &&
+        !isClassificationOthers(savedSpec.classification) &&
+        !/^o\d+$/i.test(String(savedSpec.id || "").trim())
       ) {
         return savedId;
       }
@@ -552,7 +786,9 @@ export function initGraphsUI(category, amountOfGraphs = 4, resetToDefaults = fal
   // and one graphViews store notification instead of N each.
   const pendingRenders = graphIds.map((id, index) => {
     const spec = coreConfig.graphs.get(id);
-    const outer = $(`<div class="outer-graph-container" data-category="${spec.graphCategory}"></div>`);
+    const outer = $(
+      `<div class="outer-graph-container" data-category="${spec.graphCategory}" data-tab-category="${category}" data-panel-index="${index}"></div>`
+    );
 
     // Explicitly clear any potential inherited styles
     outer.css({
@@ -572,7 +808,7 @@ export function initGraphsUI(category, amountOfGraphs = 4, resetToDefaults = fal
     const newViews = [];
     pendingRenders.forEach(({ spec, outer }) => {
       // skipRegistration=true: we do ONE store update below instead of N
-      const view = showGraph(spec, outer, category, true);
+      const view = showGraph(spec, outer, category, true, spec.graphCategory);
       if (view) newViews.push(view);
     });
     // Single store notification for all new views
