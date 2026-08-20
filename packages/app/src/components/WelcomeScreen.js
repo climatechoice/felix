@@ -9,6 +9,16 @@ import felixLogo from "../imgs/felix-png.png";
 import { startTutorial } from "./Tutorial.js";
 import { startLesson8 } from "./Lesson8";
 
+const buildVersion = typeof __APP_GIT_TAG__ !== "undefined" && __APP_GIT_TAG__
+  ? __APP_GIT_TAG__
+  : typeof __APP_VERSION__ !== "undefined"
+    ? __APP_VERSION__
+    : "unknown";
+
+const versionUrl = typeof __APP_VERSION_URL__ !== "undefined"
+  ? __APP_VERSION_URL__
+  : "https://github.com/climatechoice/felix/releases";
+
 export function createWelcomeScreen() {
   const $welcomeScreen = $(`
     <div id="welcome-screen">
@@ -40,10 +50,19 @@ export function createWelcomeScreen() {
         </div>
         <div class="welcome-footer">
           <p>Developed by IIASA & ICCS</p>
+          <p class="welcome-version-line">
+            <span>Version ${buildVersion}</span>
+            <span class="welcome-footer-separator">•</span>
+            <button type="button" class="welcome-version-link">Release Notes</button>
+          </p>
         </div>
       </div>
     </div>
   `);
+
+  $welcomeScreen.find(".welcome-version-link").on("click", () => {
+    window.open(versionUrl, "_blank", "noopener,noreferrer");
+  });
 
   // Enter button — always triggers the guide
   $welcomeScreen.find(".welcome-enter-btn").on("click", () => {

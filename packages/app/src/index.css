@@ -2724,6 +2724,37 @@ p {
 /* Tutorial styles */
 #tutorial-overlay {
   position: fixed;
+
+.welcome-version-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  color: rgba(44, 62, 80, 0.75);
+}
+
+.welcome-version-link {
+  all: unset;
+  color: inherit;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(44, 62, 80, 0.28);
+  transition: color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.welcome-version-link:hover {
+  color: rgba(44, 62, 80, 0.95);
+  border-bottom-color: rgba(44, 62, 80, 0.55);
+}
+
+.welcome-version-link:focus-visible {
+  outline: 1px solid rgba(44, 62, 80, 0.35);
+  outline-offset: 2px;
+}
+
+.welcome-footer-separator {
+  opacity: .45;
+}
   top: 0;
   left: 0;
   width: 100%;
