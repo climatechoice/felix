@@ -2,7 +2,7 @@
   "name": "project",
   "version": "1.0.2",
   "private": true,
-  "license": "MIT",
+  "license": "EUPL-1.2",
   "type": "module",
   "scripts": {
     "dev": "sde dev",
