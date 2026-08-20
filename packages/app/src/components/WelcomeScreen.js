@@ -10,9 +10,9 @@ import { startTutorial } from "./Tutorial.js";
 import { startLesson8 } from "./Lesson8";
 
 const buildVersion = typeof __APP_GIT_TAG__ !== "undefined" && __APP_GIT_TAG__
-  ? __APP_GIT_TAG__
+  ? __APP_GIT_TAG__.replace(/^v/, "")
   : typeof __APP_VERSION__ !== "undefined"
-    ? __APP_VERSION__
+    ? __APP_VERSION__.replace(/^v/, "")
     : "unknown";
 
 const versionUrl = typeof __APP_VERSION_URL__ !== "undefined"
