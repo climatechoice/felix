@@ -21,9 +21,24 @@ function getGitTag() {
   }
 }
 
+function getLatestGitTag() {
+  try {
+    return execSync('git tag --sort=-v:refname', {
+      cwd: projDir,
+      stdio: ['ignore', 'pipe', 'ignore']
+    })
+      .toString()
+      .split(/\r?\n/)
+      .map(tag => tag.trim())
+      .find(tag => tag.length > 0) || ''
+  } catch {
+    return ''
+  }
+}
+
 export default defineConfig(env => {
   const gitTag = getGitTag()
-  const appVersion = gitTag || '1.0.1'
+  const appVersion = gitTag || getLatestGitTag() || '1.0.1'
   const versionUrl = gitTag
     ? `https://github.com/climatechoice/felix/releases/tag/${encodeURIComponent(gitTag)}`
     : 'https://github.com/climatechoice/felix/releases'
