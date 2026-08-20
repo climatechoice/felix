@@ -462,7 +462,7 @@ export function loadNavBar() {
         <!-- Interactive Lesson removed from Resources: use the nav button instead -->
         <div class="docs-dropdown-item" data-action="update-log">
           <span class="material-icons">update</span>
-          <span>Update Log</span>
+          <span>Release Notes</span>
         </div>
       </div>
     </div>
@@ -491,8 +491,7 @@ export function loadNavBar() {
     } else if (action === "quick-guide") {
       startTutorial();
     } else if (action === "update-log") {
-      // TODO: Add update log functionality
-      alert("Update log feature coming soon!");
+      window.open(__APP_VERSION_URL__ || "https://github.com/climatechoice/felix/releases", "_blank");
     }
     
     $documentationDropdownContainer.find(".docs-dropdown-menu").removeClass("show");

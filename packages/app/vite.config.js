@@ -1,4 +1,5 @@
 import { dirname, resolve } from 'path'
+import { execSync } from 'child_process'
 import { fileURLToPath } from 'url'
 
 import { defineConfig } from 'vite'
@@ -9,7 +10,24 @@ import { defineConfig } from 'vite'
 const appDir = dirname(fileURLToPath(import.meta.url))
 const projDir = resolve(appDir, '..', '..')
 
+function getGitTag() {
+  try {
+    return execSync('git describe --tags --exact-match HEAD', {
+      cwd: projDir,
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).toString().trim()
+  } catch {
+    return ''
+  }
+}
+
 export default defineConfig(env => {
+  const gitTag = getGitTag()
+  const appVersion = gitTag || '1.0.1'
+  const versionUrl = gitTag
+    ? `https://github.com/climatechoice/felix/releases/tag/${encodeURIComponent(gitTag)}`
+    : 'https://github.com/climatechoice/felix/releases'
+
   return {
     // Don't clear the screen in dev mode so that we can see builder output
     clearScreen: false,
@@ -27,7 +45,10 @@ export default defineConfig(env => {
     // Inject special values into the generated JS
     define: {
       // Set a flag to indicate that this is a production build
-      __PRODUCTION__: env.mode === 'production'
+      __PRODUCTION__: env.mode === 'production',
+      __APP_VERSION__: JSON.stringify(appVersion),
+      __APP_GIT_TAG__: JSON.stringify(gitTag),
+      __APP_VERSION_URL__: JSON.stringify(versionUrl)
     },
 
     resolve: {
