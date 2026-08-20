@@ -1,11 +1,16 @@
-# FeliX ISE
+# FeliXSim
 
-FeliX Interactive Simulation Environment (FeliX ISE) builds upon the robust [FeliX](https://github.com/iiasa/Felix-Model) model, a global system dynamics-based Integrated Assessment Model (IAM) developed by IIASA, designed to simulate complex interactions among population, economy, energy, land, food, climate, biodiversity, and more. 
+FeliXSim is an interactive simulator which builds upon the robust [FeliX](https://github.com/iiasa/Felix-Model) model, a global system dynamics-based Integrated Assessment Model (IAM) developed by IIASA, designed to simulate complex interactions among population, economy, energy, land, food, climate, biodiversity, and more. 
 
 FeliX is one of the very few models that explicitly model human behaviors in the human-earth system, considering dynamic interactions of socio-economic and environmental sectors. The model is calibrated with data from 1900 to 2020 and projects through to 2100.
 
 ## The interface
-<img width="2306" height="1257" alt="image" src="https://github.com/user-attachments/assets/76bb73ac-37b4-4702-a949-e5af94cfdcc4" />  
+<img alt="Default interface" src="figures/default_interface.png" />  
+<sup>Default interface.</sup>
+
+<img alt="Visualisations for scenario exploration" src="figures/visualisations.png" />  
+<sup>Different kinds of visualisations for scenario exploration, trade-offs, target alignments, and uncertainty analysis.</sup>
+
 Visit it yourself:  https://climatechoice.github.io/felix/
 
 ## Instructions for setting up the project
@@ -44,12 +49,12 @@ Once you've completed that, run it:
 npm run dev
 ```
 and then navigate to http://localhost:8080/index.html  
-You should see that the default SDEverywhere project runs as expected. If there are any issues, resolve them, and then come back to set up the FeliX ISE.
+You should see that the default SDEverywhere project runs as expected. If there are any issues, resolve them, and then come back to set up FeliXSim.
 
 
-### Setting up the FeliX ISE
+### Setting up FeliXSim
 
-If you've followed all the previous instructions correctly, setting up the FeliX ISE should be as simple as the steps below:  
+If you've followed all the previous instructions correctly, setting up FeliXSim should be as simple as the steps below:  
 ```sh
 cd ..          # go to the parent directory *
 git clone https://github.com/climatechoice/felix.git
