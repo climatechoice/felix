@@ -16,6 +16,22 @@ import img8 from '../imgs/lesson/8.png';
  * Creates an 8-step lesson using user's images and provided text.
  */
 export function startLesson8() {
+  const INTRO_DOT_COLORS = ['#000000', '#00BFFF', '#996633', '#FFD700', '#228B22', '#ED7014', '#FF6347'];
+
+  const LESSON_HIGHLIGHT_COLORS = {
+    x1: '#000000',
+    x2: '#00BFFF',
+    x3: '#996633',
+    x4: '#FFD700',
+    x5: '#228B22',
+    x6: '#ED7014',
+    x7: '#FF6347'
+  };
+
+  const introDotsHtml = INTRO_DOT_COLORS
+    .map((color) => `<span class="dot" style="background:${color}"></span>`)
+    .join('');
+
   const LEGEND = `
     <b>Arrows</b>
     <div class="ll-row">
@@ -44,7 +60,7 @@ export function startLesson8() {
   const steps = [
     {
       title: 'Introduction',
-      subtitle: '<span class="lesson-intro-dots"><span class="dot" style="background:#000000"></span><span class="dot" style="background:#00BFFF"></span><span class="dot" style="background:#996633"></span><span class="dot" style="background:#FFD700"></span><span class="dot" style="background:#228B22"></span><span class="dot" style="background:#ED7014"></span><span class="dot" style="background:#FF6347"></span></span>',
+      subtitle: `<span class="lesson-intro-dots">${introDotsHtml}</span>`,
       description: `<p>The global food system is one of the largest drivers of environmental and human sustainability challenges worldwide. In this lesson, we will explore how our everyday food behaviours place pressure on key systems including land, water, fertilizers, biodiversity, climate, and human nutrition.</p>`,
       image: img0,
       graphId: null
@@ -55,7 +71,8 @@ export function startLesson8() {
       description: `<p>It all begins with the demand for food. To produce the food we eat, agriculture needs land for crops and animals, and water to grow and feed them.</p>`,
       image: img1,
       graphId: 'x1',
-      legend: LEGEND
+      legend: LEGEND,
+      lessonHighlight: LESSON_HIGHLIGHT_COLORS.x1
     },
     // Population step removed as requested
     {
@@ -64,7 +81,8 @@ export function startLesson8() {
       description: `<p>Water is essential for producing food. It helps crops grow and is also used to produce feed for livestock. When water is available, crop yields improve and more food can be produced.</p>`,
       image: img2,
       graphId: 'x2',
-      legend: LEGEND
+      legend: LEGEND,
+      lessonHighlight: LESSON_HIGHLIGHT_COLORS.x2
     },
     {
       title: 'Land',
@@ -72,7 +90,8 @@ export function startLesson8() {
       description: `<p>As the demand for food grows, more land is often needed. Forests and natural ecosystems may be converted into farmland to grow more crops and raise more animals.</p>`,
       image: img3,
       graphId: 'x3',
-      legend: LEGEND
+      legend: LEGEND,
+      lessonHighlight: LESSON_HIGHLIGHT_COLORS.x3
     },
     {
       title: 'Fertilizer',
@@ -80,7 +99,8 @@ export function startLesson8() {
       description: `<p>When expanding farmland becomes difficult, farmers try to grow more on the same land. Fertilizers help crops grow faster and increase how much food that land can produce.</p>`,
       image: img4,
       graphId: 'x4',
-      legend: LEGEND
+      legend: LEGEND,
+      lessonHighlight: LESSON_HIGHLIGHT_COLORS.x4
     },
     {
       title: 'Biodiversity',
@@ -88,7 +108,8 @@ export function startLesson8() {
       description: `<p>Producing more food can also affect nature. Expanding farmland and using fertilizers can reduce biodiversity and change ecosystems that farming depends on.</p>`,
       image: img5,
       graphId: 'x5',
-      legend: LEGEND
+      legend: LEGEND,
+      lessonHighlight: LESSON_HIGHLIGHT_COLORS.x5
     },
     {
       title: 'Climate',
@@ -96,7 +117,8 @@ export function startLesson8() {
       description: `<p>Food production also releases greenhouse gases—from livestock, fertilizers, and land-use change. These emissions warm the climate, which over time can affect crops and ecosystems.</p>`,
       image: img6,
       graphId: 'x6',
-      legend: LEGEND
+      legend: LEGEND,
+      lessonHighlight: LESSON_HIGHLIGHT_COLORS.x6
     },
     {
       title: 'Nutrition',
@@ -105,11 +127,12 @@ export function startLesson8() {
       image: img7,
       graphId: 'x7',
       legend: LEGEND,
+      lessonHighlight: LESSON_HIGHLIGHT_COLORS.x7,
       zoomLeave: { x: '69%', y: '22%' }
     },
     {
       title: 'Explore Your Behaviour!',
-      subtitle: '<span class="lesson-intro-dots"><span class="dot" style="background:#000000"></span><span class="dot" style="background:#00BFFF"></span><span class="dot" style="background:#996633"></span><span class="dot" style="background:#FFD700"></span><span class="dot" style="background:#228B22"></span><span class="dot" style="background:#ED7014"></span><span class="dot" style="background:#FF6347"></span></span>',
+      subtitle: `<span class="lesson-intro-dots">${introDotsHtml}</span>`,
       description: `<p>Food demand goes beyond simple calorie needs—it reflects what we choose to eat, how efficiently food is used, and the practices that shape everyday consumption. Explore the simulator to see how your behaviours influence sustainability outcomes.</p>`,
       image: img8,
       graphId: null,

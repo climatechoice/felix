@@ -145,7 +145,7 @@ export function startLesson(steps = [], opts = {}) {
       if (step && step.graphId) {
         // prefer the explicit outer container if present
         const targetEl = ($graphOuter && $graphOuter.length) ? $graphOuter[0] : $graph[0];
-        const ev = new CustomEvent('lesson:showGraphInLesson', { detail: { graphId: step.graphId, stepIndex: idx, container: targetEl } });
+        const ev = new CustomEvent('lesson:showGraphInLesson', { detail: { graphId: step.graphId, stepIndex: idx, container: targetEl, lessonHighlight: step.lessonHighlight } });
         window.dispatchEvent(ev);
       } else {
         // clear any existing lesson graph

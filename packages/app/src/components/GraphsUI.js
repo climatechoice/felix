@@ -886,6 +886,7 @@ try {
 
       if (container) {
         const $outer = $(container);
+        const lessonHighlight = detail && detail.lessonHighlight;
         // Ensure the container looks like an outer-graph-container so CSS applies
         try { $outer.addClass('outer-graph-container'); } catch (e) {}
         $outer.off(); $outer.attr('style','height: 100%; width: 100%;'); $outer.empty();
@@ -899,7 +900,7 @@ try {
           const $titleContainer = $outer.find('.title-container');
           if ($titleContainer && $titleContainer.length) {
             // Determine primary color: prefer hardcoded overrides, then legend, then scenarioDisplay
-            let primaryColor = LESSON_COLOR_OVERRIDES[spec.id] || null;
+            let primaryColor = lessonHighlight || LESSON_COLOR_OVERRIDES[spec.id] || null;
             if (!primaryColor) {
               if (spec.legendItems && spec.legendItems.length && spec.legendItems[0].color) {
                 primaryColor = spec.legendItems[0].color;
