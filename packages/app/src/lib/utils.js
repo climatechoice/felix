@@ -224,7 +224,8 @@ export function createInfoIcon(hoverText, opts = {}) {
   if (!hoverText) return null;
 
   const infoIconContainer = $('<div class="info-icon-container">');
-  const icon = $('<div class="info-icon">i</div>');
+  const iconText = opts.iconText || "i";
+  const icon = $(`<div class="info-icon">${iconText}</div>`);
 
   // Parse Markdown to HTML
   const parsedHTML = marked.parse(hoverText);

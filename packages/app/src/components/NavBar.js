@@ -19,6 +19,7 @@ import { loadTargets, updateAllGraphTargets } from "../lib/utils.js";
 import { targetsVisible } from "../stores/targets-store.js";
 import { startTutorial } from "./Tutorial.js";
 import { startLesson8 } from "./Lesson8";
+import { showFacilitationGuideLibrary } from "./FacilitationGuideLibrary.js";
 import { graphViews } from "../stores/graphs-store.js";
 import { defaultMinYear, defaultMaxYear, presentYear, resetYearRangeSettings } from "../stores/year-range-store.js";
 
@@ -459,6 +460,10 @@ export function loadNavBar() {
           <span class="material-icons">help_outline</span>
           <span>Quick Guide</span>
         </div>
+        <div class="docs-dropdown-item" data-action="facilitation-library">
+          <span class="material-icons">layers</span>
+          <span>Facilitation Guides</span>
+        </div>
         <!-- Interactive Lesson removed from Resources: use the nav button instead -->
         <div class="docs-dropdown-item" data-action="update-log">
           <span class="material-icons">update</span>
@@ -490,6 +495,8 @@ export function loadNavBar() {
       window.open("https://iiasa.github.io/felix_docs/", "_blank");
     } else if (action === "quick-guide") {
       startTutorial();
+    } else if (action === "facilitation-library") {
+      showFacilitationGuideLibrary();
     } else if (action === "update-log") {
       window.open(__APP_VERSION_URL__ || "https://github.com/climatechoice/felix/releases", "_blank");
     }
