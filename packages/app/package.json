@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "clean": "rm -rf public",
+    "predev": "node ./scripts/sync-workshop-guides.js",
     "lint": "eslint src --max-warnings 0",
+    "prebuild": "node ./scripts/sync-workshop-guides.js",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "precommit": "../scripts/precommit",
